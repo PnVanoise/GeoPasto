@@ -1,0 +1,26 @@
+__pycache__/
+static/
+*.log
+venv/
+
+# Bytecode
+*.py[cod]
+
+# Local env files (may contain DB credentials, API keys, etc.)
+.env
+.env.*
+
+# Django / Python useful ignores
+*.sqlite3
+db.sqlite3
+local_settings.py
+instance/
+.pytest_cache/
+.coverage
+.mypy_cache/
+.cache
+media/
+staticfiles/
+celerybeat-schedule
+.python-version
+.egg-info/

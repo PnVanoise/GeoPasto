@@ -1,0 +1,36 @@
+# Root-level ignores for this project
+
+# Exclude config directories that should not be in VCS
+conf_*/
+
+# OS files
+.DS_Store
+
+# Python caches & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+venv*/
+
+# Environment files (may contain secrets)
+.env
+.env.*
+
+# Logs
+*.log
+*.log.*
+
+# Editor directories
+.vscode/
+.idea/
+
+# Additional common ignores
+.python-version
+*.sqlite3
+.coverage
+build/
+*.egg-info

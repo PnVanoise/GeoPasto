@@ -1,0 +1,30 @@
+name: 🐛 Bug
+description: Signaler un bug
+title: "[Bug] "
+labels: ["bug"]
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 🐛 Description
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔁 Étapes pour reproduire
+      placeholder: |
+        1.
+        2.
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 🎯 Résultat attendu
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 Logs / erreurs

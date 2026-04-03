@@ -1,0 +1,44 @@
+name: 🚀 Feature
+description: Nouvelle fonctionnalité
+title: "[Feature] "
+labels: ["feature"]
+assignees: []
+
+body:
+  - type: textarea
+    id: objectif
+    attributes:
+      label: 🎯 Objectif
+      description: Décris la fonctionnalité
+      placeholder: Exemple = Gestion des exploitants
+    validations:
+      required: true
+
+  - type: textarea
+    id: backend
+    attributes:
+      label: 🧩 Backend
+      placeholder: Modèle, API, logique métier...
+
+  - type: textarea
+    id: frontend
+    attributes:
+      label: 🎨 Frontend
+      placeholder: UI, composants Vue, appels API...
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 🔗 Sous-tâches (issues à créer)
+      placeholder: |
+        - #XX Modèle
+        - #XX API
+        - #XX UI
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: ✅ Critères de validation
+      placeholder: |
+        - [ ] CRUD OK
+        - [ ] UI fonctionnelle

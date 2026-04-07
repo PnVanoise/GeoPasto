@@ -1,23 +1,40 @@
-# Installation geopasto_backend
-## Synchronisation avec le repo
-Créer un dossier vide
+# Installation — geopasto_backend
 
-Se positionner dans ce dossier
+Prérequis : Python 3.11 (recommandé). Ce README décrit l'installation pour développement, CI et production.
 
-Initialiser le repo : ```git init```
+## Synchronisation avec le dépôt
 
-Définir la source distante : ```git remote add origin https://github.com/PnVanoise/geopasto_back.git```
+1. Créer un dossier vide et se placer dedans
+2. Initialiser le repo et ajouter la remote :
 
-Récupérer les données : ```git pull origin main```
+```bash
+git init
+git remote add origin https://github.com/PnVanoise/GeoPasto.git
+git pull origin main
+```
 
-## Configuration locale
-Dans le répertoire, créer un environnement virtuel python : ```python3 -m venv venv```
+## Quickstart (dev)
 
-Activer cet environnement : ```. ./venv/bin/activate```
+Exécutez ces commandes pour préparer un environnement de développement local :
 
-Installer les modules python : ```pip install -r requirements.txt```
+```bash
+# créer et activer le venv
+python3 -m venv venv
+source venv/bin/activate
 
-Récupérer la configuration système de l'application _settings.py_ (configuration de la base notamment, secret_key, paramètres CORS)
+# installer dépendances (utilise psycopg2-binary pour éviter compilation native)
+pip install -r backend/requirements-dev.txt
+
+# configurer les variables d'environnement (voir backend/.env.example)
+cp backend/.env.example .env
+# éditez .env pour renseigner DJANGO_SECRET_KEY et DATABASE_URL
+
+# appliquer migrations et lancer le serveur
+python backend/manage.py migrate
+python backend/manage.py runserver
+```
+
+Récupérez un fichier `settings.py` approprié si nécessaire (il n'est pas versionné).
 
 ## Création du service
 ```
@@ -87,17 +104,32 @@ server {
 
 # Lancer les tests
 
-Les tests utilisent Django TestCase avec une base PostgreSQL+PostGIS.
-Le fichier `geoagri/settings.py` doit exister localement (non versionné).
+Les tests utilisent Django TestCase avec une base PostgreSQL+PostGIS. Le fichier `geoagri/settings.py` doit exister localement (non versionné) ou vous pouvez définir `DATABASE_URL` pointant vers une base de test.
 
-## Prérequis
+## Prérequis pour tests et CI
 
-Installer les dépendances de développement (inclut `pytest` et `pytest-django`) :
+- Installer les dépendances de développement :
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r backend/requirements-dev.txt
 ```
 
+### Dépendances système (production)
+
+Avant d'installer `requirements.txt` en production, installez les paquets système nécessaires pour compiler des extensions natives :
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential libpq-dev postgresql-server-dev-all
+```
+
+Ces paquets fournissent `pg_config` et les en-têtes nécessaires pour compiler `psycopg2` (source). Conservez `psycopg2` dans `requirements.txt` pour la production.
+
+### CI / développement
+
+Pour CI et dev nous utilisons `psycopg2-binary` (précompilé) afin d'éviter la compilation native. Le workflow CI se trouve dans `.github/workflows/pytest.yml` et installe `backend/requirements-dev.txt`.
+
+Remarque : `psycopg2-binary` est pratique en CI/dev mais n'est pas recommandé pour services long-running en production ; préférez `psycopg2` en prod.
 ## Option 1 — `manage.py test` (Django natif)
 
 ```bash
@@ -121,13 +153,51 @@ Le fichier `pytest.ini` à la racine du projet configure le module de settings D
 
 ---
 
-# Création d'une nouvelle instance
-1. Créer une base de données vide, activer l'extension postgis (```create extension postgis```)
-2. Créer un utilisateur propriétaire de la bdd
-3. Récupérer les sources, créer venv, actualiser l'environnement python (```pip update -r -requirements.txt```)
-4. Récupèrer un fichier settings.py, l'actualiser avec les infos de la nouvelle bdd
-5. ```python manage.py makemigrations``` (ne va rien faire : les fichiers de migrations sont déjà existant)
-6. ```python manage.py migrate``` (doit exécuter les 6x migrations passées)
+## Création d'une nouvelle instance (prod)
 
-La bdd doit être à jour.
+1. Créer la base de données PostgreSQL et activer l'extension PostGIS :
+
+```sql
+CREATE DATABASE geopasto;
+\c geopasto
+CREATE EXTENSION postgis;
+```
+
+2. Créer un utilisateur et lui donner les droits sur la base.
+3. Récupérer les sources, créer le venv et installer les dépendances de production :
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+sudo apt-get update
+sudo apt-get install -y build-essential libpq-dev postgresql-server-dev-all
+pip install -r backend/requirements.txt
+```
+
+4. Récupérer/éditer `backend/geoagri/settings.py` ou définir `DATABASE_URL` et `DJANGO_SECRET_KEY`.
+5. Appliquer les migrations :
+
+```bash
+python backend/manage.py migrate
+python backend/manage.py collectstatic --noinput
+```
+
+6. Configurer systemd/nginx comme indiqué plus haut, puis démarrer le service.
+
+La base doit être à jour.
+
+## Variables d'environnement
+
+Créez un fichier `backend/.env` (ex : copier `backend/.env.example`) et définissez au minimum :
+
+- `DJANGO_SECRET_KEY`
+- `DATABASE_URL` (ex: `postgres://user:pass@host:5432/dbname`)
+- `DEBUG` (True/False)
+
+Voir `backend/.env.example` fourni.
+
+## Raccourcis Makefile (dev)
+
+Un `Makefile` est fourni dans `backend/` pour simplifier les tâches fréquentes (création venv, installation, tests, migration, runserver).
+
 

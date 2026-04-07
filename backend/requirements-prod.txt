@@ -1,0 +1,2 @@
+-r requirements.txt
+# Add production-only packages here if needed (e.g. monitoring, WSGI servers)

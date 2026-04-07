@@ -7,8 +7,11 @@ djangorestframework-gis==1.0
 djangorestframework-simplejwt==5.3.1
 gunicorn==22.0.0
 packaging==24.1
-psycopg2==2.9.9
+psycopg2-binary==2.9.9
 PyJWT==2.9.0
 sqlparse==0.5.0
 django-extensions==4.1
 dj-database-url==3.1.2
+
+# Note: this file is intended for CI/development where a precompiled
+# binary wheel of psycopg2 avoids the need to install libpq/build tools.

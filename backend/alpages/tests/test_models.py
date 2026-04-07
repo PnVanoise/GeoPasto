@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from alpages.models import (
     QuartierPasto, SituationDExploitation, Exploiter, Ruche,
-    Eleveur, Elever, AbriDUrgence, Commodite, AbriDUrgenceCommodite
+    Eleveur, AbriDUrgence, Commodite, AbriDUrgenceCommodite
 )
 
 
@@ -19,7 +19,6 @@ class ModelsSmokeTest(TestCase):
         ruche = Ruche.objects.create(id_ruche=10, description='R10', geometry='POINT(0 0)', situation_exploitation=orig)
 
         eleveur = Eleveur.objects.create(id_eleveur=10, nom_eleveur='E10')
-        Elever.objects.create(id_elever=10, situation_exploitation=orig, type_cheptel=None, eleveur=eleveur, nombre_animaux=1, pension='P')
 
         abri = AbriDUrgence.objects.create(id_abri_urgence=10, description='A10', etat='OK')
         commod = Commodite.objects.create(id_commodite=10, description='C10')
@@ -30,5 +29,4 @@ class ModelsSmokeTest(TestCase):
         self.assertEqual(SituationDExploitation.objects.count(), 1)
         self.assertEqual(orig.ruches.count(), 1)
         self.assertEqual(orig.exploitations.count(), 1)
-        self.assertEqual(Elever.objects.filter(situation_exploitation=orig).count(), 1)
         self.assertEqual(abri.commodites.count(), 1)

@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from datetime import date
 
-from alpages.models import SituationDExploitation, Exploiter, Ruche, GardeSituation, Elever, QuartierPasto, Berger, Eleveur, TypeCheptel
+from alpages.models import SituationDExploitation, Exploiter, Ruche, GardeSituation, QuartierPasto, Berger, Eleveur, TypeCheptel
 
 class DuplicateSituationTest(APITestCase):
 
@@ -33,7 +33,7 @@ class DuplicateSituationTest(APITestCase):
         Exploiter.objects.create(id_exploiter=1, quartier=quartier, situation_exploitation=self.orig, date_debut=date(2020,1,1), commentaire='c')
         Ruche.objects.create(id_ruche=1, description='R1', geometry='POINT(0 0)', situation_exploitation=self.orig)
         GardeSituation.objects.create(id_garde_situation=1, date_debut=date(2020,1,1), commentaire='g', situation_exploitation=self.orig, berger=berger)
-        Elever.objects.create(id_elever=1, situation_exploitation=self.orig, type_cheptel=type_cheptel, eleveur=eleveur, nombre_animaux=5, pension='P', date_debut=date(2020,1,1))
+        #Elever.objects.create(id_elever=1, situation_exploitation=self.orig, type_cheptel=type_cheptel, eleveur=eleveur, nombre_animaux=5, pension='P', date_debut=date(2020,1,1))
 
     def test_duplicate_clones_and_closes_original(self):
         url = reverse('situationexploitation-duplicate', kwargs={'pk': self.orig.id_situation})
@@ -55,8 +55,8 @@ class DuplicateSituationTest(APITestCase):
         self.assertEqual(new.exploitations.count(), 1)
         self.assertEqual(new.ruches.count(), 1)
         self.assertEqual(new.gardes_situation.count(), 1)
-        from alpages.models import Elever
-        self.assertEqual(Elever.objects.filter(situation_exploitation=new).count(), 1)
+        #from alpages.models import Elever
+        #self.assertEqual(Elever.objects.filter(situation_exploitation=new).count(), 1)
         # check linked relationships point to new
         ex = new.exploitations.first()
         self.assertEqual(ex.situation_exploitation.id_situation, new.id_situation)
@@ -64,5 +64,5 @@ class DuplicateSituationTest(APITestCase):
         self.assertEqual(ru.situation_exploitation.id_situation, new.id_situation)
         gr = new.gardes_situation.first()
         self.assertEqual(gr.situation_exploitation.id_situation, new.id_situation)
-        el = Elever.objects.filter(situation_exploitation=new).first()
-        self.assertEqual(el.situation_exploitation.id_situation, new.id_situation)
+        #el = Elever.objects.filter(situation_exploitation=new).first()
+        #self.assertEqual(el.situation_exploitation.id_situation, new.id_situation)

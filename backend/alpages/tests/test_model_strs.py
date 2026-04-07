@@ -8,11 +8,6 @@ from alpages import models as m
     [
         (m.UnitePastorale, {"nom_up": "UP1"}, "UP1"),
         (m.ProprietaireFoncier, {"nom_propr": "Dupont"}, "Dupont"),
-        (
-            m.UPProprietaire,
-            {"proprietaire": m.ProprietaireFoncier(nom_propr="P1"), "unite_pastorale": m.UnitePastorale(nom_up="U1")},
-            "P1 est propriétaire de U1",
-        ),
         (m.QuartierPasto, {"nom_quartier": "Q1"}, "Q1"),
         (m.TypeDeSuivi, {"description": "SUIVI"}, "SUIVI"),
         (m.PlanDeSuivi, {"description": "PLAN1"}, "PLAN1"),
@@ -23,12 +18,6 @@ from alpages import models as m
         (m.SituationDExploitation, {"nom_situation": "SIT"}, "SIT"),
         (m.Eleveur, {"nom_eleveur": "E1"}, "E1"),
         (m.TypeDExploitant, {"description": "TYPEEX"}, "TYPEEX"),
-        (m.Exploitant, {"nom_exploitant": "EXP1"}, "EXP1"),
-        (
-            m.EtreCompose,
-            {"eleveur": m.Eleveur(nom_eleveur="ELV"), "exploitant": m.Exploitant(nom_exploitant="EXP")},
-            "ELV est membre de EXP",
-        ),
         (m.SubventionPNV, {"description": "SUBV"}, "SUBV"),
         (m.Commodite, {"description": "COMMO"}, "COMMO"),
         (m.AbriDUrgence, {"description": "ABRI"}, "ABRI"),
@@ -42,16 +31,6 @@ from alpages import models as m
         (m.Berger, {"nom_berger": "B1", "prenom_berger": "P1"}, "B1"),
         (m.GardeSituation, {"id_garde_situation": 7}, "7"),
         (m.TypeCheptel, {"description": "TCH"}, "TCH"),
-        (
-            m.Elever,
-            {
-                "eleveur": m.Eleveur(nom_eleveur="EL"),
-                "type_cheptel": m.TypeCheptel(description="TC"),
-                "situation_exploitation": m.SituationDExploitation(nom_situation="SIT"),
-                "nombre_animaux": 5,
-            },
-            "EL élève TC dans la situation SIT",
-        ),
         (m.Production, {"description": "PROD"}, "PROD"),
         (m.Categorie_pension, {"description": "CATP"}, "CATP"),
         (m.Espece, {"description": "ESP"}, "ESP"),

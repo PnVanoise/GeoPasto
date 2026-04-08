@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 import logging
 
 logger = logging.getLogger(__name__)
+from .pagination import DefaultPagination
 
 
 class BaseModelViewSet(ModelViewSet):
@@ -61,6 +62,56 @@ class BaseModelViewSet(ModelViewSet):
             return Response({'next_id': None})
         return Response({'next_id': next_id})
 
+    def list(self, request, *args, **kwargs):
+        """
+        Default `list` behaviour for all ModelViewSets inheriting from
+        `BaseModelViewSet`. By default return the full list unless the
+        client provides a `page` query parameter, in which case the
+        `DefaultPagination` is used. Child viewsets may override `list`
+        if they require a different behaviour.
+        """
+        self.pagination_class = DefaultPagination
+        return self.conditional_list(request)
+
     def get_pk_field_name(self):
         # model PK attribute name (e.g. 'id', 'id_unite_pastorale', ...)
         return self.get_queryset().model._meta.pk.name
+
+    def conditional_list(self, request, queryset=None, serializer_class=None):
+        """
+        Helper to return either a full list or a paginated response depending
+        on whether the client provided a `page` query parameter.
+
+        If `serializer_class` is provided it will be used to serialize the
+        results (useful for light/detail serializers). Otherwise `get_serializer`
+        is used so normal `serializer_class`/`get_serializer_class` behaviour
+        (including context) is preserved.
+
+        Usage: child viewsets can call `return self.conditional_list(request, serializer_class=MySerializer)`
+        or override `self.pagination_class` before calling to select a
+        pagination class.
+        """
+        qs = queryset if queryset is not None else self.filter_queryset(self.get_queryset())
+
+        # If no `page` param, return full list
+        if 'page' not in request.GET:
+            if serializer_class is not None:
+                serializer = serializer_class(qs, many=True, context=self.get_serializer_context())
+            else:
+                serializer = self.get_serializer(qs, many=True)
+            return Response(serializer.data)
+
+        # Otherwise rely on DRF pagination machinery (child may set pagination_class)
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            if serializer_class is not None:
+                serializer = serializer_class(page, many=True, context=self.get_serializer_context())
+            else:
+                serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        if serializer_class is not None:
+            serializer = serializer_class(qs, many=True, context=self.get_serializer_context())
+        else:
+            serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)

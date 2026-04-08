@@ -1,8 +1,10 @@
 import logging
 from rest_framework import status
 from rest_framework.response import Response
-from alpages.viewsets_base import BaseModelViewSet
 from rest_framework.decorators import api_view, action
+
+from .pagination import DefaultPagination
+from .viewsets_base import BaseModelViewSet
 
 from alpages.models import Logement, Commodite, LogementCommodite
 from alpages.models import UnitePastorale, ProprietaireFoncier, QuartierPasto, ProprietaireUnitePastorale
@@ -40,6 +42,9 @@ from .choices_logement import LST_STATUT, LST_ACCES_FINAL, LST_PROPRIETE, LST_TY
                               LST_ORIGINE_EAU, LST_QUALITE_EAU, LST_DISPO_EAU, LST_ASSAINISSEMENT, LST_CHAUFFE_EAU, LST_OUI_NON, LST_OUI_NON_INC
 
 logger = logging.getLogger(__name__)
+
+
+
 
 @api_view(['GET'])
 def get_choices_logement(request):
@@ -87,8 +92,10 @@ class UnitePastoraleViewset(BaseModelViewSet):
     @action(detail=False, methods=['get'], url_path='light')
     def list_light(self, request):
         queryset = self.get_queryset()
-        serializer = UnitePastoraleLSerializer(queryset, many=True)
-        return Response(serializer.data)
+        # Use the light serializer for this endpoint; enable pagination when
+        # `page` param is present.
+        self.pagination_class = DefaultPagination
+        return self.conditional_list(request, serializer_class=UnitePastoraleLSerializer)
 
 
    
@@ -100,21 +107,7 @@ class ProprietaireFoncierViewset(BaseModelViewSet):
         return queryset
     
     
-class EspeceViewset(BaseModelViewSet):
-    serializer_class = EspeceSerializer
 
-    def get_queryset(self):
-        queryset = Espece.objects.all().order_by('id_espece')
-        id_espece = self.request.GET.get('id_espece')
-        if id_espece is not None:
-            queryset = queryset.filter(id_espece=id_espece)
-
-        return queryset
-    def get_queryset(self):
-        queryset = PlanDeSuivi.objects.all().select_related('type_suivi').select_related('unite_pastorale').order_by('id_plan_suivi')
-        return queryset
-
-    
 class TypeDeMesureViewset(BaseModelViewSet):
     serializer_class = TypeDeMesureSerializer
 
@@ -460,7 +453,11 @@ class EspeceViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = Espece.objects.all().order_by('id_espece')
+        id_espece = self.request.GET.get('id_espece')
+        if id_espece is not None:
+            queryset = queryset.filter(id_espece=id_espece)
         return queryset
+
 
 
 class RaceViewset(BaseModelViewSet):

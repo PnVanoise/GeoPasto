@@ -1,5 +1,5 @@
 <template>
-  <CrudList2
+  <CrudListPaginated
     title="Catégories de pension"
     modelName="categorie_pension"
     apiRouteName="categorie_pension"
@@ -14,7 +14,7 @@
 
 <script setup>
 import CategoriePensionForm2 from './CategoriePensionForm2.vue';
-import CrudList2 from './CrudList2.vue';
+import CrudListPaginated from './CrudListPaginated.vue';
 
 const columns = [
   { field: "description", label: "Description", sortable: true },

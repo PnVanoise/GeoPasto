@@ -1,5 +1,5 @@
 <template>
-  <CrudList2
+  <CrudListPaginated
     title="Espèces"
     modelName="espece"
     apiRouteName="espece"
@@ -14,7 +14,7 @@
 
 <script setup>
 import EspeceForm2 from './EspeceForm2.vue';
-import CrudList2 from './CrudList2.vue';
+import CrudListPaginated from './CrudListPaginated.vue';
 
 const columns = [
   { field: "description", label: "Description", sortable: true },

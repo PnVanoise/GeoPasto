@@ -12,24 +12,37 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
 
   const items = ref([]);
   const isLoading = ref(false);
+  const pagination = ref({ count: null, next: null, previous: null, page_size: null });
   const showModal = ref(false);
   const selectedItem = ref(null);
   const mode = ref("view"); // add | change | view
 
-  const fetchAll = async () => {
+  const fetchAll = async (page = null) => {
     isLoading.value = true;
     try {
-      const response = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/${apiRouteName}/`);
+      const params = page ? { params: { page } } : {};
+      const response = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/${apiRouteName}/`, params);
       const data = response.data;
+      // Support DRF paginated responses: { count, next, previous, results }
+      let payload = data;
+      if (data && Array.isArray(data.results)) {
+        pagination.value = { count: data.count ?? null, next: data.next ?? null, previous: data.previous ?? null, page_size: data.page_size ?? null };
+        payload = data.results;
+      } else {
+        pagination.value = { count: null, next: null, previous: null, page_size: null };
+      }
 
       // Si l'API renvoie un FeatureCollection (GeoJSON), le convertir en tableau d'items
-      if (data && data.type === 'FeatureCollection' && Array.isArray(data.features)) {
-        items.value = data.features.map(f => ({ ...(f.properties || {}), id: f.id || f.properties?.id, geometry: f.geometry }));
-      } else if (geojsonMode && Array.isArray(data)) {
+      if (payload && payload.type === 'FeatureCollection' && Array.isArray(payload.features)) {
+        items.value = payload.features.map((f) => ({ ...(f.properties || {}), id: f.id || f.properties?.id, geometry: f.geometry }));
+      } else if (geojsonMode && Array.isArray(payload)) {
         // Certains endpoints peuvent renvoyer un tableau de Feature
-        items.value = data.map(f => (f && f.type === 'Feature') ? ({ ...(f.properties || {}), id: f.id || f.properties?.id, geometry: f.geometry }) : f);
+        items.value = payload.map((f) => (f && f.type === 'Feature') ? ({ ...(f.properties || {}), id: f.id || f.properties?.id, geometry: f.geometry }) : f);
+      } else if (Array.isArray(payload)) {
+        items.value = payload;
       } else {
-        items.value = data;
+        // Fallback: single object -> wrap into array
+        items.value = payload ? [payload] : [];
       }
     } catch (err) {
       mainStore.setErrorMessage("Erreur lors du chargement.");
@@ -183,6 +196,7 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
   return {
     items,
     isLoading,
+    pagination,
     showModal,
     selectedItem,
     mode,

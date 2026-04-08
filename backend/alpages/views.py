@@ -290,10 +290,6 @@ class RaceViewset(BaseModelViewSet):
 
         return queryset
 
-    def get_queryset(self):
-        queryset = Ruche.objects.all().order_by('id_ruche')
-        return queryset
-
 class BergerViewset(BaseModelViewSet):
     serializer_class = BergerSerializer
 
@@ -458,14 +454,6 @@ class EspeceViewset(BaseModelViewSet):
             queryset = queryset.filter(id_espece=id_espece)
         return queryset
 
-
-
-class RaceViewset(BaseModelViewSet):
-    serializer_class = RaceSerializer
-
-    def get_queryset(self):
-        queryset = Race.objects.all().order_by('id_race')
-        return queryset
 
 
 class Categorie_animauxViewset(BaseModelViewSet):

@@ -480,13 +480,22 @@ class QuartierPastoViewset(BaseModelViewSet):
     serializer_class = QuartierPastoSerializer
 
     def get_queryset(self):
-        queryset = QuartierPasto.objects.all().order_by('unite_pastorale', 'code_quartier')
+        queryset = QuartierPasto.objects.all().order_by('code_quartier')
 
-        up_id = self.request.GET.get('up_id')
-        if up_id is not None:
-            queryset = queryset.filter(unite_pastorale=up_id)
+        # up_id = self.request.GET.get('up_id')
+        # if up_id is not None:
+        #     queryset = queryset.filter(unite_pastorale=up_id)
 
         return queryset
+    
+    # def get_queryset(self):
+    #     queryset = QuartierPasto.objects.all().order_by('unite_pastorale', 'code_quartier')
+
+    #     up_id = self.request.GET.get('up_id')
+    #     if up_id is not None:
+    #         queryset = queryset.filter(unite_pastorale=up_id)
+
+    #     return queryset
 
 class PlanDeSuiviViewset(BaseModelViewSet):
     serializer_class = PlanDeSuiviSerializer

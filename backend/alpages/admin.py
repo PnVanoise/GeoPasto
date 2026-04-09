@@ -1,6 +1,6 @@
 from django.contrib.gis import admin
 from leaflet.admin import LeafletGeoAdmin
-from .models import Logement, QuartierUP, Commodite, LogementCommodite
+from .models import Logement, Commodite, LogementCommodite
 from .models import UnitePastorale, ProprietaireFoncier, QuartierPasto, ProprietaireUnitePastorale
 
 from .models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, BeneficierDe
@@ -12,7 +12,6 @@ from .models import TypeEvenement, Evenement
 from .models import Cheptel, Type_cheptel, Production, Categorie_pension, Espece, Race, Categorie_animaux
 
 admin.site.register(Logement, LeafletGeoAdmin)
-admin.site.register(QuartierUP, LeafletGeoAdmin)
 admin.site.register(Commodite, LeafletGeoAdmin)
 admin.site.register(LogementCommodite, LeafletGeoAdmin)
 

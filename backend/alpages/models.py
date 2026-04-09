@@ -58,7 +58,8 @@ class QuartierPasto(models.Model):
     code_quartier = models.CharField(max_length=50, null=True, blank=True)
     nom_quartier = models.CharField(max_length=50, null=True, blank=True)
     geometry = models.PolygonField(srid=2154, null=True, blank=True)
-    unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.SET_NULL, blank=True, null=True, related_name='quartiers')
+    situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.SET_NULL, blank=True, null=True, related_name='quartiers')
+    # unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.SET_NULL, blank=True, null=True, related_name='quartiers')
     
     def __str__(self):
         return str(self.nom_quartier)
@@ -628,38 +629,3 @@ class EquipementExploitant(models.Model):
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
     type_equipement = models.ForeignKey('alpages.TypeEquipement', on_delete=models.SET_NULL, blank=True, null=True, related_name='eqptsExploitant')
     exploitant = models.ForeignKey('alpages.Exploitant', on_delete=models.SET_NULL, blank=True, null=True, related_name='eqptsExploitant')
-
-
-# TEMPORAIRE DLG
-class Quartieralpage(models.Model):
-    """
-    Quartier d'alpage
-    """
-
-    id = models.BigIntegerField(primary_key=True)
-    geom = models.MultiPolygonField(srid=2154, blank=True, null=True)
-    quartier_code_court = models.CharField(max_length=10, blank=True, null=True)
-    date_presence_troupeau = models.CharField(max_length=100, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'alpages_quartieralpage'
-        
-class QuartierUP(models.Model):
-    """
-    Quartier d'alpages
-    """
-    
-    quartier_code = models.CharField(max_length=15, null=True, blank=True)
-    surface = models.FloatField(null=True, blank=True)
-    up_code = models.CharField(max_length=254, null=True, blank=True)
-    up_nom_1 = models.CharField(max_length=254, null=True, blank=True)
-    up_nom_2 = models.CharField(max_length=254, null=True, blank=True)
-    quartier_code_court = models.CharField(max_length=254, null=True, blank=True)
-    quartier_nom = models.CharField(max_length=254, null=True, blank=True)
-    
-    geom = models.MultiPolygonField(srid=2154, null=True)
-
-    def __str__(self):
-        return str(self.quartier_code)
-

@@ -5,7 +5,7 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometryFi
 from django.contrib.gis.geos import Polygon
 from django.contrib.gis.db.models.functions import Distance
 
-from alpages.models import Logement, QuartierUP, Quartieralpage, Commodite, LogementCommodite
+from alpages.models import Logement, Commodite, LogementCommodite
 from alpages.models import UnitePastorale, ProprietaireFoncier, QuartierPasto, ProprietaireUnitePastorale
 from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from alpages.models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe
@@ -136,11 +136,9 @@ class QuartierPastoSerializer(GeoFeatureModelSerializer):
         model = QuartierPasto
         geo_field = 'geometry'
         auto_bbox = True
-        fields = ['id_quartier', 'code_quartier', 'nom_quartier', 'geometry', 'unite_pastorale', 'unitepastorale_nom']
+        fields = ['id_quartier', 'code_quartier', 'nom_quartier', 'geometry']
         
-    def get_unitepastorale_nom(self, obj):
-        return obj.unite_pastorale.nom_up if obj.unite_pastorale else None
-
+    
     def to_internal_value(self, data):
         # Intercepter les données de géométrie avant la validation
         geometry = data.get('geometry', None)
@@ -164,9 +162,7 @@ class QuartierPastoSerializer(GeoFeatureModelSerializer):
                 "coordinates": [[]]  # Un polygone vide
             }
         
-        if instance.unite_pastorale is None:
-            data['unitepastorale_nom'] = None
-
+        
         return data
 
 # Bloc plans de suivi (bleu)
@@ -820,36 +816,5 @@ class EquipementExploitantSerializer(GeoFeatureModelSerializer):
             instance.geometry.transform(4326)
         
         return super().to_representation(instance)
-
-
-# TEMPORAIRE DLG
-class QuartieralpageSerializer(GeoFeatureModelSerializer):
-    
-    class Meta:
-        model = Quartieralpage
-        geo_field = 'geom'
-        auto_bbox = True
-        fields = '__all__'
-    
-    def to_representation(self, instance):
-        if (instance.geom != None):
-            instance.geom.transform(4326)
-        
-        return super().to_representation(instance)
-            
-class QuartierUPSerializer(GeoFeatureModelSerializer):
-
-    class Meta:
-        model = QuartierUP
-        geo_field = 'geom'
-        auto_bbox = True
-        fields = '__all__'
-    
-    def to_representation(self, instance):
-        if (instance.geom != None):
-            instance.geom.transform(4326)
-            return super().to_representation(instance)
-        else:
-            return ""
 
 

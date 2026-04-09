@@ -663,17 +663,3 @@ class QuartierUP(models.Model):
     def __str__(self):
         return str(self.quartier_code)
 
-
-# TEST CC
-class LogementTest(models.Model):
-    """
-    Test logement
-    """
-    id_logement_test = models.BigIntegerField(primary_key=True)
-    nom_logement_test = models.CharField(max_length=254)
- 
-    geometry = models.PointField(srid=2154, blank=True, null=True)
-
-    def __str__(self):
-        return str(self.nom_logement_test)
-

@@ -305,7 +305,7 @@ function performDelete() {
 .table-with-fixed-header th,
 .table-with-fixed-header td {
   min-width: 120px;
-  padding: 10px 20px;
+  padding: 3px 8px;
   text-align: left;
 }
 

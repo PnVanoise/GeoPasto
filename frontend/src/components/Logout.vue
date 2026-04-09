@@ -1,25 +1,11 @@
 <template>
-  <div class="auth_msg">
-    Bonjour <b>{{ mainStore.username }}</b>
-    <!-- <p v-for="(perms, model) in mainStore.userPermissions" :key="model">
-        <strong>{{ model }}</strong> :
-        <span>{{ perms.join(', ') }}</span>
-      </p> -->
-    <!-- <p v-if="mainStore.successMessage" class="success">{{ mainStore.successMessage }}</p>
-    <p v-if="mainStore.errorMessage" class="error">{{ mainStore.errorMessage }}</p> -->
-  </div>
-  <button @click="logout">Se déconnecter</button>
-
+    <button @click="logout">Se déconnecter</button>
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
 import { ref, defineEmits, onMounted, onUnmounted } from "vue";
 
 import { useMainStore } from "../store";
-
-// Utiliser le router pour rediriger après la déconnexion
-const router = useRouter();
 
 // Evénement de déconnexion
 const emit = defineEmits(["loggedOut"]);
@@ -66,14 +52,8 @@ onUnmounted(() => {
 
 // Fonction de déconnexion
 const logout = () => {
-  // Supprimer le token JWT de localStorage
-  localStorage.removeItem("user");
-
+  // Le parent orchestre toute la deconnexion (store + navigation)
   emit("loggedOut");
-
-  // Rediriger l'utilisateur vers la page d'accueil'
-  router.push("/");
-  // window.location.reload();
 };
 </script>
 
@@ -87,7 +67,7 @@ button {
   background-color: #ff4757;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 999px;
   cursor: pointer;
 }
 

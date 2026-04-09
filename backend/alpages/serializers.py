@@ -15,7 +15,6 @@ from alpages.models import TypeEvenement, Evenement
 from alpages.models import TypeEquipement, EquipementAlpage, EquipementExploitant
 from alpages.models import Production, Categorie_pension, Race, Categorie_animaux, Espece, Cheptel, Type_cheptel
 
-from alpages.models import LogementTest
 
 
 # Bloc administratif (orange)
@@ -854,17 +853,3 @@ class QuartierUPSerializer(GeoFeatureModelSerializer):
             return ""
 
 
-# TEST CC
-#IMPORTER classe du model
-class LogementTestSerializer(GeoFeatureModelSerializer):
-
-    class Meta:
-        model = LogementTest
-        geo_field = 'geometry'
-        fields = '__all__'
-    
-    # Transformation du 2154 vers 4326
-    def to_representation(self, instance):
-        if instance.geometry:
-            instance.geometry.transform(4326)
-        return super().to_representation(instance)

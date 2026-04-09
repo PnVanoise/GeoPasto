@@ -52,7 +52,7 @@ from alpages import models as m
         (m.Evenement, {"description": "EVT"}, "EVT"),
         (m.TypeEquipement, {"description": "TEQ", "categorie": "CAT"}, "TEQ"),
         (m.QuartierUP, {"quartier_code": "QC"}, "QC"),
-        (m.LogementTest, {"nom_logement_test": "LT"}, "LT"),
+        # (m.LogementTest, {"nom_logement_test": "LT"}, "LT"),
     ],
 )
 def test_model_strs(cls, kwargs, expected):

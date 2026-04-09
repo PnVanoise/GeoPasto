@@ -11,8 +11,6 @@ from .models import TypeEquipement, EquipementAlpage, EquipementExploitant
 from .models import TypeEvenement, Evenement
 from .models import Cheptel, Type_cheptel, Production, Categorie_pension, Espece, Race, Categorie_animaux
 
-from .models import LogementTest
-
 admin.site.register(Logement, LeafletGeoAdmin)
 admin.site.register(QuartierUP, LeafletGeoAdmin)
 admin.site.register(Commodite, LeafletGeoAdmin)
@@ -57,11 +55,6 @@ admin.site.register(MesureDePlan, LeafletGeoAdmin)
 admin.site.register(TypeEquipement, LeafletGeoAdmin)
 admin.site.register(EquipementExploitant, LeafletGeoAdmin)
 admin.site.register(EquipementAlpage, LeafletGeoAdmin)
-
-
-# TEST CC
-admin.site.register(LogementTest, LeafletGeoAdmin)
-
 
 ##################
 # Mise à jour Cheptels / types de cheptel

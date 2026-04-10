@@ -1,0 +1,37 @@
+server {
+    listen 80;
+    server_name <servername>; # ou IP publique
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # FRONTEND Vue.js
+    location / {
+	proxy_pass http://127.0.0.1:<port_frontend>;
+	proxy_http_version 1.1;
+	proxy_set_header Upgrade $http_upgrade;
+	proxy_set_header Connection 'upgrade';
+	proxy_set_header Host $host;
+	proxy_cache_bypass $http_upgrade;
+    }
+
+    # BACKEND Django API
+    location /api/ {
+        proxy_pass http://localhost:<port_backend>;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /static/ {
+        alias <geopasto-directory>/backend/geoagri/static/;
+    }
+
+    # Admin Django
+    location /admin/ {
+        proxy_pass http://localhost:<port_backend>;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

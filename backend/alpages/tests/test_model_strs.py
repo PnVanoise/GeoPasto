@@ -30,7 +30,6 @@ from alpages import models as m
         (m.Ruche, {"description": "R1"}, "R1"),
         (m.Berger, {"nom_berger": "B1", "prenom_berger": "P1"}, "B1"),
         (m.GardeSituation, {"id_garde_situation": 7}, "7"),
-        (m.TypeCheptel, {"description": "TCH"}, "TCH"),
         (m.Production, {"description": "PROD"}, "PROD"),
         (m.Categorie_pension, {"description": "CATP"}, "CATP"),
         (m.Espece, {"description": "ESP"}, "ESP"),

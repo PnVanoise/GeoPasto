@@ -21,7 +21,7 @@ from alpages.models import (
     Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV,
     Logement, Commodite, LogementCommodite,
     AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe,
-    Berger, GardeSituation, TypeCheptel,
+    Berger, GardeSituation,
     Production, Categorie_pension, Espece, Race, Categorie_animaux,
     Cheptel, Type_cheptel,
     TypeEvenement, TypeEquipement,
@@ -33,7 +33,7 @@ from alpages.serializers import (
     BeneficierDeSerializer, PlanDeSuiviSerializer, MesureDePlanSerializer,
     SubventionPNVSerializer, LogementCommoditeSerializer,
     TypeConventionSerializer, TypeDeSuiviSerializer, TypeDeMesureSerializer,
-    BergerSerializer, TypeCheptelSerializer, ProductionSerializer,
+    BergerSerializer, ProductionSerializer,
     Categorie_pensionSerializer, EspeceSerializer, RaceSerializer,
     Categorie_animauxSerializer, CheptelSerializer, Type_cheptelSerializer,
     TypeEvenementSerializer, TypeEquipementSerializer, AbriDUrgenceSerializer,
@@ -171,29 +171,6 @@ class ExploiterSerializerTest(TestCase):
 
 
 # ============================================================================
-# UPProprietaireSerializer
-# ============================================================================
-
-class UPProprietaireSerializerTest(TestCase):
-    """Tests for the up_nom and proprietaire_nom source-based fields."""
-
-    def test_up_nom_and_proprietaire_nom_populated(self):
-        up = UnitePastorale.objects.create(
-            id_unite_pastorale=101, code_up='UP101', nom_up='UP101 Nom',
-            annee_version=2024, geometry=_up_geom(), version_active=True,
-        )
-        prop = ProprietaireFoncier.objects.create(
-            id_proprietaire=100, nom_propr='DuBois',
-        )
-        upp = UPProprietaire.objects.create(
-            id_up_proprietaire=100, unite_pastorale=up, proprietaire=prop,
-        )
-        data = UPProprietaireSerializer(upp).data
-        self.assertEqual(data['up_nom'], 'UP101 Nom')
-        self.assertEqual(data['proprietaire_nom'], 'DuBois')
-
-
-# ============================================================================
 # QuartierPastoSerializer  (GeoFeature – properties under data['properties'])
 # ============================================================================
 
@@ -262,65 +239,6 @@ class GardeSituationSerializerTest(TestCase):
         self.assertEqual(data['berger_nom'], 'Mouton')
         self.assertEqual(data['berger_prenom'], 'Pierre')
         self.assertEqual(data['situation_nom'], 'Sit103')
-
-
-# ============================================================================
-# EleverSerializer
-# ============================================================================
-
-# class EleverSerializerTest(TestCase):
-#     """Tests for EleverSerializer, including the annee computed field and nested details."""
-
-#     # ------------------------------------------------------------------
-#     # Private helpers — each creates fresh objects for the test.
-#     # ------------------------------------------------------------------
-#     def _make_eleveur(self):
-#         return Eleveur.objects.create(id_eleveur=104, nom_eleveur='Berret')
-
-#     def _make_type_cheptel(self):
-#         return TypeCheptel.objects.create(id_type_cheptel=100, description='Bovin', espece='Bovins')
-
-#     def _make_situation(self):
-#         return SituationDExploitation.objects.create(
-#             id_situation=104, nom_situation='Sit104', situation_active=True,
-#         )
-
-#     # ------------------------------------------------------------------
-#     # annee
-#     # ------------------------------------------------------------------
-#     def test_annee_returns_year_when_date_debut_set(self):
-#         e = self._make_eleveur()
-#         el = Elever.objects.create(
-#             id_elever=100, eleveur=e, nombre_animaux=10, date_debut=date(2023, 6, 1),
-#         )
-#         self.assertEqual(EleverSerializer(el).data['annee'], 2023)
-
-#     def test_annee_returns_none_when_date_debut_is_none(self):
-#         e = self._make_eleveur()
-#         el = Elever.objects.create(id_elever=101, eleveur=e, nombre_animaux=5)
-#         self.assertIsNone(EleverSerializer(el).data['annee'])
-
-#     # ------------------------------------------------------------------
-#     # Nested detail fields
-#     # ------------------------------------------------------------------
-#     def test_eleveur_detail_contains_nom_eleveur(self):
-#         e = self._make_eleveur()
-#         el = Elever.objects.create(id_elever=102, eleveur=e, nombre_animaux=3)
-#         self.assertIn('nom_eleveur', EleverSerializer(el).data['eleveur_detail'])
-
-#     def test_type_cheptel_detail_contains_description(self):
-#         e = self._make_eleveur()
-#         tc = self._make_type_cheptel()
-#         el = Elever.objects.create(id_elever=103, eleveur=e, type_cheptel=tc, nombre_animaux=7)
-#         self.assertIn('description', EleverSerializer(el).data['type_cheptel_detail'])
-
-#     def test_situation_detail_contains_nom_situation(self):
-#         e = self._make_eleveur()
-#         sit = self._make_situation()
-#         el = Elever.objects.create(
-#             id_elever=104, eleveur=e, situation_exploitation=sit, nombre_animaux=2,
-#         )
-#         self.assertIn('nom_situation', EleverSerializer(el).data['situation_detail'])
 
 
 # ============================================================================
@@ -556,17 +474,6 @@ class BergerSerializerFieldsTest(TestCase):
         data = BergerSerializer(b).data
         self.assertIn('nom_berger', data)
         self.assertIn('prenom_berger', data)
-
-
-class TypeCheptelSerializerFieldsTest(TestCase):
-    def test_fields_present(self):
-        tc = TypeCheptel.objects.create(
-            id_type_cheptel=101, description='Ovin', espece='Ovins',
-        )
-        data = TypeCheptelSerializer(tc).data
-        self.assertIn('id_type_cheptel', data)
-        self.assertIn('description', data)
-        self.assertIn('espece', data)
 
 
 class ProductionSerializerFieldsTest(TestCase):

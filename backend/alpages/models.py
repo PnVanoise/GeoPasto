@@ -1,4 +1,7 @@
 from django.contrib.gis.db import models
+from django.core.exceptions import ValidationError
+from django.db.models import F,Q
+
 from .choices_logement import LST_STATUT, LST_ACCES_FINAL, LST_PROPRIETE, LST_TYPE_LOGEMENT, LST_MULTIUSAGE, \
                               LST_ACTIVITE_LAITIERE, LST_ETAT_BATIMENT, LST_ACCUEIL_PUBLIC, LST_SURFACE_LOGEMENT, \
                               LST_WC, LST_ALIM_ELECTRIQUE, LST_ALIM_EAU, LST_ORIGINE_EAU, LST_QUALITE_EAU, \
@@ -58,8 +61,22 @@ class QuartierPasto(models.Model):
     code_quartier = models.CharField(max_length=50, null=True, blank=True)
     nom_quartier = models.CharField(max_length=50, null=True, blank=True)
     geometry = models.PolygonField(srid=2154, null=True, blank=True)
-    situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.SET_NULL, blank=True, null=True, related_name='quartiers')
-    # unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.SET_NULL, blank=True, null=True, related_name='quartiers')
+
+    situation_exploitation = models.ForeignKey(
+        'alpages.SituationDExploitation',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='quartiers'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['situation_exploitation', 'code_quartier'],
+                name='uniq_code_quartier_par_situation',
+            ),
+        ]
     
     def __str__(self):
         return str(self.nom_quartier)
@@ -168,13 +185,39 @@ class SituationDExploitation(models.Model):
     """
     
     id_situation = models.BigIntegerField(primary_key=True)
+    annee = models.PositiveSmallIntegerField()
     nom_situation = models.CharField(max_length=150, null=False, blank=False)
     situation_active = models.BooleanField(null=False, blank=False)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
-    unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.SET_NULL, blank=True, null=True, related_name='situations')
-    exploitant = models.ForeignKey('alpages.Exploitant', on_delete=models.SET_NULL, blank=True, null=True, related_name='situations')
+
+    unite_pastorale = models.ForeignKey(
+        'alpages.UnitePastorale',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name='situations'
+    )
+    exploitant = models.ForeignKey(
+        'alpages.Exploitant',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name='situations'
+    )
     
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['unite_pastorale', 'annee'],
+                name='uniq_situation_up_annee'
+            ),
+            models.CheckConstraint(
+                check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
+                name='chk_situation_dates_coherentes',
+            ),
+        ]
+
     def __str__(self):
         return str(self.nom_situation)
 
@@ -185,14 +228,53 @@ class Exploiter(models.Model):
     """
     
     id_exploiter = models.BigIntegerField(primary_key=True)
-    quartier = models.ForeignKey('alpages.QuartierPasto', on_delete=models.SET_NULL, blank=True, null=True, related_name='exploitations')
-    situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.SET_NULL, blank=True, null=True, related_name='exploitations')
-    date_debut = models.DateField(null=True, blank=True)
-    date_fin = models.DateField(null=True, blank=True)
+
+    cheptel = models.ForeignKey(
+        'alpages.Cheptel',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='parcours'
+    )
+    quartier = models.ForeignKey(
+        'alpages.QuartierPasto',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='parcours')
+    
+    date_debut = models.DateField()
+    date_fin = models.DateField()
+    mode_conduite = models.CharField(max_length=50, null=True, blank=True)
     commentaire = models.CharField(max_length=500, null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
+                name='chk_parcours_dates_coherentes',
+            ),
+            models.UniqueConstraint(
+                fields=['cheptel', 'quartier', 'date_debut'],
+                name='uniq_parcours_cheptel_quartier_debut',
+            )
+        ]
+
+    def clean(self):
+        # Cohérence métier: cheptel et quartier doivent être dans la même situation
+        if (
+            self.cheptel_id
+            and self.quartier_id
+            and self.cheptel.situation_exploitation_id
+            != self.quartier.situation_exploitation_id
+        ):
+            raise ValidationError(
+                "Le cheptel et le quartier doivent appartenir à la même situation."
+            )
+
     
     def __str__(self):
-        return f"{self.situation_exploitation} exploite {self.quartier}"
+        return f"{self.cheptel} exploite {self.quartier}"
 
 
 class Eleveur(models.Model):
@@ -424,40 +506,6 @@ class GardeSituation(models.Model):
     
     def __str__(self):
         return str(self.id_garde_situation)
-
-class TypeCheptel(models.Model):
-    """
-    Type de cheptel
-    """
-    
-    id_type_cheptel = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
-    espece = models.CharField(max_length=50, null=False, blank=False)
-    race = models.CharField(max_length=50, null=True, blank=True)
-    production = models.CharField(max_length=50, null=True, blank=True)
-    stade_maturite = models.CharField(max_length=50, null=True, blank=True)
-
-    def __str__(self):
-        return str(self.description)
-
-# class Elever(models.Model):
-#     """
-#     Association Eleveur / Cheptel
-#     """
-    
-#     id_elever = models.BigIntegerField(primary_key=True)
-#     situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.SET_NULL, blank=True, null=True, related_name='elevers')
-#     type_cheptel = models.ForeignKey('alpages.TypeCheptel', on_delete=models.SET_NULL, blank=True, null=True, related_name='elevers')
-#     eleveur = models.ForeignKey('alpages.Eleveur', on_delete=models.SET_NULL, blank=True, null=True, related_name='elevers')
-
-#     nombre_animaux = models.IntegerField(null=False, blank=False)
-#     pension = models.CharField(max_length=50, null=True, blank=True)
-#     date_debut = models.DateField(null=True, blank=True)
-#     date_fin = models.DateField(null=True, blank=True)
-    
-#     def __str__(self):
-#         return f"{self.eleveur} élève {self.type_cheptel} dans la situation {self.situation_exploitation}"
-
 
 ##################
 # Mise à jour Cheptels / types de cheptel

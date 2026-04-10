@@ -101,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, unref, computed, onMounted, watch } from "vue";
+import { ref, unref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import Grid3 from "./Grid3.vue";
 import Modal from "./Modal.vue";
 import { useCrud } from "../composables/useCrud";
@@ -190,7 +190,46 @@ function getNestedValue(obj, path) {
   return path.split(".").reduce((acc, key) => acc?.[key], obj);
 }
 
-onMounted(crud.fetchAll);
+const findItemById = (id) => {
+  const expected = String(id);
+  return (crud.items.value || []).find((item) => {
+    const candidate =
+      item?.[props.idField] ??
+      item?.id ??
+      item?.properties?.[props.idField] ??
+      item?.properties?.id;
+    return String(candidate) === expected;
+  });
+};
+
+const onCrudOpenView = async (event) => {
+  try {
+    const detail = event?.detail || {};
+    if (!detail.modelName || detail.modelName !== props.modelName) return;
+    if (detail.id === undefined || detail.id === null) return;
+
+    let target = findItemById(detail.id);
+    if (!target) {
+      await crud.fetchAll();
+      target = findItemById(detail.id);
+    }
+
+    if (target) {
+      crud.openView(target);
+    }
+  } catch (err) {
+    console.warn("Could not open view from crud-open-view event", err);
+  }
+};
+
+onMounted(() => {
+  crud.fetchAll();
+  window.addEventListener("crud-open-view", onCrudOpenView);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("crud-open-view", onCrudOpenView);
+});
 
 // If initialNewItem is provided, prefill selectedItem when entering add mode
 watch(() => crud.mode.value, (m) => {

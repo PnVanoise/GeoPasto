@@ -18,21 +18,36 @@
     </div>
     <div class="main-item">
       <h2>Où les trouve-t-on ?</h2>
-      <MapContainer v-model="mapRef">
-        <BaseLayersControl :map="mapRef" />
-        <GeoJsonLayer
-          v-if="mapRef"
-          :key="updateKey"
-          :map="mapRef"
-          :geoData="unitepastorales"
-          geoObjectName="unitePastorale"
-          :mPolygonStyle="layerStyle"
-          popupRoute="/UnitePastorale/edit"
-          geomType="Polygon"
-          objectLib="Unité pastorale"
-          popupAttribute="nom_up"
-        />
-      </MapContainer>
+      <div class="maps-stack">
+        <section class="map-section">
+          <h3>Carte Leaflet (historique git)</h3>
+          <MapContainer v-model="mapRef">
+            <BaseLayersControl :map="mapRef" />
+            <GeoJsonLayer
+              v-if="mapRef && unitepastorales?.features?.length"
+              :map="mapRef"
+              :geoData="unitepastorales"
+              geoObjectName="unitePastorale"
+              :mPolygonStyle="layerStyle"
+              popupRoute="/UnitePastorale/edit"
+              geomType="Polygon"
+              objectLib="Unité pastorale"
+              popupAttribute="nom_up"
+            />
+          </MapContainer>
+        </section>
+
+        <section class="map-section">
+          <h3>Carte OpenLayers (branche feat/frontend-openalyers-map)</h3>
+          <OpenLayersGeoJsonMap
+            :geoData="unitepastorales"
+            :mPolygonStyle="layerStyle"
+            popupRoute="/UnitePastorale/edit"
+            popupAttribute="nom_up"
+            @open-popup-item="onMapPopupItem"
+          />
+        </section>
+      </div>
     </div>
   </div>
 </template>
@@ -41,6 +56,7 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 
+import OpenLayersGeoJsonMap from "./ListMap/OpenLayersGeoJsonMap.vue";
 import MapContainer from "./ListMap/MapContainer.vue";
 import BaseLayersControl from "./ListMap/BaseLayersControl.vue";
 import GeoJsonLayer from "./ListMap/GeoJsonLayer.vue";
@@ -58,7 +74,6 @@ const columns = [
 
 const isLoading = ref(true);
 const mapRef = ref(null);
-const updateKey = ref(0);
 const router = useRouter();
 
 // Data --> props
@@ -79,8 +94,6 @@ const fetchUnitePastorales = () => {
     .get(`${config.API_BASE_URL}/api/unitePastorale/`)
     .then((response) => {
       unitepastorales.value = response.data;
-      // bump updateKey to force GeoJsonLayer remount and refresh the map layer
-      updateKey.value += 1;
       console.log("list response data:", response.data);
       console.log("unitepastorales.value:", unitepastorales.value);
       // if (unitepastorales.value.type === "FeatureCollection") {
@@ -138,6 +151,22 @@ const deleteUP = (id) => {
     });
 };
 
+const onMapPopupItem = (payload) => {
+  const id = payload?.id;
+  if (!id) return;
+
+  try {
+    window.dispatchEvent(new CustomEvent("crud-open-view", {
+      detail: {
+        modelName: "unitepastorale",
+        id,
+      },
+    }));
+  } catch (err) {
+    console.warn("Could not dispatch crud-open-view event", err);
+  }
+};
+
 onMounted(fetchUnitePastorales);
 
 // Refresh when other components notify that geo data changed
@@ -167,6 +196,15 @@ onBeforeUnmount(() => {
   padding: 20px;
   margin: 10px;
   text-align: center;
+}
+
+.maps-stack {
+  display: grid;
+  gap: 24px;
+}
+
+.map-section h3 {
+  margin-bottom: 12px;
 }
 
 /* Style pour aligner le formulaire de recherche et le bouton d'ajout */

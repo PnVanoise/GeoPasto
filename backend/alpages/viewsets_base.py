@@ -15,6 +15,18 @@ class BaseModelViewSet(ModelViewSet):
     - generic getNextId action for models that use manual integer PKs
     """
 
+    def _resolve_base_queryset(self):
+        """Return an unfiltered queryset usable in tests and utility methods.
+
+        In unit tests, viewsets are often instantiated without a request and
+        with ``viewset.queryset`` set directly. Using this helper avoids
+        accessing request-dependent ``get_queryset`` implementations.
+        """
+        qs = getattr(self, 'queryset', None)
+        if qs is not None:
+            return qs.all() if hasattr(qs, 'all') else qs
+        return self.get_queryset()
+
     def create(self, request, *args, **kwargs):
         logger.debug(f"BaseModelViewset {self.__class__.__name__} - Received data for creation: {request.data}")
         serializer = self.get_serializer(data=request.data)
@@ -46,7 +58,7 @@ class BaseModelViewSet(ModelViewSet):
         prefer migrating to AutoField/BigAutoField or UUIDs.
         """
         try:
-            qs = self.get_queryset().order_by(self.get_pk_field_name())
+            qs = self._resolve_base_queryset().order_by(self.get_pk_field_name())
         except Exception:
             logger.warning(f"BaseModelViewset {self.__class__.__name__} - Error occurred while fetching queryset for next ID")
             return Response({'next_id': None})
@@ -75,7 +87,7 @@ class BaseModelViewSet(ModelViewSet):
 
     def get_pk_field_name(self):
         # model PK attribute name (e.g. 'id', 'id_unite_pastorale', ...)
-        return self.get_queryset().model._meta.pk.name
+        return self._resolve_base_queryset().model._meta.pk.name
 
     def conditional_list(self, request, queryset=None, serializer_class=None):
         """

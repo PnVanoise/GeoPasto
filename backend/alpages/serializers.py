@@ -5,12 +5,12 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometryFi
 from django.contrib.gis.geos import Polygon
 from django.contrib.gis.db.models.functions import Distance
 
-from alpages.models import Logement, QuartierUP, Quartieralpage, Commodite, LogementCommodite
+from alpages.models import Logement, Commodite, LogementCommodite
 from alpages.models import UnitePastorale, ProprietaireFoncier, QuartierPasto, ProprietaireUnitePastorale
 from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from alpages.models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe
 from alpages.models import SituationDExploitation, Exploiter
-from alpages.models import Ruche, Berger, TypeCheptel, GardeSituation
+from alpages.models import Ruche, Berger, GardeSituation
 from alpages.models import TypeEvenement, Evenement
 from alpages.models import TypeEquipement, EquipementAlpage, EquipementExploitant
 from alpages.models import Production, Categorie_pension, Race, Categorie_animaux, Espece, Cheptel, Type_cheptel
@@ -130,17 +130,14 @@ class ProprietaireUnitePastoraleSerializer(serializers.ModelSerializer):
 
 
 class QuartierPastoSerializer(GeoFeatureModelSerializer):
-    unitepastorale_nom = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = QuartierPasto
         geo_field = 'geometry'
         auto_bbox = True
-        fields = ['id_quartier', 'code_quartier', 'nom_quartier', 'geometry', 'unite_pastorale', 'unitepastorale_nom']
+        fields = ['id_quartier', 'code_quartier', 'nom_quartier', 'geometry']
         
-    def get_unitepastorale_nom(self, obj):
-        return obj.unite_pastorale.nom_up if obj.unite_pastorale else None
-
+    
     def to_internal_value(self, data):
         # Intercepter les données de géométrie avant la validation
         geometry = data.get('geometry', None)
@@ -164,9 +161,7 @@ class QuartierPastoSerializer(GeoFeatureModelSerializer):
                 "coordinates": [[]]  # Un polygone vide
             }
         
-        if instance.unite_pastorale is None:
-            data['unitepastorale_nom'] = None
-
+        
         return data
 
 # Bloc plans de suivi (bleu)
@@ -276,13 +271,12 @@ class SituationDExploitationSerializer(serializers.ModelSerializer):
 
 class ExploiterSerializer(serializers.ModelSerializer):
     
-    situation_nom = serializers.CharField(source='situation_exploitation.nom_situation', read_only=True)
     quartier_nom = serializers.CharField(source='quartier.nom_quartier', read_only=True)
        
     class Meta:
         model = Exploiter
-        fields = [ 'id_exploiter', 'date_debut', 'date_fin', 'quartier', 'situation_exploitation', 'commentaire',
-                  'situation_nom', 'quartier_nom' ]
+        fields = [ 'id_exploiter', 'date_debut', 'date_fin', 'quartier', 'commentaire',
+                  'quartier_nom' ]
             
 
 class EleveurSerializer(serializers.ModelSerializer):
@@ -516,53 +510,6 @@ class GardeSituationSerializer(serializers.ModelSerializer):
                   'situation_nom', 'berger_nom', 'berger_prenom' ]
 
 
-class TypeCheptelSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = TypeCheptel
-        fields = [ 'id_type_cheptel', 'description', 'espece', 'race', 'production', 'stade_maturite' ]
-
-# class EleverSerializer(serializers.ModelSerializer):
-#     # Année
-#     annee = serializers.SerializerMethodField()
-
-#     # Eleveur
-#     eleveur = serializers.PrimaryKeyRelatedField(
-#         queryset = Eleveur.objects.all(),
-#         allow_null = True,
-#     )
-#     eleveur_detail = EleveurSerializer(
-#         source='eleveur',
-#         read_only=True,
-#     )
-#     # Type de cheptel
-#     type_cheptel = serializers.PrimaryKeyRelatedField(
-#         queryset = TypeCheptel.objects.all(),
-#         allow_null = True,
-#     )
-#     type_cheptel_detail = TypeCheptelSerializer(
-#         source='type_cheptel',
-#         read_only=True,
-#     )
-#     # Situation d'exploitation
-#     situation_exploitation = serializers.PrimaryKeyRelatedField(
-#         queryset = SituationDExploitation.objects.all(),
-#         allow_null = True,
-#     )
-#     situation_detail = SituationDExploitationSerializer(
-#         source='situation_exploitation',
-#         read_only=True
-#     )
-    
-#     class Meta:
-#         model = Elever
-#         fields = [ 'id_elever', 'date_debut', 'annee', 'date_fin', 'nombre_animaux', 'type_cheptel', 'type_cheptel_detail', 'eleveur', 'eleveur_detail',
-#                   'situation_exploitation', 'situation_detail' ]
-    
-#     def get_annee(self, obj):
-#         if obj.date_debut:
-#             return obj.date_debut.year
-#         return None
 
 
 ##################
@@ -820,36 +767,5 @@ class EquipementExploitantSerializer(GeoFeatureModelSerializer):
             instance.geometry.transform(4326)
         
         return super().to_representation(instance)
-
-
-# TEMPORAIRE DLG
-class QuartieralpageSerializer(GeoFeatureModelSerializer):
-    
-    class Meta:
-        model = Quartieralpage
-        geo_field = 'geom'
-        auto_bbox = True
-        fields = '__all__'
-    
-    def to_representation(self, instance):
-        if (instance.geom != None):
-            instance.geom.transform(4326)
-        
-        return super().to_representation(instance)
-            
-class QuartierUPSerializer(GeoFeatureModelSerializer):
-
-    class Meta:
-        model = QuartierUP
-        geo_field = 'geom'
-        auto_bbox = True
-        fields = '__all__'
-    
-    def to_representation(self, instance):
-        if (instance.geom != None):
-            instance.geom.transform(4326)
-            return super().to_representation(instance)
-        else:
-            return ""
 
 

@@ -1,4 +1,5 @@
 import logging
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, action
@@ -316,6 +317,11 @@ class EvenementViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = Evenement.objects.all().order_by('id_evenement')
+
+        up_id = self.request.GET.get('unite_pastorale') or self.request.GET.get('id_up')
+        if up_id is not None:
+            queryset = queryset.filter(unite_pastorale_id=up_id)
+
         return queryset
     
 class LogementViewset(BaseModelViewSet):
@@ -380,6 +386,21 @@ class EquipementAlpageViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = EquipementAlpage.objects.all().order_by('id_equipement_alpage')
+
+        up_id_raw = (
+            self.request.GET.get('unite_pastorale')
+            or self.request.GET.get('id_up')
+            or self.request.GET.get('up_id')
+        )
+
+        if up_id_raw is not None:
+            up_id_str = str(up_id_raw).strip()
+            if up_id_str:
+                queryset = queryset.filter(
+                    Q(unite_pastorale_id=up_id_str)
+                    | Q(unite_pastorale__id_unite_pastorale=up_id_str)
+                )
+
         return queryset
 
 class EquipementExploitantViewset(BaseModelViewSet):
@@ -387,6 +408,11 @@ class EquipementExploitantViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = EquipementExploitant.objects.all().order_by('id_equipement_exploitant')
+
+        id_situation = self.request.GET.get('id_situation') or self.request.GET.get('situation_exploitation')
+        if id_situation is not None:
+            queryset = queryset.filter(situation_exploitation_id=id_situation)
+
         return queryset
 
 
@@ -401,6 +427,10 @@ class CheptelViewset(BaseModelViewSet):
         id_cheptel = self.request.GET.get('id_cheptel')
         if id_cheptel is not None:
             queryset = queryset.filter(id_cheptel=id_cheptel)
+
+        id_situation = self.request.GET.get('id_situation')
+        if id_situation is not None:
+            queryset = queryset.filter(situation_exploitation_id=id_situation)
 
         return queryset
 
@@ -455,9 +485,9 @@ class QuartierPastoViewset(BaseModelViewSet):
     def get_queryset(self):
         queryset = QuartierPasto.objects.all().order_by('code_quartier')
 
-        # up_id = self.request.GET.get('up_id')
-        # if up_id is not None:
-        #     queryset = queryset.filter(unite_pastorale=up_id)
+        id_situation = self.request.GET.get('id_situation')
+        if id_situation is not None:
+            queryset = queryset.filter(situation_exploitation_id=id_situation)
 
         return queryset
     
@@ -482,6 +512,15 @@ class ExploiterViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = Exploiter.objects.all().order_by('id_exploiter')
+
+        id_situation = self.request.GET.get('id_situation')
+        if id_situation is not None:
+            # Un parcours est lié à une situation via le cheptel et/ou le quartier.
+            queryset = queryset.filter(
+                Q(cheptel__situation_exploitation_id=id_situation)
+                | Q(quartier__situation_exploitation_id=id_situation)
+            ).distinct()
+
         return queryset
 
 class EleveurViewset(BaseModelViewSet):

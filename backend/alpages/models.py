@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
-from django.db.models import F,Q
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import F, Q, Sum
 
 from .choices_logement import LST_STATUT, LST_ACCES_FINAL, LST_PROPRIETE, LST_TYPE_LOGEMENT, LST_MULTIUSAGE, \
                               LST_ACTIVITE_LAITIERE, LST_ETAT_BATIMENT, LST_ACCUEIL_PUBLIC, LST_SURFACE_LOGEMENT, \
@@ -245,6 +246,11 @@ class Exploiter(models.Model):
     
     date_debut = models.DateField()
     date_fin = models.DateField()
+    nombre_animaux = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+    )
     mode_conduite = models.CharField(max_length=50, null=True, blank=True)
     commentaire = models.CharField(max_length=500, null=True, blank=True)
 
@@ -271,6 +277,39 @@ class Exploiter(models.Model):
             raise ValidationError(
                 "Le cheptel et le quartier doivent appartenir à la même situation."
             )
+
+        if self.nombre_animaux is None:
+            return
+
+        if self.cheptel_id:
+            max_animaux = getattr(self.cheptel, 'nombre_animaux', 0) or 0
+        else:
+            situation_id = None
+            if self.quartier_id and getattr(self.quartier, 'situation_exploitation_id', None):
+                situation_id = self.quartier.situation_exploitation_id
+
+            if not situation_id:
+                raise ValidationError({
+                    'nombre_animaux': (
+                        "Impossible de valider nombre_animaux sans cheptel: "
+                        "le quartier doit être renseigné et lié à une situation."
+                    )
+                })
+
+            max_animaux = (
+                Cheptel.objects
+                .filter(situation_exploitation_id=situation_id)
+                .aggregate(total=Sum('nombre_animaux'))
+                .get('total')
+                or 0
+            )
+
+        if self.nombre_animaux > max_animaux:
+            raise ValidationError({
+                'nombre_animaux': (
+                    f"nombre_animaux ({self.nombre_animaux}) dépasse le maximum autorisé ({max_animaux})."
+                )
+            })
 
     
     def __str__(self):
@@ -593,6 +632,14 @@ class Type_cheptel(models.Model):
     
     id_type_cheptel = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
+    coefficient_UGB = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=False,
+        blank=False,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+    )
     production = models.ForeignKey('alpages.Production', on_delete=models.SET_NULL, blank=True, null=True, related_name='types_cheptel')
     pension = models.ForeignKey('alpages.Categorie_pension', on_delete=models.SET_NULL, blank=True, null=True, related_name='types_cheptel')
     race = models.ForeignKey('alpages.Race', on_delete=models.SET_NULL, blank=True, null=True, related_name='types_cheptel')
@@ -676,4 +723,4 @@ class EquipementExploitant(models.Model):
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
     type_equipement = models.ForeignKey('alpages.TypeEquipement', on_delete=models.SET_NULL, blank=True, null=True, related_name='eqptsExploitant')
-    exploitant = models.ForeignKey('alpages.Exploitant', on_delete=models.SET_NULL, blank=True, null=True, related_name='eqptsExploitant')
+    situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.SET_NULL, blank=True, null=True, related_name='eqptsExploitant')

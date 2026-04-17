@@ -1,10 +1,12 @@
 <template>
-  <div v-if="isShown" class="modal-overlay" @click.self="handleOverlayClick">
-    <div class="modal-content">
-      <button class="modal-close" @click="close">x</button>
-      <slot></slot>
+  <Teleport to="body">
+    <div v-if="isShown" class="modal-overlay" @click.self="handleOverlayClick">
+      <div class="modal-content">
+        <button class="modal-close" @click="close">x</button>
+        <slot></slot>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>

@@ -1,115 +1,179 @@
 <template>
-  <div class="event-form-modal">
-    <h3 class="w3-center w3-margin">{{ formTitle }}</h3>
+  <h3 class="w3-center w3-margin">{{ formTitle }}</h3>
 
-    <form @submit.prevent="submitForm">
+  <form class="event-form" @submit.prevent="submitForm">
+    <div class="event-layout">
+      <section class="layout-card">
+        <h4>Informations événement</h4>
+
         <div class="w3-row form-ligne">
-            <div class="w3-quarter form-cell">
-              <label for="id_evenement">ID</label>
-              <input id="id_evenement" type="number" v-model.number="form.id_evenement" :readonly="autoId" :disabled="props.mode === 'view'" />
-              <label>
-                <input
-                  type="checkbox"
-                  v-model="autoId"
-                  :disabled="props.mode === 'view' || !can('change')"
-                /> auto
-              </label>
-            </div>
-            <div class="w3-quarter form-cell">
-              <label>Date de l'événement</label>
-              <input
-                type="date"
-                v-model="form.date_evenement"
-                required
-                :disabled="props.mode === 'view' || !can('change')"
-              />
-            </div>
-            <div class="w3-quarter form-cell">
-              <label>Date d'observation</label>
-              <input
-                type="date"
-                v-model="form.date_observation"
-                required
-                :disabled="props.mode === 'view' || !can('change')"
-              />
-            </div>
-            <div class="w3-quarter form-cell">
-                <label>Observateur</label>
-                <input
-                  type="text"
-                  v-model="form.observateur"
-                  required
-                  :disabled="props.mode === 'view' || !can('change')"
-                />
-            </div>
+          <div class="w3-half form-cell">
+            <v-text-field
+              id="id_evenement"
+              type="number"
+              v-model.number="form.id_evenement"
+              label="ID"
+              :readonly="autoId"
+              :disabled="props.mode === 'view' || autoId"
+              density="compact"
+              variant="outlined"
+              hide-details
+            />
+          </div>
+          <div class="w3-half form-cell">
+            <v-switch
+              v-model="autoId"
+              label="ID auto"
+              color="primary"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              hide-details
+            />
+          </div>
         </div>
 
         <div class="w3-row form-ligne">
-            <div class="w3-quarter form-cell">
-                <label>Source</label>
-                <input
-                  type="text"
-                  v-model="form.source"
-                  :disabled="props.mode === 'view' || !can('change')"
-                />
-            </div>
-            <div class="w3-quarter form-cell">
-                <label>Unité pastorale</label>
-                <select
-                  v-model.number="form.unite_pastorale" 
-                  :disabled="props.mode === 'view' || !can('change')"
-                >
-                  <option :value="null">-- Choisir --</option>
-                  <option v-for="u in ups" :key="u.id_unite_pastorale" :value="u.id_unite_pastorale">{{ u.nom_up }} - {{ u.secteur }}</option>
-                </select>
-                <label>Type d'événement</label>
-                <select
-                  v-model.number="form.type_evenement" 
-                  :disabled="props.mode === 'view' || !can('change')"
-                >
-                  <option :value="null">-- Choisir --</option>
-                  <option v-for="t in types" :key="t.id_type_evenement" :value="t.id_type_evenement">{{ t.description }}</option>
-                </select>
-            </div>
-            <div class="w3-quarter form-cell">
-                <label>Description</label>
-                <textarea
-                  v-model="form.description" 
-                  :disabled="props.mode === 'view' || !can('change')"
-                ></textarea>
-            </div>
-            <div class="w3-quarter form-cell">
-                <label>Type géométrie</label>
-              <select
-                v-model="geometryType"
-                :disabled="props.mode === 'view' || !can('change')"
-              >
-                <option value="Point">Point</option>
-                <option value="LineString">Ligne</option>
-                <option value="Polygon">Polygone</option>
-              </select>
-            </div>
-            <div class="w3-quarter form-cell">
-                <label>Type sélectionné:</label>
-                <div><strong>{{ geometryType || 'aucune' }}</strong></div>
-            </div>
+          <div class="w3-half form-cell">
+            <v-text-field
+              type="date"
+              v-model="form.date_evenement"
+              label="Date de l'événement"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              required
+            />
+          </div>
+          <div class="w3-half form-cell">
+            <v-text-field
+              type="date"
+              v-model="form.date_observation"
+              label="Date d'observation"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              required
+            />
+          </div>
         </div>
-      <div v-if="props.mode !== 'view'" class="w3-row form-ligne">
-          <small>Choisir le type avant de dessiner. Cliquez sur &quot;Éditer&quot; pour dessiner.</small>
-      </div>
 
-      <div>
-        <label>Géométrie</label>
-        <MapEditMultipolygon2 v-model="form.geometry" :geometryType="geometryType" 
-          :disabled="props.mode === 'view' || !can('change')" />
-      </div>
+        <div class="w3-row form-ligne">
+          <div class="w3-half form-cell">
+            <v-text-field
+              v-model="form.observateur"
+              label="Observateur"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              required
+            />
+          </div>
+          <div class="w3-half form-cell">
+            <v-text-field
+              v-model="form.source"
+              label="Source"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+            />
+          </div>
+        </div>
 
-      <div class="form-actions" style="margin-top:10px;display:flex;gap:8px;">
-        <button type="button" class="btn btn-secondary" @click="closeModal">Retour</button>
-        <button v-if="props.mode !== 'view'" type="submit" class="btn btn-primary">{{ btTitle }}</button>
-      </div>
-    </form>
-  </div>
+        <div class="w3-row form-ligne">
+          <div class="w3-half form-cell">
+            <v-select
+              v-model="form.unite_pastorale"
+              :items="ups"
+              item-title="nom_up"
+              item-value="id_unite_pastorale"
+              label="Unité pastorale"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+            />
+          </div>
+          <div class="w3-half form-cell">
+            <v-select
+              v-model="form.type_evenement"
+              :items="types"
+              item-title="description"
+              item-value="id_type_evenement"
+              label="Type d'événement"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+            />
+          </div>
+        </div>
+
+        <div class="w3-row form-ligne">
+          <div class="form-cell">
+            <v-textarea
+              v-model="form.description"
+              label="Description"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              variant="outlined"
+              rows="2"
+              hide-details
+              auto-grow
+            />
+          </div>
+        </div>
+
+        <div class="w3-row form-ligne">
+          <div class="w3-half form-cell">
+            <v-select
+              v-model="geometryType"
+              :items="geometryTypeOptions"
+              label="Type géométrie"
+              :disabled="props.mode === 'view' || !can('change')"
+              density="compact"
+              variant="outlined"
+              hide-details
+            />
+          </div>
+          <div class="w3-half form-cell selected-geom-type">
+            Type sélectionné: <strong>{{ geometryType || 'aucune' }}</strong>
+          </div>
+        </div>
+
+        <div v-if="props.mode !== 'view'" class="w3-row form-ligne">
+          <small>Choisir le type avant de dessiner. Cliquez sur "Éditer" dans la carte pour dessiner.</small>
+        </div>
+      </section>
+
+      <section class="layout-card">
+        <h4>Géométrie</h4>
+        <MapEditMultipolygon2
+          v-model="form.geometry"
+          :geometryType="geometryType"
+          :disabled="props.mode === 'view' || !can('change')"
+        />
+      </section>
+    </div>
+
+    <div class="form-actions">
+      <v-btn color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
+      <v-btn
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+      >
+        {{ btTitle }}
+      </v-btn>
+    </div>
+  </form>
 </template>
 <script setup>
 import { reactive, watch, ref, computed, onMounted } from 'vue'
@@ -155,6 +219,7 @@ const form = reactive({
 })
 
 const geometryType = ref('Point')
+const geometryTypeOptions = ['Point', 'LineString', 'Polygon']
 
 watch(
   () => props.initialForm,
@@ -250,7 +315,68 @@ const closeModal = () => {
 </script>
 
 <style scoped>
-.event-form-modal { padding: 12px }
-.event-form-modal label { display: block; margin-top: 6px }
+.form-ligne {
+  padding: 4px;
+}
+
+.form-cell {
+  padding: 4px;
+}
+
+.event-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.layout-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #ffffff;
+}
+
+.layout-card h4 {
+  margin: 0 0 0.6rem 0;
+}
+
+.selected-geom-type {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  color: #334155;
+  font-size: 0.88rem;
+}
+
+.event-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.event-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+
+.event-form :deep(.v-input),
+.event-form :deep(.v-field__input),
+.event-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 1100px) {
+  .event-layout {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 

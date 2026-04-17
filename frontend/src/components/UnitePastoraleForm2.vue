@@ -1,21 +1,17 @@
 <template>
   <h3 class="w3-center w3-margin">{{ formTitle }}</h3>
   
-  <form @submit.prevent="submitForm">
-    <div style="
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        align-items: stretch;
-      ">
-      <div style="">
+  <form class="up-form" @submit.prevent="submitForm">
+    <div class="up-form-layout">
+      <div class="up-form-col">
         <div class="form-cell">
           <v-text-field
             id="code_up"
             v-model="form.properties.code_up"
             :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
             label="Code UP"
-            dense
+            density="compact"
+            variant="underlined"
             hide-details
             clearable
           />
@@ -24,9 +20,10 @@
           <v-text-field
             id="nom_up"
             v-model="form.properties.nom_up"
-            class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
             label="Nom UP"
-            dense
+            density="compact"
+            variant="underlined"
             hide-details
             clearable
           />
@@ -37,95 +34,97 @@
             v-model="form.properties.secteur"
             :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
             label="Secteur"
-            dense
+            density="compact"
+            variant="underlined"
             hide-details
             clearable
           />
         </div>
-        <div class="form-cell">
-          <v-text-field
-            id="annee_version"
-            v-model="form.properties.annee_version"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Année version"
-            dense
-            hide-details
-            clearable
-          />
+        <div class="w3-row form-ligne inline-two-fields">
+          <div class="w3-half form-cell">
+            <v-text-field
+              id="annee_version"
+              v-model="form.properties.annee_version"
+              :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+              label="Année version"
+              density="compact"
+              variant="underlined"
+              hide-details
+              clearable
+            />
+          </div>
+          <div class="w3-half form-cell inline-switch-cell">
+            <v-switch
+              id="version_active"
+              v-model="form.properties.version_active"
+              :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+              label="Version active ?"
+              color="primary"
+              density="compact"
+              hide-details
+            />
+          </div>
         </div>
         <div class="form-cell">
-          <v-switch
-            id="version_active"
-            v-model="form.properties.version_active"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Version active ?"
-            color="primary"
-            dense
-            hide-details
-          />
-        </div>
-        <!-- Test grille 1 -->
-        <div class="grid-container">
+        <v-select
+          id="proprietaires"
+          v-model="form.properties.proprios"
+          :items="proprietairesOptions"
+          item-value="id_proprietaire"
+          item-title="full_name"
+          multiple
+          chips
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          label="Propriétaires"
+          density="compact"
+          variant="underlined"
+          :menu-props="{ maxHeight: '300px' }"
+        />
+      </div>
+        <div class="grid-container up-section-gap">
           <h3>Situations d'exploitation</h3>
-          <h4>A compléter</h4>
-          <!-- <Grid :data="situationExploitations" :columns="situGridColumns" :bgColor="'#f7ba0b'"
-            :columnLabels="situColumnLabels" :actions="gridActions" @edit="situOnEdit" @delete="situOnDelete">
-          </Grid>
-          <div class="form-actions">
-            <v-btn density="comfortable" color="info" @click="goToAddSituation" prepend-icon="mdi-plus-circle">
-              Nouvelle situation d'exploitation</v-btn>
-          </div> -->
+          <template v-if="props.mode === 'add'">
+            <div class="w3-panel w3-pale-yellow" style="padding:12px; border:1px solid #ddd;">
+              Enregistrez l'unité pastorale pour pouvoir ajouter des situations d'exploitation.
+            </div>
+          </template>
+          <template v-else>
+            <CrudList2
+              title="Situations d'exploitation"
+              modelName="situationdexploitation"
+              apiRouteName="situationExploitation"
+              itemLabel="une situation"
+              idField="id"
+              :columns="situGridColumns"
+              :formComponent="SituationExploitationForm2"
+              :bgColor="'#154889'"
+              :showTitle="false"
+              :showHeader="true"
+              :showSearch="true"
+              :showFilters="false"
+              :filters="situFilters"
+              :forceAdd="false"
+              :viewOnly="props.mode === 'view'"
+              :initialNewItem="{ unite_pastorale: form.id, exploitant: null }"
+            />
+          </template>
         </div>
 
-        <div class="grid-container">
-          <h3>Quartiers</h3>
-          <h4>A DEPLACER DANS LES SITUATIONS</h4>
-          <!-- <Grid :data="quartiers" :columns="quarGridColumns" :bgColor="'#f7ba0b'" :columnLabels="quarColumnLabels"
-            :actions="gridActions" @edit="quarOnEdit" @delete="quarOnDelete">
-          </Grid>
-          <div class="form-actions">
-            <v-btn density="comfortable" color="info" @click="goToAddQuartier" prepend-icon="mdi-plus-circle">
-              Nouveau quartier</v-btn>
-            <v-btn density="comfortable" color="info" @click="goToQuartiersList" prepend-icon="mdi-eye">
-              Voir les quartiers de l'UP</v-btn> -->
-          <!-- <button v-if="!isReadOnly" type="button" @click="goToAddQuartier" class="w3-button w3-blue">
-            Nouveau quartier
-          </button>
-          <button type="button" @click="goToQuartiersList" class="w3-button w3-blue">
-            Voir les quartiers de l'UP
-          </button>
-          </div> -->
-        </div>
-        <br />
+        
       </div>
-      <div style="">
+      <div class="up-form-col">
         <div class="form-cell">
-              <h3>Géométrie</h3>
-              <h4>A compléter</h4>
-              <MapEditMultipolygon2
-                :key="form.geometry ? JSON.stringify(form.geometry) : 'no-geom'"
+              <!-- <h4>Géométrie</h4> -->
+              <QuartierGeometryEditorOl
+                :key="`up-geom-${form.id ?? 'new'}`"
                 v-model="form.geometry"
-                :geometryType="'MultiPolygon'"
-                :referenceGeometry="refUPs"
-                :vector-layers="vectorLayers"
+                geometryType="MultiPolygon"
+                :contextGeoData="refUPs"
               />
         </div>
       </div>
       <!-- Membres -->
-      <div class="form-cell">
-        <v-select
-          id="membres"
-          v-model="form.properties.proprios"
-          :items="proprietaires"
-          item-value="id_proprietaire"
-          :item-title="proprietaire => proprietaire.nom_propr + ' ' + proprietaire.prenom_propr"
-          multiple
-          chips
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Membres"
-          :menu-props="{ maxHeight: '300px' }"
-        />
-      </div>
+      
     </div>
 
     <div class="form-actions">
@@ -155,8 +154,9 @@ import auth from "../../auth";
 import { usePermissions } from "../composables/usePermissions";
 
 import config from "../../config";
-import MapEditMultipolygon2 from "./MapEditMultipolygon2.vue";
-import Grid from "./Grid.vue";
+import QuartierGeometryEditorOl from "./QuartierGeometryEditorOl.vue";
+import CrudList2 from "./CrudList2.vue";
+import SituationExploitationForm2 from "./SituationExploitationForm2.vue";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -185,44 +185,31 @@ const refUPs = ref([]);
 
 const showMissingGeometry = ref(false);
 
-// const situGridColumns = ref(["nom_situation", "situation_active"]);
-// const situColumnLabels = ref({
-//   nom_situation: "Nom",
-//   situation_active: "Active ?",
-// });
-
-// const gridActions = computed(() => {
-//   if (props.isReadOnly) {
-//     // En mode lecture seule → uniquement la vue
-//     return {
-//       view: true,
-//       edit: false,
-//       delete: false,
-//     };
-//   } else {
-//     // En mode édition → tout est permis
-//     return {
-//       view: true,
-//       edit: true,
-//       delete: true,
-//     };
-//   }
-// });
-
-// const quarGridColumns = ref(["id", "code_quartier", "nom_quartier"]);
-// const quarColumnLabels = ref({
-//   id: "ID",
-//   code_quartier: "Code",
-//   nom_quartier: "Nom",
-// });
-
-// const proprietaires = ref([]);
+const proprietaires = ref([]);
 const situationExploitations = ref([]);
-const quartiers = ref([]);
-const quartiersGeoJSON = ref(null);
 const evenementsGeoJSON = ref(null);
 const evenements = ref([]);
 
+const situGridColumns = ref([
+  { field: "annee", label: "Année", sortable: true },
+  { field: "exploitant_nom", label: "Exploitant", sortable: true },
+  { field: "situation_active", label: "Active ?", sortable: true },
+]);
+
+const situFilters = ref([
+  {
+    key: "upFilter",
+    type: "hidden",
+    default: "",
+    apply: (items, _value) => {
+      if (!form.id) return [];
+      return (items || []).filter((i) => {
+        const upId = i.unite_pastorale ?? i.unite_pastorale_id ?? i.properties?.unite_pastorale;
+        return String(upId) === String(form.id);
+      });
+    },
+  },
+]);
 
 const fetchSituations = () => {
   auth.axiosInstance
@@ -238,39 +225,6 @@ const fetchSituations = () => {
     .finally(() => {
       //isLoading.value = false;
       console.log("fetchSituations done");
-    });
-};
-
-const fetchQuartiers = () => {
-  console.log(`${config.API_BASE_URL}/api/quartierPasto/?up_id=${form.id}`);
-  // transformer en features
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/quartierPasto/?up_id=${form.id}`)
-    .then((response) => {
-      const data = response.data;
-      console.log("list response data:", response.data);
-      console.log("fetchQuartiers.value:", quartiers.value);
-
-      if (data.type === "FeatureCollection") {
-        // Transformer les features en tableau
-        quartiers.value = data.features.map((feature) => {
-          return {
-            ...feature.properties, // Ajoute toutes les propriétés
-            id: feature.id, // Ajoute l'id
-          };
-        });
-        // keep the full GeoJSON for map overlay
-        quartiersGeoJSON.value = data;
-      } else {
-        quartiersGeoJSON.value = null;
-      }
-    })
-    .catch((error) => {
-      console.error("There was an error!", error);
-    })
-    .finally(() => {
-      //isLoading.value = false;
-      console.log("fetchQuartiers done");
     });
 };
 
@@ -355,111 +309,92 @@ const form = reactive({
   geometry: props.initialForm?.geometry || null,
  });
 
-const proprietaires = ref([]);
+
 
 // prepare vectorLayers for the map: include quartiers and evenements when available
-const vectorLayers = computed(() => {
-  const layers = [];
-  if (quartiersGeoJSON.value) {
-    layers.push({
-      id: "quartiers",
-      label: "Quartiers",
-      data: quartiersGeoJSON.value,
-      visible: true,
-      style: {
-        color: "#00E5FF",
-        weight: 3,
-        fill: false,
-      },
-      onEachFeature: (feature, layer) => {
-        const props = feature.properties || {};
-        const title = props.nom_quartier || props.code_quartier || "Quartier";
-        layer.bindPopup(title);
-      },
-    });
-  }
+// const vectorLayers = computed(() => {
+//   const layers = [];
+//   if (quartiersGeoJSON.value) {
+//     layers.push({
+//       id: "quartiers",
+//       label: "Quartiers",
+//       data: quartiersGeoJSON.value,
+//       visible: true,
+//       style: {
+//         color: "#00E5FF",
+//         weight: 3,
+//         fill: false,
+//       },
+//       onEachFeature: (feature, layer) => {
+//         const props = feature.properties || {};
+//         const title = props.nom_quartier || props.code_quartier || "Quartier";
+//         layer.bindPopup(title);
+//       },
+//     });
+//   }
 
-  if (evenementsGeoJSON.value) {
-    layers.push({
-      id: "evenements",
-      label: "Événements",
-      data: evenementsGeoJSON.value,
-      visible: true,
-      // use point style for events (if points), fallback to red outline for polygons
-      style: (feature) => {
-        if (feature.geometry && feature.geometry.type === "Point") return {
-          radius: 8,
-          color: "#F4511E",
-          fillColor: "#F4511E",
-          fillOpacity: 0,
-          weight: 2,
-        };
-        // markers default
-        return { color: "#ff3333", weight: 2, fill: false };
-      },
-      onEachFeature: (feature, layer) => {
-        const props = feature.properties || {};
-        const title = props.description || props.source || "Événement";
-        const date = props.date_evenement || props.date_observation || null;
-        const content = date ? `${title}<br/><small>${date}</small>` : title;
-        layer.bindPopup(content);
-      },
-    });
-  }
+//   if (evenementsGeoJSON.value) {
+//     layers.push({
+//       id: "evenements",
+//       label: "Événements",
+//       data: evenementsGeoJSON.value,
+//       visible: true,
+//       // use point style for events (if points), fallback to red outline for polygons
+//       style: (feature) => {
+//         if (feature.geometry && feature.geometry.type === "Point") return {
+//           radius: 8,
+//           color: "#F4511E",
+//           fillColor: "#F4511E",
+//           fillOpacity: 0,
+//           weight: 2,
+//         };
+//         // markers default
+//         return { color: "#ff3333", weight: 2, fill: false };
+//       },
+//       onEachFeature: (feature, layer) => {
+//         const props = feature.properties || {};
+//         const title = props.description || props.source || "Événement";
+//         const date = props.date_evenement || props.date_observation || null;
+//         const content = date ? `${title}<br/><small>${date}</small>` : title;
+//         layer.bindPopup(content);
+//       },
+//     });
+//   }
 
-  return layers;
-});
+//   return layers;
+// });
 
 const router = useRouter();
 
 // Variable pour stocker le nextId
 const nextId = ref(null);
 
-const goToQuartiersList = () => {
-  // Utilisation de l'ID de l'UP pour la navigation
-  if (form.id) {
-    router.push(`/QuartierPastos/${form.id}`);
-  } else {
-    console.warn("L'ID de l'UP n'est pas défini !");
-  }
+const fetchNextId = () => {
+  auth.axiosInstance
+    .get(`${config.API_BASE_URL}/api/unitePastorale/getNextId/`)
+    .then((response) => {
+      console.log("Next ID response:", response.data);
+      nextId.value = response.data.next_id;
+      form.id = nextId.value;
+      if (!form.properties) form.properties = {};
+      form.properties.id_unite_pastorale = nextId.value;
+    })
+    .catch((error) => {
+      console.error("Erreur lors de la récupération du Next ID", error);
+    });
 };
 
-// const submitForm = () => {
-//   console.log("Form submitted with:", form.value);
-
-//   if (!props.isEdit) {
-//     form.value.id = nextId.value;
-//   }
-
-//   props
-//     .onSubmit(form.value)
-//     .then(() => {
-//       console.log("Form submission then block executed");
-//     })
-//     .catch((error) => {
-//       console.error("There was an error in form submission!", error);
-//     });
-// };
+const proprietairesOptions = computed(() => {
+  return (proprietaires.value || []).map((p) => ({
+    ...p,
+    full_name: `${p.nom_propr || ""} ${p.prenom_propr || ""}`.trim(),
+  }));
+});
 
 onMounted(() => {
   console.log('UnitePastoraleForm initialForm prop at mount:', props.initialForm);
 
-  // Récupére le prochain ID si on est en mode création uniquement
-  const fetchNextId = () => {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/unitePastorale/getNextId/`)
-      .then((response) => {
-        console.log("Next ID response:", response.data);
-        nextId.value = response.data.next_id;
-        form.id = nextId.value;
-        // set domain-specific id inside properties as API expects
-        if (!form.properties) form.properties = {};
-        form.properties.id_unite_pastorale = nextId.value;
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  };
+  fetchRefUPs();
 
   if (props.mode === 'add') fetchNextId();
 
@@ -481,27 +416,33 @@ onMounted(() => {
     }
 });
 
-  // Watch mode so that when modal opens in 'add' we fetch a next id
-  watch(() => props.mode, (m) => {
-    if (m === 'add') {
-      // only fetch if not already set
-      if (!form.properties?.id_unite_pastorale && !form.id) fetchNextId();
-    }
-  });
+// Watch mode so that when modal opens in 'add' we fetch a next id
+watch(() => props.mode, (m) => {
+  if (m === 'add') {
+    // only fetch if not already set
+    if (!form.properties?.id_unite_pastorale && !form.id) fetchNextId();
+  }
+});
 
 watch(
   () => props.initialForm,
   (newForm) => {
+    const isPlainObject = (value) => Object.prototype.toString.call(value) === "[object Object]";
+    const isEmptyInitialForm =
+      !newForm || (isPlainObject(newForm) && Object.keys(newForm).length === 0);
+
+    // In add mode, parent rerenders can resend an empty initialForm object.
+    // Do not reset the local draft (including drawn geometry) in that case.
+    if (props.mode === "add" && isEmptyInitialForm) {
+      return;
+    }
+
     console.log('UnitePastoraleForm initialForm changed:', newForm);
       try {
         Object.assign(form, JSON.parse(JSON.stringify(newForm || {})));
       } catch (e) {
         Object.assign(form, newForm || {});
       }
-      // assurer l'ID pour le mode "change" (compatibilité id / id_unite_pastorale)
-      // if (newForm.id_unite_pastorale) form.id_unite_pastorale = newForm.id_unite_pastorale;
-      // else if (newForm.id) form.id_unite_pastorale = newForm.id;
-
 
       // keep proprietaires selection in sync when initialForm changes
       const initIds = newForm?.properties?.proprios_ids || newForm?.membres_ids || newForm?.proprios_ids;
@@ -513,65 +454,6 @@ watch(
   { deep: true, immediate: true }
 );
 
-watch(
-  () => form.id,
-  (newId) => {
-    if (newId) {
-      fetchSituations();
-      fetchQuartiers();
-      fetchRefUPs();
-      fetchEvenements();
-    }
-  }
-);
-
-// Méthode pour gérer l'édition
-function situOnEdit(entry) {
-  console.log("Éditer:", entry.id_situation);
-  router.push(`/SituationExploitation/edit/${entry.id_situation}`);
-}
-
-// Méthode pour gérer la suppression
-function situOnDelete(entry) {
-  console.log("Supprimer:", entry.id_situation);
-  deleteSituation(entry.id_situation);
-}
-
-const deleteSituation = (id) => {
-  auth.axiosInstance
-    .delete(`${config.API_BASE_URL}/api/situationExploitation/${id}/`)
-    .then((response) => {
-      fetchSituations();
-      mainStore.setSuccessMessage("Situation d'exploitation supprimée!");
-    })
-    .catch((error) => {
-      console.error("There was an error!", error);
-    });
-};
-
-// Méthode pour gérer l'édition
-function quarOnEdit(entry) {
-  console.log("Éditer:", entry.id_quartier);
-  router.push(`/QuartierPasto/edit/${entry.id_quartier}`);
-}
-
-// Méthode pour gérer la suppression
-function quarOnDelete(entry) {
-  console.log("Supprimer:", entry.id_quartier);
-  deleteQuartier(entry.id_quartier);
-}
-
-const deleteQuartier = (id) => {
-  auth.axiosInstance
-    .delete(`${config.API_BASE_URL}/api/quar/${id}/`)
-    .then((response) => {
-      fetchSituations();
-      mainStore.setSuccessMessage("Situation d'exploitation supprimée!");
-    })
-    .catch((error) => {
-      console.error("There was an error!", error);
-    });
-};
 
 // Submits
 const submitForm = () => {
@@ -611,11 +493,26 @@ const closeModal = () => {
 
 <style scoped>
 .form-ligne {
-  padding: 8px;
+  padding: 4px;
 }
 
 .form-cell {
-  padding: 8px;
+  padding: 4px;
+}
+
+.up-form-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.up-form-col {
+  min-width: 0;
+}
+
+.up-section-gap {
+  margin-top: 0.75rem;
 }
 
 .grid-container {
@@ -623,6 +520,39 @@ const closeModal = () => {
   /* Arrondi des coins de la grille */
   overflow: hidden;
   /* Assure que le contenu s'adapte à l'arrondi */
+}
+
+.up-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.up-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+
+.up-form :deep(.v-input) {
+  font-size: 0.88rem;
+}
+
+.up-form :deep(.v-field__input),
+.up-form :deep(.v-select__selection-text),
+.up-form :deep(.v-chip__content) {
+  font-size: 0.88rem;
+}
+
+.up-form :deep(.v-switch) {
+  margin-top: 0;
+}
+
+.inline-two-fields {
+  margin: 0;
+}
+
+.inline-switch-cell {
+  display: flex;
+  align-items: center;
 }
 
 .form-actions {
@@ -635,6 +565,12 @@ const closeModal = () => {
 
 .disable-events {
   pointer-events: none
+}
+
+@media (max-width: 1100px) {
+  .up-form-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div id="map-container">
-      <div id="map"></div>
+    <div class="map-container">
+      <div ref="mapElement" class="map"></div>
     </div>
 
     <button type="button" @click="toggleEditMode">
@@ -75,6 +75,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue"]);
+const mapElement = ref(null);
 
 // --- Variables globales ---
 let map;
@@ -93,8 +94,10 @@ let legendControl = null;
 onMounted(async () => {
   await nextTick();
 
+  if (!mapElement.value) return;
+
   // Création de la carte avec un zoom max "global"
-  map = L.map("map", {
+  map = L.map(mapElement.value, {
     center: [45.3405, 6.7533],
     zoom: 10,
     zoomControl: false,
@@ -429,6 +432,14 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  if (!map) return;
+
+  map.off('overlayadd', updateLegend);
+  map.off('overlayremove', updateLegend);
+  map.off(L.Draw.Event.CREATED, updateGeometry);
+  map.off(L.Draw.Event.EDITED, updateGeometry);
+  map.off(L.Draw.Event.DELETED, updateGeometry);
+
   // remove legend control
   if (legendControl) {
     try { legendControl.remove(); } catch (e) {}
@@ -444,6 +455,13 @@ onBeforeUnmount(() => {
     try { map.removeLayer(layer); } catch (e) {}
   });
   vectorLayerMap = {};
+
+  try { map.remove(); } catch (e) {}
+  map = null;
+  drawControl = null;
+  drawnItems = null;
+  originalData = null;
+  referenceLayer = null;
 });
 
 // --- Fonctions d'affichage ---
@@ -453,6 +471,9 @@ function displayReferenceGeometry() {
   if (!map || !drawnItems || !originalData) return;
 
   if (!props.referenceGeometry) return;
+  if (!referenceLayer) {
+    referenceLayer = new L.FeatureGroup().addTo(map);
+  }
   referenceLayer.clearLayers();
 
   const rawReference = toRaw(props.referenceGeometry);
@@ -621,7 +642,7 @@ function toggleEditMode() {
 </script>
 
 <style scoped>
-#map {
+.map {
   width: 100%;
   height: 400px;
 }

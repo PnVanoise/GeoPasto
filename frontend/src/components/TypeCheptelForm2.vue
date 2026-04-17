@@ -58,6 +58,20 @@
           clearable
         />
       </div>
+      <div class="w3-half form-cell">
+        <v-text-field
+          id="coefficient_UGB"
+          v-model.number="form.coefficient_UGB"
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          label="Coefficient UGB"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          dense
+          hide-details
+        />
+      </div>
     </div>
     <div class="w3-row form-ligne">
       <div class="w3-half form-cell">
@@ -115,6 +129,7 @@ const btTitle = computed(() => {
 // Formulaire réactif
 const form = reactive({
   description: "",
+  coefficient_UGB: 0,
   production: "",
   pension: "",
   race: "",

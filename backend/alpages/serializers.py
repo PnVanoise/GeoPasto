@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Sum
 
 from rest_framework import serializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometryField
@@ -135,7 +136,7 @@ class QuartierPastoSerializer(GeoFeatureModelSerializer):
         model = QuartierPasto
         geo_field = 'geometry'
         auto_bbox = True
-        fields = ['id_quartier', 'code_quartier', 'nom_quartier', 'geometry']
+        fields = ['id_quartier', 'code_quartier', 'nom_quartier', 'geometry', 'situation_exploitation']
         
     
     def to_internal_value(self, data):
@@ -262,21 +263,99 @@ class SituationDExploitationSerializer(serializers.ModelSerializer):
 
     def get_exploitant_nom(self, obj):
         return obj.exploitant.nom_exploitant if obj.exploitant else None
+
+    def to_internal_value(self, data):
+        # Accept frontend payloads that send `id` instead of `id_situation`.
+        data = dict(data)
+        if 'id' in data and 'id_situation' not in data:
+            data['id_situation'] = data['id']
+        return super().to_internal_value(data)
     
     class Meta:
         model = SituationDExploitation
-        fields = [ 'id_situation', 'nom_situation', 'situation_active', 'date_debut', 'date_fin',
+        fields = [ 'id_situation', 'annee', 'nom_situation', 'situation_active', 'date_debut', 'date_fin',
                   'exploitant', 'exploitant_nom', 'unite_pastorale', 'unite_pastorale_detail' ]
     
 
 class ExploiterSerializer(serializers.ModelSerializer):
     
+    nombre_animaux = serializers.IntegerField(required=False, allow_null=True, min_value=0)
     quartier_nom = serializers.CharField(source='quartier.nom_quartier', read_only=True)
+    situation_exploitation = serializers.SerializerMethodField(read_only=True)
+    cheptel_nom = serializers.SerializerMethodField(read_only=True)
+    cheptel_nombre_animaux = serializers.SerializerMethodField(read_only=True)
+    tous_troupeaux = serializers.SerializerMethodField(read_only=True)
+
+    def get_cheptel_nom(self, obj):
+        if obj.cheptel_id is None:
+            return "Tous les troupeaux"
+
+        if getattr(obj.cheptel, 'description', None):
+            return obj.cheptel.description
+
+        return f"Troupeau #{obj.cheptel_id}"
+
+    def get_tous_troupeaux(self, obj):
+        return obj.cheptel_id is None
+
+    def get_cheptel_nombre_animaux(self, obj):
+        if obj.cheptel_id is None:
+            return None
+        return getattr(obj.cheptel, 'nombre_animaux', None)
+
+    def get_situation_exploitation(self, obj):
+        if obj.cheptel_id and getattr(obj.cheptel, 'situation_exploitation_id', None):
+            return obj.cheptel.situation_exploitation_id
+        if obj.quartier_id and getattr(obj.quartier, 'situation_exploitation_id', None):
+            return obj.quartier.situation_exploitation_id
+        return None
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        if 'nombre_animaux' not in attrs and self.instance is not None:
+            return attrs
+
+        declared_animaux = attrs.get('nombre_animaux', None)
+        if declared_animaux is None:
+            return attrs
+
+        cheptel = attrs.get('cheptel', getattr(self.instance, 'cheptel', None))
+        quartier = attrs.get('quartier', getattr(self.instance, 'quartier', None))
+
+        if cheptel is not None:
+            max_animaux = getattr(cheptel, 'nombre_animaux', 0) or 0
+        else:
+            situation_id = getattr(quartier, 'situation_exploitation_id', None)
+            if not situation_id:
+                raise serializers.ValidationError({
+                    'nombre_animaux': (
+                        "Impossible de valider nombre_animaux sans cheptel: "
+                        "le quartier doit être renseigné et lié à une situation."
+                    )
+                })
+
+            max_animaux = (
+                Cheptel.objects
+                .filter(situation_exploitation_id=situation_id)
+                .aggregate(total=Sum('nombre_animaux'))
+                .get('total')
+                or 0
+            )
+
+        if declared_animaux > max_animaux:
+            raise serializers.ValidationError({
+                'nombre_animaux': (
+                    f"La valeur maximale autorisée est {max_animaux}."
+                )
+            })
+
+        return attrs
        
     class Meta:
         model = Exploiter
-        fields = [ 'id_exploiter', 'date_debut', 'date_fin', 'quartier', 'commentaire',
-                  'quartier_nom' ]
+        fields = [ 'id_exploiter', 'date_debut', 'date_fin', 'quartier', 'cheptel', 'nombre_animaux', 'commentaire',
+                  'quartier_nom', 'cheptel_nom', 'cheptel_nombre_animaux', 'tous_troupeaux', 'situation_exploitation' ]
             
 
 class EleveurSerializer(serializers.ModelSerializer):
@@ -547,9 +626,11 @@ class RaceSerializer(serializers.ModelSerializer):
     Race
     """
 
+    espece_description = serializers.CharField(source='espece.description', read_only=True)
+
     class Meta:
         model = Race
-        fields = [ 'id_race', 'description', 'espece' ]
+        fields = [ 'id_race', 'description', 'espece', 'espece_description' ]
 
 class Categorie_animauxSerializer(serializers.ModelSerializer):
     """
@@ -567,7 +648,7 @@ class Type_cheptelSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Type_cheptel
-        fields = [ 'id_type_cheptel', 'description', 'production', 'pension', 'race', 'categorie_animaux' ]
+        fields = [ 'id_type_cheptel', 'description', 'coefficient_UGB', 'production', 'pension', 'race', 'categorie_animaux' ]
         
 class CheptelSerializer(serializers.ModelSerializer):
     """
@@ -629,12 +710,19 @@ class TypeEvenementSerializer(serializers.ModelSerializer):
 
 
 class EvenementSerializer(GeoFeatureModelSerializer):
+    type_evenement_label = serializers.SerializerMethodField()
     
     class Meta:
         model = Evenement
         geo_field = 'geometry'
         auto_bbox = True
         fields = '__all__'
+
+    def get_type_evenement_label(self, obj):
+        try:
+            return obj.type_evenement.description if obj.type_evenement else None
+        except Exception:
+            return None
 
     def _find_unite_pastorale(self, geometry):
         # Rechercher l'unité pastorale qui contient la géométrie de l'événement
@@ -747,20 +835,25 @@ class EquipementExploitantSerializer(GeoFeatureModelSerializer):
         source='type_equipement',
         read_only=True
         )
-    unite_pastorale = serializers.PrimaryKeyRelatedField(
-        queryset = UnitePastorale.objects.all(),
+    situation_exploitation = serializers.PrimaryKeyRelatedField(
+        queryset = SituationDExploitation.objects.all(),
         allow_null = True,
     )
-    unite_pastorale_detail = UnitePastoraleLSerializer(
-        source='unite_pastorale',
-        read_only=True
-    )
+    situation_exploitation_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = EquipementExploitant
         geo_field = 'geometry'
         auto_bbox = True
         fields = '__all__'
+
+    def get_situation_exploitation_detail(self, obj):
+        if not obj.situation_exploitation:
+            return None
+        return {
+            'id_situation': obj.situation_exploitation.id_situation,
+            'nom_situation': obj.situation_exploitation.nom_situation,
+        }
     
     def to_representation(self, instance):
         if (instance.geometry != None):

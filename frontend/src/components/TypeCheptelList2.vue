@@ -18,10 +18,12 @@ import CrudList2 from './CrudList2.vue';
 
 const columns = [
   { field: "description", label: "Description", sortable: true },
+  { field: "coefficient_UGB", label: "Coeff. UGB", sortable: true },
 ];
 
 const searchFields = [
-  'description'
+  'description',
+  'coefficient_UGB'
 ];
 
 </script>

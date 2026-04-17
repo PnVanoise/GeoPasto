@@ -17,10 +17,14 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
   const selectedItem = ref(null);
   const mode = ref("view"); // add | change | view
 
-  const fetchAll = async (page = null) => {
+  const fetchAll = async (page = null, extraQueryParams = null) => {
     isLoading.value = true;
     try {
-      const params = page ? { params: { page } } : {};
+      const mergedParams = {
+        ...(extraQueryParams || {}),
+        ...(page ? { page } : {}),
+      };
+      const params = Object.keys(mergedParams).length > 0 ? { params: mergedParams } : {};
       const response = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/${apiRouteName}/`, params);
       const data = response.data;
       // Support DRF paginated responses: { count, next, previous, results }
@@ -52,6 +56,17 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     }
   };
 
+  const resolveItemId = (payload) => {
+    if (!payload) return null;
+    return (
+      payload[idField]
+      ?? payload.id
+      ?? payload.properties?.[idField]
+      ?? payload.properties?.id
+      ?? null
+    );
+  };
+
   const getNextId = async () => {
     try {
       const response = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/${apiRouteName}/getNextId/`);
@@ -62,7 +77,7 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     }
   };
 
-  const createItem = async (payload) => {
+  const createItem = async (payload, extraQueryParams = null) => {
     console.log("create / payload :", payload);
     console.log("create / idField :", idField);
     let body = payload;
@@ -91,13 +106,13 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
 
     await auth.axiosInstance.post(`${config.API_BASE_URL}/api/${apiRouteName}/`, sendBody);
     mainStore.setSuccessMessage("Créé avec succès !");
-    await fetchAll();
+    await fetchAll(null, extraQueryParams);
   };
 
-  const updateItem = async (payload) => {
+  const updateItem = async (payload, extraQueryParams = null) => {
     console.log("update / payload :", payload);
     console.log("update / idField :", idField);
-    const id = payload[idField];
+    const id = resolveItemId(payload);
     if (!id) throw new Error(`ID introuvable pour ${idField}`);
     let body = payload;
     if (geojsonMode) {
@@ -119,14 +134,15 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     console.log("update / sendBody :", sendBody);
     await auth.axiosInstance.put(`${config.API_BASE_URL}/api/${apiRouteName}/${id}/`, sendBody);
     mainStore.setSuccessMessage("Modifié avec succès !");
-    await fetchAll();
+    await fetchAll(null, extraQueryParams);
   };
 
-  const deleteItem = async (payload) => {
-    const id = payload[idField];
+  const deleteItem = async (payload, extraQueryParams = null) => {
+    const id = resolveItemId(payload);
+    if (!id) throw new Error(`ID introuvable pour ${idField}`);
     await auth.axiosInstance.delete(`${config.API_BASE_URL}/api/${apiRouteName}/${id}/`);
     mainStore.setSuccessMessage("Supprimé !");
-    await fetchAll();
+    await fetchAll(null, extraQueryParams);
   };
 
   // Open add modal, optionally with an initial item to prefill the form

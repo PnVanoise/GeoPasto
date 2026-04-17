@@ -1,11 +1,11 @@
 <template>
   <h3 class="w3-center w3-margin">{{ formTitle }}</h3>
-  <div class="debug-block" style="margin:0.5rem 0;padding:0.5rem;border:1px dashed #ccc;">
+  <!-- <div class="debug-block" style="margin:0.5rem 0;padding:0.5rem;border:1px dashed #ccc;">
     <div style="font-weight:600;margin-bottom:0.25rem;">initialForm (parent / selectedItem):</div>
     <pre style="max-height:160px;overflow:auto;margin:0 0 0.5rem 0;">{{ JSON.stringify(props.initialForm, null, 2) }}</pre>
     <div style="font-weight:600;margin-bottom:0.25rem;">form (local reactive):</div>
     <pre style="max-height:160px;overflow:auto;margin:0">{{ JSON.stringify(form, null, 2) }}</pre>
-  </div>
+  </div> -->
 
   <form @submit.prevent="submitForm">
     <!-- Ligne 1 : Situation | Eleveur -->
@@ -19,6 +19,7 @@
           item-value="id_situation"
           :class="{ 'disable-events': props.mode === 'view' || !can('change') || situLocked }"         label="Situation d'exploitation"
           dense
+          variant="underlined"
           hide-details
           clearable
         />
@@ -33,6 +34,7 @@
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
           label="Eleveur"
           dense
+          variant="underlined"
           hide-details
           clearable
         />
@@ -50,6 +52,7 @@
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
           label="Type de cheptel"
           dense
+          variant="underlined"
           hide-details
           clearable
         />
@@ -63,6 +66,7 @@
           type="number"
           min="1"
           dense
+          variant="underlined"
           hide-details
           clearable
         />
@@ -77,6 +81,7 @@
           v-model="form.date_debut"
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
           dense
+          variant="underlined"
           hide-details
           clearable
         />
@@ -88,6 +93,7 @@
           v-model="form.date_fin"
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
           dense
+          variant="underlined"
           hide-details
           clearable
         />
@@ -101,6 +107,7 @@
           label="Description"
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
           dense
+          variant="underlined"
           hide-details
           clearable
         />

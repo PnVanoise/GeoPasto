@@ -20,30 +20,8 @@
       <h2>Où les trouve-t-on ?</h2>
       <div class="maps-stack">
         <section class="map-section">
-          <h3>Carte Leaflet (historique git)</h3>
-          <MapContainer v-model="mapRef">
-            <BaseLayersControl :map="mapRef" />
-            <GeoJsonLayer
-              v-if="mapRef && unitepastorales?.features?.length"
-              :map="mapRef"
-              :geoData="unitepastorales"
-              geoObjectName="unitePastorale"
-              :mPolygonStyle="layerStyle"
-              popupRoute="/UnitePastorale/edit"
-              geomType="Polygon"
-              objectLib="Unité pastorale"
-              popupAttribute="nom_up"
-            />
-          </MapContainer>
-        </section>
-
-        <section class="map-section">
-          <h3>Carte OpenLayers (branche feat/frontend-openalyers-map)</h3>
           <OpenLayersGeoJsonMap
-            :geoData="unitepastorales"
-            :mPolygonStyle="layerStyle"
-            popupRoute="/UnitePastorale/edit"
-            popupAttribute="nom_up"
+            :layers="openLayersLayers"
             @open-popup-item="onMapPopupItem"
           />
         </section>
@@ -53,19 +31,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import { usePermissions } from "../composables/usePermissions";
 
 import OpenLayersGeoJsonMap from "./ListMap/OpenLayersGeoJsonMap.vue";
-import MapContainer from "./ListMap/MapContainer.vue";
-import BaseLayersControl from "./ListMap/BaseLayersControl.vue";
-import GeoJsonLayer from "./ListMap/GeoJsonLayer.vue";
 
 import config from "../../config";
 
 import auth from "../../auth";
-import UnitePastoraleForm2 from "./UnitePastoraleForm2.vue";
 import CrudList2 from "./CrudList2.vue";
+import UnitePastoraleForm2 from "./UnitePastoraleForm2.vue";
 
 const columns = [
   { field: "nom_up", label: "UP", sortable: true },
@@ -73,8 +49,8 @@ const columns = [
 ];
 
 const isLoading = ref(true);
-const mapRef = ref(null);
 const router = useRouter();
+const { can } = usePermissions("unitepastorale");
 
 // Data --> props
 // Zone de recherche et grille
@@ -88,6 +64,28 @@ const layerStyle = {
   weight: 2,
   fillOpacity: 0.3,
 };
+
+const openLayersLayers = computed(() => [
+  {
+    id: "unitepastorale",
+    visible: true,
+    data: unitepastorales.value,
+    style: {
+      strokeColor: layerStyle.color,
+      strokeWidth: layerStyle.weight,
+      fillOpacity: layerStyle.fillOpacity,
+      zIndex: 10,
+    },
+    popup: {
+      typeLabel: "UP",
+      attribute: "nom_up",
+      idAttribute: "id_unite_pastorale",
+      route: "/UnitePastorale/edit",
+      viewRoute: "/UnitePastorale/edit",
+      canEdit: can("change"),
+    },
+  },
+]);
 
 const fetchUnitePastorales = () => {
   auth.axiosInstance
@@ -153,7 +151,23 @@ const deleteUP = (id) => {
 
 const onMapPopupItem = (payload) => {
   const id = payload?.id;
+  const action = payload?.action || "view";
   if (!id) return;
+
+  if (action === "edit") {
+    if (!can("change")) return;
+    try {
+      window.dispatchEvent(new CustomEvent("crud-open-edit", {
+        detail: {
+          modelName: "unitepastorale",
+          id,
+        },
+      }));
+      return;
+    } catch (err) {
+      console.warn("Could not dispatch crud-open-edit event", err);
+    }
+  }
 
   try {
     window.dispatchEvent(new CustomEvent("crud-open-view", {

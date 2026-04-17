@@ -170,6 +170,89 @@ class ExploiterSerializerTest(TestCase):
         self.assertEqual(data['quartier_nom'], 'Quartier100')
 
 
+class ExploiterNombreAnimauxValidationTest(TestCase):
+    def setUp(self):
+        self.up = UnitePastorale.objects.create(
+            id_unite_pastorale=150,
+            code_up='UP150',
+            nom_up='UP 150',
+            annee_version=2024,
+            geometry=_up_geom(),
+            version_active=True,
+        )
+        self.situation = SituationDExploitation.objects.create(
+            id_situation=150,
+            nom_situation='Sit150',
+            situation_active=True,
+            unite_pastorale=self.up,
+        )
+        self.quartier = QuartierPasto.objects.create(
+            id_quartier=150,
+            nom_quartier='Quartier150',
+            geometry=_qp_geom(),
+            situation_exploitation=self.situation,
+        )
+
+        self.cheptel_1 = Cheptel.objects.create(
+            id_cheptel=150,
+            description='Troupeau150',
+            situation_exploitation=self.situation,
+            nombre_animaux=40,
+        )
+        self.cheptel_2 = Cheptel.objects.create(
+            id_cheptel=151,
+            description='Troupeau151',
+            situation_exploitation=self.situation,
+            nombre_animaux=60,
+        )
+
+    def test_accepts_value_within_specific_herd_limit(self):
+        serializer = ExploiterSerializer(data={
+            'id_exploiter': 150,
+            'quartier': self.quartier.id_quartier,
+            'cheptel': self.cheptel_1.id_cheptel,
+            'date_debut': '2024-06-01',
+            'date_fin': '2024-06-10',
+            'nombre_animaux': 35,
+        })
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_rejects_value_above_specific_herd_limit(self):
+        serializer = ExploiterSerializer(data={
+            'id_exploiter': 151,
+            'quartier': self.quartier.id_quartier,
+            'cheptel': self.cheptel_1.id_cheptel,
+            'date_debut': '2024-06-01',
+            'date_fin': '2024-06-10',
+            'nombre_animaux': 41,
+        })
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('nombre_animaux', serializer.errors)
+
+    def test_rejects_value_above_all_herds_sum_when_cheptel_null(self):
+        serializer = ExploiterSerializer(data={
+            'id_exploiter': 152,
+            'quartier': self.quartier.id_quartier,
+            'cheptel': None,
+            'date_debut': '2024-06-01',
+            'date_fin': '2024-06-10',
+            'nombre_animaux': 101,
+        })
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('nombre_animaux', serializer.errors)
+
+    def test_accepts_value_within_all_herds_sum_when_cheptel_null(self):
+        serializer = ExploiterSerializer(data={
+            'id_exploiter': 153,
+            'quartier': self.quartier.id_quartier,
+            'cheptel': None,
+            'date_debut': '2024-06-01',
+            'date_fin': '2024-06-10',
+            'nombre_animaux': 100,
+        })
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+
 # ============================================================================
 # QuartierPastoSerializer  (GeoFeature – properties under data['properties'])
 # ============================================================================
@@ -510,6 +593,8 @@ class RaceSerializerFieldsTest(TestCase):
         self.assertIn('id_race', data)
         self.assertIn('description', data)
         self.assertIn('espece', data)
+        self.assertIn('espece_description', data)
+        self.assertEqual(data['espece_description'], 'Bovin')
 
 
 class Categorie_animauxSerializerFieldsTest(TestCase):
@@ -547,6 +632,7 @@ class Type_cheptelSerializerFieldsTest(TestCase):
         data = Type_cheptelSerializer(tc).data
         self.assertIn('id_type_cheptel', data)
         self.assertIn('description', data)
+        self.assertIn('coefficient_UGB', data)
 
 
 class TypeEvenementSerializerFieldsTest(TestCase):

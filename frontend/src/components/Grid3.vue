@@ -66,6 +66,49 @@ function nestedValue(obj, path) {
   return String(path || "").split('.').reduce((o, key) => (o ? o[key] : null), obj);
 }
 
+function isDateField(fieldPath) {
+  return /(^|\.)date(_|$)/i.test(String(fieldPath || ""));
+}
+
+function toFrDate(value) {
+  if (value == null || value === "") return "";
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    const dd = String(value.getDate()).padStart(2, "0");
+    const mm = String(value.getMonth() + 1).padStart(2, "0");
+    const yyyy = String(value.getFullYear());
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  const raw = String(value);
+  const isoDateMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoDateMatch) {
+    return `${isoDateMatch[3]}/${isoDateMatch[2]}/${isoDateMatch[1]}`;
+  }
+
+  const isoDateTimeMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+  if (isoDateTimeMatch) {
+    return `${isoDateTimeMatch[3]}/${isoDateTimeMatch[2]}/${isoDateTimeMatch[1]}`;
+  }
+
+  return raw;
+}
+
+function isBooleanCell(entry, col) {
+  return typeof nestedValue(entry, col.field) === "boolean";
+}
+
+function formatCellValue(entry, col) {
+  const value = nestedValue(entry, col.field);
+  if (value == null) return "";
+
+  if (col?.format === "date" || col?.type === "date" || isDateField(col?.field)) {
+    return toFrDate(value);
+  }
+
+  return value;
+}
+
 function toggleSort(col) {
   if (!col || !col.sortable) return;
 
@@ -194,46 +237,48 @@ function performDelete() {
             {{ col.label }}
             <span class="arrow" :class="sortField === col.field ? (sortDirection === 'asc' ? 'asc' : 'dsc') : ''"></span>
           </th>
-          <th :style="{ backgroundColor: bgColor }">Actions</th>
+          <th class="actions-col" :style="{ backgroundColor: bgColor }">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="entry in displayedData" :key="getItemId(entry)">
           <td v-for="col in columns" :key="col.field">
-            <template v-if="typeof nestedValue(entry, col.field) === 'boolean'">
+            <template v-if="isBooleanCell(entry, col)">
               <input type="checkbox" :checked="nestedValue(entry, col.field)" disabled />
             </template>
             <template v-else>
-              {{ nestedValue(entry, col.field) ?? '' }}
+              {{ formatCellValue(entry, col) }}
             </template>
           </td>
-          <td>
-            <template v-if="actions.view">
-              <font-awesome-icon
-                icon="eye"
-                class="icon-view"
-                title="Voir les détails"
-                @click="$emit('view', entry)"
-              />
-            </template>
+          <td class="actions-col">
+            <div class="actions-cell-inner">
+              <template v-if="actions.view">
+                <font-awesome-icon
+                  icon="eye"
+                  class="icon-view"
+                  title="Voir les détails"
+                  @click="$emit('view', entry)"
+                />
+              </template>
 
-            <template v-if="actions.edit">
-              <font-awesome-icon
-                icon="edit"
-                class="icon-edit"
-                title="Modifier"
-                @click="$emit('edit', entry)"
-              />
-            </template>
+              <template v-if="actions.edit">
+                <font-awesome-icon
+                  icon="edit"
+                  class="icon-edit"
+                  title="Modifier"
+                  @click="$emit('edit', entry)"
+                />
+              </template>
 
-            <template v-if="actions.delete">
-              <font-awesome-icon
-                icon="trash"
-                class="icon-delete"
-                title="Supprimer"
-                @click="confirmDelete(entry)"
-              />
-            </template>
+              <template v-if="actions.delete">
+                <font-awesome-icon
+                  icon="trash"
+                  class="icon-delete"
+                  title="Supprimer"
+                  @click="confirmDelete(entry)"
+                />
+              </template>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -243,16 +288,18 @@ function performDelete() {
   </div>
 
   <!-- Modal suppression -->
-  <div v-if="showDeleteModal" class="modal-overlay">
-    <div class="modal-content">
-      <h3>Confirmer la suppression</h3>
-      <p>Êtes-vous sûr de vouloir supprimer cet enregistrement ?</p>
-      <div class="modal-actions">
-        <button type="button" @click="performDelete" class="modal-confirm">Oui, supprimer</button>
-        <button type="button" @click="cancelDelete" class="modal-cancel">Annuler</button>
+  <Teleport to="body">
+    <div v-if="showDeleteModal" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Confirmer la suppression</h3>
+        <p>Êtes-vous sûr de vouloir supprimer cet enregistrement ?</p>
+        <div class="modal-actions">
+          <button type="button" @click="performDelete" class="modal-confirm">Oui, supprimer</button>
+          <button type="button" @click="cancelDelete" class="modal-cancel">Annuler</button>
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -309,6 +356,32 @@ function performDelete() {
   text-align: left;
 }
 
+.table-with-fixed-header th.actions-col,
+.table-with-fixed-header td.actions-col {
+  width: 1%;
+  min-width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.table-with-fixed-header td.actions-col {
+  padding-right: 0;
+}
+
+.table-with-fixed-header td.actions-col .actions-cell-inner {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-with-fixed-header td.actions-col .icon-view,
+.table-with-fixed-header td.actions-col .icon-edit,
+.table-with-fixed-header td.actions-col .icon-delete {
+  margin-right: 0;
+}
+
 th.active {
   color: #fff;
   background-color: rgba(0,0,0,0.08);
@@ -346,7 +419,8 @@ th.active {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  /* Must be above parent CRUD modal overlays (Modal.vue uses 2000). */
+  z-index: 3100;
 }
 
 .modal-content {
@@ -355,6 +429,7 @@ th.active {
   border-radius: 8px;
   min-width: 300px;
   text-align: center;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.28);
 }
 
 .modal-actions {

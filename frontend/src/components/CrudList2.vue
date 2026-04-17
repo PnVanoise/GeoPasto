@@ -10,6 +10,7 @@
           class="search-field"
           v-model="searchQuery"
           label="Recherche"
+          variant="underlined"
           dense
           hide-details
           clearable
@@ -52,13 +53,31 @@
           v-if="props.showAddButton && !props.viewOnly && (crud.can('add') || props.forceAdd)"
           color="info"
           @click="() => crud.openAdd(props.initialNewItem ? { ...props.initialNewItem } : null)"
-          prepend-icon="mdi-plus-circle"
-          class="add-btn"
-        >
-          Ajouter
-        </v-btn>
-        
-        
+          icon="mdi-plus"
+          class="icon-round-btn add-btn"
+          :title="`Ajouter ${props.itemLabel || 'élément'}`"
+          aria-label="Ajouter"
+        />
+
+        <v-btn
+          v-if="props.showExportButtons"
+          color="success"
+          icon="mdi-file-delimited"
+          class="icon-round-btn export-btn"
+          @click="handleExportAll"
+          title="Exporter tout"
+          aria-label="Exporter tout"
+        />
+
+        <v-btn
+          v-if="props.showExportButtons"
+          color="success"
+          icon="mdi-file-delimited-outline"
+          class="icon-round-btn export-btn"
+          @click="exportVisible"
+          title="Exporter visible"
+          aria-label="Exporter visible"
+        />
       </div>
     </div>
 
@@ -74,18 +93,6 @@
       @edit="handleEdit"
       @delete="handleDelete"
     />
-
-    <div class="grid-footer-actions">
-      <v-btn color="success" class="export-btn export-rect" @click="handleExportAll">
-        <v-icon left>mdi-file-delimited</v-icon>
-        Exporter — Toutes les données
-      </v-btn>
-
-      <v-btn color="success" class="export-btn export-rect" @click="exportVisible">
-        <v-icon left>mdi-file-delimited-outline</v-icon>
-        Exporter — Visibles
-      </v-btn>
-    </div>
 
     <Modal :show="crud.showModal.value" @close="crud.closeModal" :close-on-overlay="false">
       <component
@@ -131,9 +138,11 @@ const props = defineProps({
   showSearch: { type: Boolean, default: true },
   showFilters: { type: Boolean, default: true },
   showAddButton: { type: Boolean, default: true },
+  showExportButtons: { type: Boolean, default: true },
   forceAdd: { type: Boolean, default: false },
   initialNewItem: { type: Object, default: null },
   viewOnly: { type: Boolean, default: false },
+  requestParams: { type: Object, default: null },
 });
 const crud = useCrud(props.modelName, props.apiRouteName, props.idField, { geojson: props.geojsonMode });
 const searchQuery = ref("");
@@ -210,7 +219,7 @@ const onCrudOpenView = async (event) => {
 
     let target = findItemById(detail.id);
     if (!target) {
-      await crud.fetchAll();
+      await crud.fetchAll(null, props.requestParams);
       target = findItemById(detail.id);
     }
 
@@ -222,13 +231,37 @@ const onCrudOpenView = async (event) => {
   }
 };
 
+const onCrudOpenEdit = async (event) => {
+  try {
+    const detail = event?.detail || {};
+    if (!detail.modelName || detail.modelName !== props.modelName) return;
+    if (detail.id === undefined || detail.id === null) return;
+    if (props.viewOnly) return;
+    if (!crud.can("change")) return;
+
+    let target = findItemById(detail.id);
+    if (!target) {
+      await crud.fetchAll(null, props.requestParams);
+      target = findItemById(detail.id);
+    }
+
+    if (target) {
+      crud.openEdit(target);
+    }
+  } catch (err) {
+    console.warn("Could not open edit from crud-open-edit event", err);
+  }
+};
+
 onMounted(() => {
-  crud.fetchAll();
+  crud.fetchAll(null, props.requestParams);
   window.addEventListener("crud-open-view", onCrudOpenView);
+  window.addEventListener("crud-open-edit", onCrudOpenEdit);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("crud-open-view", onCrudOpenView);
+  window.removeEventListener("crud-open-edit", onCrudOpenEdit);
 });
 
 // If initialNewItem is provided, prefill selectedItem when entering add mode
@@ -238,12 +271,21 @@ watch(() => crud.mode.value, (m) => {
   }
 });
 
+watch(
+  () => props.requestParams,
+  (newParams, oldParams) => {
+    if (JSON.stringify(newParams || {}) === JSON.stringify(oldParams || {})) return;
+    crud.fetchAll(null, newParams);
+  },
+  { deep: true }
+);
+
 const handleSubmit = async (formData) => {
   console.log("Submitting form data:", formData);
   if (crud.mode.value === "add") {
-    await crud.createItem(formData);
+    await crud.createItem(formData, props.requestParams);
   } else if (crud.mode.value === "edit" || crud.mode.value === "change") {
-    await crud.updateItem(formData);
+    await crud.updateItem(formData, props.requestParams);
   }
   crud.closeModal();
   // notify other parts of the app that data changed (modelName provided)
@@ -348,7 +390,7 @@ function handleDelete(item) {
   // perform delete and notify listeners so maps/lists can refresh
   (async () => {
     try {
-      await crud.deleteItem(item);
+      await crud.deleteItem(item, props.requestParams);
       try {
         window.dispatchEvent(new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } }));
       } catch (e) {
@@ -401,24 +443,16 @@ function handleDelete(item) {
   margin-left: 16px;
 }
 
-.header-right .export-btn {
-  height: 28px;
-  min-width: 28px;
-  padding: 4px 6px;
-}
-
-.header-right .export-btn .v-icon {
-  font-size: 16px;
+.header-right .icon-round-btn {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  padding: 0;
 }
 
 .header-actions .add-btn {
   margin-left: auto !important;
-  flex: 0 0 auto;
-  min-width: 140px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
 }
 
 /* Make sure Vuetify field height aligns with the button */
@@ -438,30 +472,9 @@ function handleDelete(item) {
     flex: 1 1 auto;
     margin-left: 0;
   }
-}
 
-/* Footer export buttons under the grid */
-.grid-footer-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.grid-footer-actions .export-btn.export-rect {
-  border-radius: 4px; /* moins arrondi */
-  padding: 6px 12px;
-  height: 36px;
-  text-transform: none;
-}
-
-.grid-footer-actions .export-btn .v-icon {
-  font-size: 18px;
-}
-
-@media (max-width: 600px) {
-  .grid-footer-actions {
-    justify-content: flex-start;
+  .header-right {
+    margin-left: 0;
   }
 }
 </style>

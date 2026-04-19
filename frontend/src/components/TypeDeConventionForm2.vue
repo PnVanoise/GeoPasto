@@ -60,8 +60,11 @@ watch(
     if (newVal) {
       Object.assign(form, newVal);
       // assurer l'ID pour le mode "change" (compatibilité id / id_type_convention)
-      if (newVal.id_type_convention) form.id_type_convention = newVal.id_type_convention;
-      else if (newVal.id) form.id_type_convention = newVal.id;
+      if (newVal.id_type_convention !== undefined && newVal.id_type_convention !== null) {
+        form.id_type_convention = newVal.id_type_convention;
+      } else if (newVal.id !== undefined && newVal.id !== null) {
+        form.id_type_convention = newVal.id;
+      }
     }
   },
   { immediate: true }

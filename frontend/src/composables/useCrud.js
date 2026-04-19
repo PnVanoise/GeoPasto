@@ -10,6 +10,8 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
 
   const geojsonMode = !!options.geojson;
 
+  const hasValidId = (value) => value !== null && value !== undefined && value !== "";
+
   const items = ref([]);
   const isLoading = ref(false);
   const pagination = ref({ count: null, next: null, previous: null, page_size: null });
@@ -113,7 +115,7 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     console.log("update / payload :", payload);
     console.log("update / idField :", idField);
     const id = resolveItemId(payload);
-    if (!id) throw new Error(`ID introuvable pour ${idField}`);
+    if (!hasValidId(id)) throw new Error(`ID introuvable pour ${idField}`);
     let body = payload;
     if (geojsonMode) {
       if (payload && payload.properties) {
@@ -139,7 +141,7 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
 
   const deleteItem = async (payload, extraQueryParams = null) => {
     const id = resolveItemId(payload);
-    if (!id) throw new Error(`ID introuvable pour ${idField}`);
+    if (!hasValidId(id)) throw new Error(`ID introuvable pour ${idField}`);
     await auth.axiosInstance.delete(`${config.API_BASE_URL}/api/${apiRouteName}/${id}/`);
     mainStore.setSuccessMessage("Supprimé !");
     await fetchAll(null, extraQueryParams);
@@ -171,10 +173,10 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
       }
       const feature = { properties: props };
       if (it.geometry) feature.geometry = it.geometry;
-      feature.id = it[idField] || it.id || props[idField] || null;
+      feature.id = it[idField] ?? it.id ?? props[idField] ?? null;
       selectedItem.value = feature;
     } else {
-      if (!it[idField] && it.id) it[idField] = it.id;
+      if (!hasValidId(it[idField]) && hasValidId(it.id)) it[idField] = it.id;
       selectedItem.value = it;
     }
     showModal.value = true;
@@ -193,10 +195,10 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
       }
       const feature = { properties: props };
       if (it.geometry) feature.geometry = it.geometry;
-      feature.id = it[idField] || it.id || props[idField] || null;
+      feature.id = it[idField] ?? it.id ?? props[idField] ?? null;
       selectedItem.value = feature;
     } else {
-      if (!it[idField] && it.id) it[idField] = it.id;
+      if (!hasValidId(it[idField]) && hasValidId(it.id)) it[idField] = it.id;
       selectedItem.value = it;
     }
     showModal.value = true;

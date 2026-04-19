@@ -147,8 +147,11 @@ watch(
     if (newVal) {
       Object.assign(form, newVal);
       // assurer l'ID pour le mode "change" (compatibilité id / id_type_cheptel)
-      if (newVal.id_type_cheptel) form.id_type_cheptel = newVal.id_type_cheptel;
-      else if (newVal.id) form.id_type_cheptel = newVal.id;
+      if (newVal.id_type_cheptel !== undefined && newVal.id_type_cheptel !== null) {
+        form.id_type_cheptel = newVal.id_type_cheptel;
+      } else if (newVal.id !== undefined && newVal.id !== null) {
+        form.id_type_cheptel = newVal.id;
+      }
     }
   },
   { immediate: true }

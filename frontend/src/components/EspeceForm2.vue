@@ -63,8 +63,11 @@ watch(
     if (newVal) {
       Object.assign(form, newVal);
       // assurer l'ID pour le mode "change" (compatibilité id / id_espece)
-      if (newVal.id_espece) form.id_espece = newVal.id_espece;
-      else if (newVal.id) form.id_espece = newVal.id;
+      if (newVal.id_espece !== undefined && newVal.id_espece !== null) {
+        form.id_espece = newVal.id_espece;
+      } else if (newVal.id !== undefined && newVal.id !== null) {
+        form.id_espece = newVal.id;
+      }
     }
   },
   { immediate: true }

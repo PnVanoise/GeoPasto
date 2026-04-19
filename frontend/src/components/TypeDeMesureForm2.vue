@@ -62,8 +62,11 @@ watch(
     if (newVal) {
       Object.assign(form, newVal);
       // assurer l'ID pour le mode "change" (compatibilité id / id_type_mesure)
-      if (newVal.id_type_mesure) form.id_type_mesure = newVal.id_type_mesure;
-      else if (newVal.id) form.id_type_mesure = newVal.id;
+      if (newVal.id_type_mesure !== undefined && newVal.id_type_mesure !== null) {
+        form.id_type_mesure = newVal.id_type_mesure;
+      } else if (newVal.id !== undefined && newVal.id !== null) {
+        form.id_type_mesure = newVal.id;
+      }
     }
   },
   { immediate: true }

@@ -62,8 +62,11 @@ watch(
     if (newVal) {
       Object.assign(form, newVal);
       // assurer l'ID pour le mode "change" (compatibilité id / id_type_suivi)
-      if (newVal.id_type_suivi) form.id_type_suivi = newVal.id_type_suivi;
-      else if (newVal.id) form.id_type_suivi = newVal.id;
+      if (newVal.id_type_suivi !== undefined && newVal.id_type_suivi !== null) {
+        form.id_type_suivi = newVal.id_type_suivi;
+      } else if (newVal.id !== undefined && newVal.id !== null) {
+        form.id_type_suivi = newVal.id;
+      }
     }
   },
   { immediate: true }

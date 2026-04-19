@@ -125,8 +125,11 @@ watch(
     if (newVal) {
       Object.assign(form, newVal);
       // assurer l'ID pour le mode "change" (compatibilité id / id_eleveur)
-      if (newVal.id_eleveur) form.id_eleveur = newVal.id_eleveur;
-      else if (newVal.id) form.id_eleveur = newVal.id;
+      if (newVal.id_eleveur !== undefined && newVal.id_eleveur !== null) {
+        form.id_eleveur = newVal.id_eleveur;
+      } else if (newVal.id !== undefined && newVal.id !== null) {
+        form.id_eleveur = newVal.id;
+      }
     }
   },
   { immediate: true }

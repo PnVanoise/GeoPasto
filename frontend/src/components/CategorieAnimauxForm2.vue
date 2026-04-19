@@ -79,8 +79,11 @@ watch(
     if (newVal) {
       Object.assign(form, newVal);
       // assurer l'ID pour le mode "change" (compatibilité id / id_categorie_animaux)
-      if (newVal.id_categorie_animaux) form.id_categorie_animaux = newVal.id_categorie_animaux;
-      else if (newVal.id) form.id_categorie_animaux = newVal.id;
+      if (newVal.id_categorie_animaux !== undefined && newVal.id_categorie_animaux !== null) {
+        form.id_categorie_animaux = newVal.id_categorie_animaux;
+      } else if (newVal.id !== undefined && newVal.id !== null) {
+        form.id_categorie_animaux = newVal.id;
+      }
     }
   },
   { immediate: true }

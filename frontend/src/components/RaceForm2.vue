@@ -78,8 +78,11 @@ watch(
     if (newVal) {
       Object.assign(form, newVal);
       // assurer l'ID pour le mode "change" (compatibilité id / id_race)
-      if (newVal.id_race) form.id_race = newVal.id_race;
-      else if (newVal.id) form.id_race = newVal.id;
+      if (newVal.id_race !== undefined && newVal.id_race !== null) {
+        form.id_race = newVal.id_race;
+      } else if (newVal.id !== undefined && newVal.id !== null) {
+        form.id_race = newVal.id;
+      }
     }
   },
   { immediate: true }

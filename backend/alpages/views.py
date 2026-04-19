@@ -379,6 +379,11 @@ class TypeEquipementViewset(BaseModelViewSet):
     
     def get_queryset(self):
         queryset = TypeEquipement.objects.all()
+        categorie = self.request.GET.get('categorie')
+        if categorie is not None:
+            categorie = categorie.strip()
+            if categorie:
+                queryset = queryset.filter(categorie__iexact=categorie)
         return queryset
 
 class EquipementAlpageViewset(BaseModelViewSet):

@@ -2,7 +2,7 @@
   <div class="quartier-geometry-editor">
     <div ref="mapElement" class="geometry-map"></div>
 
-    <div class="geometry-toolbar">
+    <div v-if="!props.disabled" class="geometry-toolbar">
       <v-btn
         size="small"
         color="primary"
@@ -66,6 +66,10 @@ const props = defineProps({
   contextGeoData: {
     type: Object,
     default: null,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -332,6 +336,18 @@ const clearGeometry = () => {
   emit("update:modelValue", null);
 };
 
+const applyInteractionMode = () => {
+  if (!map || !source) return;
+  removeInteractions();
+  if (props.disabled) return;
+
+  if (source.getFeatures().length) {
+    enableModify();
+  } else {
+    enableDraw();
+  }
+};
+
 defineExpose({
   getGeometry: () => toOutputGeometry(),
   hasGeometry: () => {
@@ -440,11 +456,7 @@ onMounted(async () => {
 
   syncContextLayer();
   syncFromModel();
-  if (source.getFeatures().length) {
-    enableModify();
-  } else {
-    enableDraw();
-  }
+  applyInteractionMode();
 
   refreshMapSize();
 });
@@ -453,9 +465,17 @@ watch(
   () => props.modelValue,
   () => {
     syncFromModel();
+    applyInteractionMode();
     refreshMapSize();
   },
   { deep: true }
+);
+
+watch(
+  () => props.disabled,
+  () => {
+    applyInteractionMode();
+  }
 );
 
 watch(

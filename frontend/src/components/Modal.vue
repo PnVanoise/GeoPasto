@@ -60,4 +60,8 @@ const handleOverlayClick = () => {
   font-size: 1.5rem;
   cursor: pointer;
 }
+
+:global(.eqpt-select-menu-overlay) {
+  z-index: 2600 !important;
+}
 </style>

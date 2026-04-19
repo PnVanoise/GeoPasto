@@ -798,7 +798,7 @@ class TypeEquipementSerializer(serializers.ModelSerializer):
 
 class EquipementAlpageSerializer(GeoFeatureModelSerializer):
     type_equipement = serializers.PrimaryKeyRelatedField(
-        queryset = TypeEquipement.objects.all(),
+        queryset = TypeEquipement.objects.filter(categorie__iexact='Alpage'),
         allow_null = True,
     )
     type_equipement_detail = TypeEquipementSerializer(
@@ -828,7 +828,7 @@ class EquipementAlpageSerializer(GeoFeatureModelSerializer):
     
 class EquipementExploitantSerializer(GeoFeatureModelSerializer):
     type_equipement = serializers.PrimaryKeyRelatedField(
-        queryset = TypeEquipement.objects.all(),
+        queryset = TypeEquipement.objects.filter(categorie__iexact='Exploitant'),
         allow_null = True,
     )
     type_equipement_detail = TypeEquipementSerializer(

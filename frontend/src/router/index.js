@@ -97,7 +97,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: UnitePastoraleList,
+      component: UnitePastoraleList2,
       meta: { requiresAuth: true },  // Route protégée
     },
     {

@@ -315,7 +315,8 @@ const buildEventPopupHtml = (properties, label, href, id, objectTypeLabel) => {
 
   if (!href || !id) return details;
 
-  return `${details}<div class="popup-event-link"><a href="${href}" data-feature-id="${escapeHtml(String(id))}" data-feature-label="${escapeHtml(String(label || "Événement"))}">lien vers fiche</a></div>`;
+  return `${details}`;
+  // return `${details}<div class="popup-event-link"><a href="${href}" data-feature-id="${escapeHtml(String(id))}" data-feature-label="${escapeHtml(String(label || "Événement"))}">lien vers fiche</a></div>`;
 };
 
 const onPopupContentClick = (event) => {

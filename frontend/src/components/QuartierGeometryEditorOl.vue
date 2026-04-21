@@ -44,7 +44,7 @@ import View from "ol/View";
 import Draw from "ol/interaction/Draw";
 import Modify from "ol/interaction/Modify";
 import Snap from "ol/interaction/Snap";
-import { Fill, Stroke, Style } from "ol/style";
+import { Fill, Stroke, Style, Circle as CircleStyle, RegularShape } from "ol/style";
 import TileLayer from "ol/layer/Tile";
 import LayerGroup from "ol/layer/Group";
 import VectorLayer from "ol/layer/Vector";
@@ -67,13 +67,17 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  contextLayers: {
+    type: Array,
+    default: () => [],
+  },
   disabled: {
     type: Boolean,
     default: false,
   },
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "geometry-validity-change"]);
 const mapElement = ref(null);
 
 let map = null;
@@ -81,6 +85,7 @@ let source = null;
 let vectorLayer = null;
 let contextSource = null;
 let contextLayer = null;
+let contextPointOverlayLayer = null;
 let drawInteraction = null;
 let modifyInteraction = null;
 let snapInteraction = null;
@@ -99,12 +104,186 @@ const geometryTypeForDraw = () => {
   return props.geometryType || "Polygon";
 };
 
+const normalizeGeoData = (payload) => {
+  if (!payload) return null;
+  if (payload.type === "FeatureCollection" && Array.isArray(payload.features)) {
+    return payload;
+  }
+  if (payload.type === "Feature") {
+    return { type: "FeatureCollection", features: [payload] };
+  }
+  if (Array.isArray(payload)) {
+    return { type: "FeatureCollection", features: payload };
+  }
+  if (payload.geometry) {
+    return {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: payload.geometry,
+          properties: payload.properties || {},
+        },
+      ],
+    };
+  }
+  return null;
+};
+
+const hexToRgba = (hexColor, alpha = 0.2) => {
+  if (typeof hexColor !== "string") return `rgba(51, 65, 85, ${alpha})`;
+  const sanitized = hexColor.replace("#", "");
+  if (![3, 6].includes(sanitized.length)) return `rgba(51, 65, 85, ${alpha})`;
+  const normalized = sanitized.length === 3
+    ? sanitized.split("").map((char) => char + char).join("")
+    : sanitized;
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  if ([r, g, b].some((value) => Number.isNaN(value))) return `rgba(51, 65, 85, ${alpha})`;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const buildContextFeatureStyle = (feature) => {
+  const layerStyle = feature?.get?.("__layerStyle") || {};
+  const geometryType = feature?.getGeometry?.()?.getType?.() || "";
+  const strokeColor = layerStyle.strokeColor || "#334155";
+  const strokeWidth = Number.isFinite(layerStyle.strokeWidth) ? layerStyle.strokeWidth : 1.4;
+  const fillOpacity = Number.isFinite(layerStyle.fillOpacity) ? layerStyle.fillOpacity : 0.2;
+  const lineDash = Array.isArray(layerStyle.lineDash) ? layerStyle.lineDash : undefined;
+  const pointRadius = Number.isFinite(layerStyle.pointRadius) ? layerStyle.pointRadius : 6;
+  const pointShape = layerStyle.pointShape || "circle";
+  const pointStrokeColor = layerStyle.pointStrokeColor || "#ffffff";
+  const pointStrokeWidth = Number.isFinite(layerStyle.pointStrokeWidth)
+    ? layerStyle.pointStrokeWidth
+    : 1.3;
+
+  const styleZIndex = (geometryType === "Point" || geometryType === "MultiPoint")
+    ? 32
+    : (geometryType === "LineString" || geometryType === "MultiLineString")
+      ? 24
+      : 12;
+
+  let imageStyle;
+  if (pointShape === "triangle") {
+    imageStyle = new RegularShape({
+      points: 3,
+      radius: pointRadius,
+      fill: new Fill({ color: strokeColor }),
+      stroke: new Stroke({ color: pointStrokeColor, width: pointStrokeWidth }),
+    });
+  } else if (pointShape === "square") {
+    imageStyle = new RegularShape({
+      points: 4,
+      radius: pointRadius,
+      angle: 0,
+      fill: new Fill({ color: strokeColor }),
+      stroke: new Stroke({ color: pointStrokeColor, width: pointStrokeWidth }),
+    });
+  } else if (pointShape === "diamond") {
+    imageStyle = new RegularShape({
+      points: 4,
+      radius: pointRadius,
+      angle: Math.PI / 4,
+      fill: new Fill({ color: strokeColor }),
+      stroke: new Stroke({ color: pointStrokeColor, width: pointStrokeWidth }),
+    });
+  } else {
+    imageStyle = new CircleStyle({
+      radius: pointRadius,
+      fill: new Fill({ color: strokeColor }),
+      stroke: new Stroke({ color: pointStrokeColor, width: pointStrokeWidth }),
+    });
+  }
+
+  return new Style({
+    zIndex: styleZIndex,
+    stroke: new Stroke({
+      color: strokeColor,
+      width: strokeWidth,
+      lineDash,
+    }),
+    fill: new Fill({
+      color: hexToRgba(strokeColor, fillOpacity),
+    }),
+    image: imageStyle,
+  });
+};
+
+const getGeometryType = (feature) => {
+  return feature?.getGeometry?.()?.getType?.() || "";
+};
+
+const isPointGeometry = (feature) => {
+  const geometryType = getGeometryType(feature);
+  return geometryType === "Point" || geometryType === "MultiPoint";
+};
+
+const buildContextBaseStyle = (feature) => {
+  if (isPointGeometry(feature)) return null;
+  return buildContextFeatureStyle(feature);
+};
+
+const buildContextPointOverlayStyle = (feature) => {
+  if (!isPointGeometry(feature)) return null;
+  return buildContextFeatureStyle(feature);
+};
+
 const geometryMatchesType = (geometryType) => {
   if (!geometryType) return false;
   if (props.geometryType === "MultiPolygon") {
     return geometryType === "Polygon" || geometryType === "MultiPolygon";
   }
   return geometryType === props.geometryType;
+};
+
+const computeGeometryValidity = (geometry) => {
+  if (!geometry || !geometry.type) {
+    return { isValid: false, reason: "geometry_required" };
+  }
+
+  if (!geometryMatchesType(geometry.type)) {
+    return { isValid: false, reason: "geometry_type_mismatch" };
+  }
+
+  if (geometry.type === "Point") {
+    const isValidPoint = Array.isArray(geometry.coordinates) && geometry.coordinates.length >= 2;
+    return { isValid: isValidPoint, reason: isValidPoint ? null : "point_coordinates_invalid" };
+  }
+
+  if (geometry.type === "LineString") {
+    const isValidLine = Array.isArray(geometry.coordinates) && geometry.coordinates.length >= 2;
+    return { isValid: isValidLine, reason: isValidLine ? null : "line_coordinates_invalid" };
+  }
+
+  if (geometry.type === "Polygon") {
+    const ring = geometry.coordinates?.[0];
+    const isValidPolygon = Array.isArray(ring) && ring.length >= 4;
+    return { isValid: isValidPolygon, reason: isValidPolygon ? null : "polygon_coordinates_invalid" };
+  }
+
+  if (geometry.type === "MultiPolygon") {
+    const firstRing = geometry.coordinates?.[0]?.[0];
+    const isValidMultiPolygon = Array.isArray(firstRing) && firstRing.length >= 4;
+    return { isValid: isValidMultiPolygon, reason: isValidMultiPolygon ? null : "multipolygon_coordinates_invalid" };
+  }
+
+  return { isValid: false, reason: "unsupported_geometry_type" };
+};
+
+const emitGeometryValidity = (geometry) => {
+  const validity = computeGeometryValidity(geometry);
+  emit("geometry-validity-change", validity);
+};
+
+const keepOnlyLastEditableFeature = () => {
+  if (!source) return;
+  const features = source.getFeatures();
+  if (!Array.isArray(features) || features.length <= 1) return;
+
+  const lastFeature = features[features.length - 1];
+  source.clear();
+  source.addFeature(lastFeature);
 };
 
 const fitToFeatures = () => {
@@ -157,27 +336,51 @@ const syncContextLayer = () => {
   if (!contextSource) return;
 
   contextSource.clear();
-  const payload = props.contextGeoData;
-  if (!payload) return;
 
-  let featureCollection = null;
+  const normalizedLayers = (Array.isArray(props.contextLayers) ? props.contextLayers : [])
+    .filter((layer) => layer && layer.visible !== false)
+    .map((layer, index) => ({
+      id: layer.id || `context_${index + 1}`,
+      data: normalizeGeoData(layer.data),
+      style: layer.style || {},
+    }))
+    .filter((layer) => layer.data);
 
-  if (payload.type === "FeatureCollection" && Array.isArray(payload.features)) {
-    featureCollection = payload;
-  } else if (payload.type === "Feature") {
-    featureCollection = { type: "FeatureCollection", features: [payload] };
-  } else if (Array.isArray(payload)) {
-    featureCollection = { type: "FeatureCollection", features: payload };
+  if (!normalizedLayers.length) {
+    const legacyCollection = normalizeGeoData(props.contextGeoData);
+    if (!legacyCollection) return;
+
+    const legacyFeatures = new GeoJSON().readFeatures(legacyCollection, {
+      dataProjection: "EPSG:4326",
+      featureProjection: "EPSG:3857",
+    });
+
+    legacyFeatures.forEach((feature) => {
+      feature.set("__layerStyle", {
+        strokeColor: "#334155",
+        strokeWidth: 1.2,
+        lineDash: [12, 7],
+        fillOpacity: 0.24,
+      });
+    });
+
+    contextSource.addFeatures(legacyFeatures);
+    return;
   }
 
-  if (!featureCollection) return;
+  normalizedLayers.forEach((layer) => {
+    const features = new GeoJSON().readFeatures(layer.data, {
+      dataProjection: "EPSG:4326",
+      featureProjection: "EPSG:3857",
+    });
 
-  const features = new GeoJSON().readFeatures(featureCollection, {
-    dataProjection: "EPSG:4326",
-    featureProjection: "EPSG:3857",
+    features.forEach((feature) => {
+      feature.set("__layerStyle", layer.style || {});
+      feature.set("__layerId", layer.id);
+    });
+
+    contextSource.addFeatures(features);
   });
-
-  contextSource.addFeatures(features);
 };
 
 const refreshMapSize = () => {
@@ -198,10 +401,11 @@ const refreshMapSize = () => {
 
 const toOutputGeometry = () => {
   if (!source) return null;
+  keepOnlyLastEditableFeature();
   const features = source.getFeatures();
   if (!features.length) return null;
 
-  const feature = features[0].clone();
+  const feature = features[features.length - 1].clone();
   const geometry = feature.getGeometry();
   if (!geometry) return null;
 
@@ -265,11 +469,14 @@ const syncFromModel = () => {
   );
 
   source.addFeature(feature);
+  keepOnlyLastEditableFeature();
   refreshMapSize();
 };
 
 const emitGeometry = () => {
-  emit("update:modelValue", toOutputGeometry());
+  const geometry = toOutputGeometry();
+  emit("update:modelValue", geometry);
+  emitGeometryValidity(geometry);
 };
 
 const removeInteractions = () => {
@@ -298,7 +505,10 @@ const enableDraw = () => {
   });
 
   drawInteraction.on("drawend", (event) => {
-    emit("update:modelValue", toOutputGeometryFromFeature(event.feature));
+    keepOnlyLastEditableFeature();
+    const outputGeometry = toOutputGeometryFromFeature(event.feature);
+    emit("update:modelValue", outputGeometry);
+    emitGeometryValidity(outputGeometry);
     fitToGeometry(event.feature?.getGeometry?.());
     enableModify();
   });
@@ -334,6 +544,7 @@ const clearGeometry = () => {
   if (!source) return;
   source.clear();
   emit("update:modelValue", null);
+  emitGeometryValidity(null);
 };
 
 const applyInteractionMode = () => {
@@ -368,21 +579,19 @@ onMounted(async () => {
   contextLayer = new VectorLayer({
     source: contextSource,
     zIndex: 8,
-    style: new Style({
-      stroke: new Stroke({
-        color: "rgba(51, 65, 85, 1)",
-        width: 1.2,
-        lineDash: [12, 7],
-      }),
-      fill: new Fill({
-        color: "rgba(148, 163, 184, 0.24)",
-      }),
-    }),
+    style: buildContextBaseStyle,
+  });
+
+  contextPointOverlayLayer = new VectorLayer({
+    source: contextSource,
+    zIndex: 16,
+    style: buildContextPointOverlayStyle,
   });
 
   vectorLayer.setZIndex(12);
   vectorLayer.set("displayInLayerSwitcher", false);
   contextLayer.set("displayInLayerSwitcher", false);
+  contextPointOverlayLayer.set("displayInLayerSwitcher", false);
 
   const osmLayer = new TileLayer({
     title: "OpenStreetMap",
@@ -434,6 +643,7 @@ onMounted(async () => {
       overlaysGroup,
       contextLayer,
       vectorLayer,
+      contextPointOverlayLayer,
     ],
     view: new View({
       center: [751000, 5721000],
@@ -457,16 +667,18 @@ onMounted(async () => {
   syncContextLayer();
   syncFromModel();
   applyInteractionMode();
+  emitGeometryValidity(props.modelValue ?? null);
 
   refreshMapSize();
 });
 
 watch(
   () => props.modelValue,
-  () => {
+  (newValue) => {
     syncFromModel();
     applyInteractionMode();
     refreshMapSize();
+    emitGeometryValidity(newValue ?? null);
   },
   { deep: true }
 );
@@ -487,6 +699,29 @@ watch(
   { deep: true }
 );
 
+watch(
+  () => props.contextLayers,
+  () => {
+    syncContextLayer();
+    refreshMapSize();
+  },
+  { deep: true }
+);
+
+watch(
+  () => props.geometryType,
+  (newType, oldType) => {
+    if (!map || !source) return;
+    if (newType === oldType) return;
+
+    source.clear();
+    emit("update:modelValue", null);
+    emitGeometryValidity(null);
+    applyInteractionMode();
+    refreshMapSize();
+  }
+);
+
 onBeforeUnmount(() => {
   if (resizeObserver) {
     resizeObserver.disconnect();
@@ -500,6 +735,7 @@ onBeforeUnmount(() => {
   }
   contextSource = null;
   contextLayer = null;
+  contextPointOverlayLayer = null;
 });
 </script>
 

@@ -1,0 +1,26 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ("alpages", "0095_audit_fields_nomenclatures"),
+    ]
+
+    operations = [
+        migrations.AlterField(
+            model_name="abridurgence",
+            name="modified_on",
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AlterField(
+            model_name="typeequipement",
+            name="modified_on",
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AlterField(
+            model_name="typeevenement",
+            name="modified_on",
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+    ]

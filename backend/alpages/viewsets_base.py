@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,48 @@ class BaseModelViewSet(ModelViewSet):
         if qs is not None:
             return qs.all() if hasattr(qs, 'all') else qs
         return self.get_queryset()
+
+    def _get_model_field_names(self, serializer):
+        model = getattr(getattr(serializer, 'Meta', None), 'model', None)
+        if model is None:
+            return set()
+        return {field.name for field in model._meta.concrete_fields}
+
+    def _get_actor_name(self):
+        request = getattr(self, 'request', None)
+        user = getattr(request, 'user', None)
+        if not user or not getattr(user, 'is_authenticated', False):
+            return None
+        if hasattr(user, 'get_username'):
+            return user.get_username() or None
+        return getattr(user, 'username', None)
+
+    def _audit_save_kwargs(self, serializer, is_create):
+        actor = self._get_actor_name()
+        if not actor:
+            return {}
+
+        field_names = self._get_model_field_names(serializer)
+        save_kwargs = {}
+
+        if is_create and 'created_by' in field_names:
+            save_kwargs['created_by'] = actor
+
+        if (not is_create) and 'modified_by' in field_names:
+            save_kwargs['modified_by'] = actor
+
+        if (not is_create) and 'modified_on' in field_names:
+            save_kwargs['modified_on'] = timezone.now()
+
+        return save_kwargs
+
+    def perform_create(self, serializer):
+        save_kwargs = self._audit_save_kwargs(serializer, is_create=True)
+        serializer.save(**save_kwargs)
+
+    def perform_update(self, serializer):
+        save_kwargs = self._audit_save_kwargs(serializer, is_create=False)
+        serializer.save(**save_kwargs)
 
     def create(self, request, *args, **kwargs):
         logger.debug(f"BaseModelViewset {self.__class__.__name__} - Received data for creation: {request.data}")

@@ -8,8 +8,22 @@ from .choices_logement import LST_STATUT, LST_ACCES_FINAL, LST_PROPRIETE, LST_TY
                               LST_WC, LST_ALIM_ELECTRIQUE, LST_ALIM_EAU, LST_ORIGINE_EAU, LST_QUALITE_EAU, \
                               LST_DISPO_EAU, LST_ASSAINISSEMENT, LST_CHAUFFE_EAU, LST_OUI_NON, LST_OUI_NON_INC
 
+
+class AuditFieldsMixin(models.Model):
+    """
+    Champs de traçabilité réutilisables.
+    """
+
+    created_by = models.CharField(max_length=150, null=True, blank=True)
+    created_on = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    modified_by = models.CharField(max_length=150, null=True, blank=True)
+    modified_on = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
 # Bloc administratif (orange)
-class UnitePastorale(models.Model):
+class UnitePastorale(AuditFieldsMixin, models.Model):
     """
     Unité pastorales
     """
@@ -26,7 +40,7 @@ class UnitePastorale(models.Model):
     def __str__(self):
         return str(self.nom_up)
     
-class ProprietaireFoncier(models.Model):
+class ProprietaireFoncier(AuditFieldsMixin, models.Model):
     """
     Proprétaire foncier
     """
@@ -42,7 +56,7 @@ class ProprietaireFoncier(models.Model):
     def __str__(self):
         return str(self.nom_propr)
     
-class ProprietaireUnitePastorale(models.Model):
+class ProprietaireUnitePastorale(AuditFieldsMixin, models.Model):
     """
     Association Propriétaire foncier / Unité pastorale
     """
@@ -53,7 +67,7 @@ class ProprietaireUnitePastorale(models.Model):
     def __str__(self):
         return f"{self.proprietaire} est propriétaire de {self.unite_pastorale}"
     
-class QuartierPasto(models.Model):
+class QuartierPasto(AuditFieldsMixin, models.Model):
     """
     Quartier d'alpage
     """
@@ -84,7 +98,7 @@ class QuartierPasto(models.Model):
     
 
 # Bloc plans de suivi (bleu)
-class TypeDeSuivi(models.Model):
+class TypeDeSuivi(AuditFieldsMixin, models.Model):
     """
     Type de Suivi
     """
@@ -95,7 +109,7 @@ class TypeDeSuivi(models.Model):
     def __str__(self):
         return str(self.description)
 
-class PlanDeSuivi(models.Model):
+class PlanDeSuivi(AuditFieldsMixin, models.Model):
     """
     Plan de Suivi
     """
@@ -111,7 +125,7 @@ class PlanDeSuivi(models.Model):
         return str(self.description)
     
 # Type_de_mesure
-class TypeDeMesure(models.Model):
+class TypeDeMesure(AuditFieldsMixin, models.Model):
     """
     Type de mesure
     """
@@ -124,7 +138,7 @@ class TypeDeMesure(models.Model):
 
 
 # Mesure_de_plan
-class MesureDePlan(models.Model):
+class MesureDePlan(AuditFieldsMixin, models.Model):
     """
     Mesure de plan
     """
@@ -143,7 +157,7 @@ class MesureDePlan(models.Model):
 
 
 # Bloc exploitation
-class TypeConvention(models.Model):
+class TypeConvention(AuditFieldsMixin, models.Model):
     """
     Type de convention
     """
@@ -155,7 +169,7 @@ class TypeConvention(models.Model):
         return str(self.description)
 
 
-class ConventionDExploitation(models.Model):
+class ConventionDExploitation(AuditFieldsMixin, models.Model):
     """
     Convention d'exploitation
     """
@@ -180,7 +194,7 @@ class ConventionDExploitation(models.Model):
         return str(self.id_convention)
     
 
-class SituationDExploitation(models.Model):
+class SituationDExploitation(AuditFieldsMixin, models.Model):
     """
     Situation d'exploitation
     """
@@ -223,7 +237,7 @@ class SituationDExploitation(models.Model):
         return str(self.nom_situation)
 
 # Exploiter = (#id_quartier, #id_situation, date_debut DATE, date_fin DATE, commmentaire VARCHAR(500));
-class Exploiter(models.Model):
+class Exploiter(AuditFieldsMixin, models.Model):
     """
     Exploiter
     """
@@ -316,7 +330,7 @@ class Exploiter(models.Model):
         return f"{self.cheptel} exploite {self.quartier}"
 
 
-class Eleveur(models.Model):
+class Eleveur(AuditFieldsMixin, models.Model):
     """
     Eleveur
     """
@@ -332,7 +346,7 @@ class Eleveur(models.Model):
     def __str__(self):
         return str(self.nom_eleveur)
 
-class TypeDExploitant(models.Model):
+class TypeDExploitant(AuditFieldsMixin, models.Model):
     """
     Type d'exploitant
     """
@@ -344,7 +358,7 @@ class TypeDExploitant(models.Model):
         return str(self.description) 
 
 
-class Exploitant(models.Model):
+class Exploitant(AuditFieldsMixin, models.Model):
     """
     Exploitant
     """
@@ -358,7 +372,7 @@ class Exploitant(models.Model):
     def __str__(self):
         return str(self.nom_exploitant)
 
-class EtreCompose(models.Model):
+class EtreCompose(AuditFieldsMixin, models.Model):
     """
     EtreCompose (association exploitant / éleveurs)
     """
@@ -371,7 +385,7 @@ class EtreCompose(models.Model):
     def __str__(self):
         return f"{self.eleveur} est membre de {self.exploitant}"
     
-class SubventionPNV(models.Model):
+class SubventionPNV(AuditFieldsMixin, models.Model):
     """
     Subvention PNV
     """
@@ -386,7 +400,7 @@ class SubventionPNV(models.Model):
     def __str__(self):
         return str(self.description)
 
-class Logement(models.Model):
+class Logement(AuditFieldsMixin, models.Model):
     """
     Classe Logement
     Champs et valeurs issues des échanges avec la SEA73
@@ -422,7 +436,7 @@ class Logement(models.Model):
     geom = models.PointField(srid=2154, null=True)
 
 
-class Commodite(models.Model):
+class Commodite(AuditFieldsMixin, models.Model):
     """
     Commodite
     """
@@ -434,7 +448,7 @@ class Commodite(models.Model):
         return str(self.description)
     
 
-class LogementCommodite(models.Model):
+class LogementCommodite(AuditFieldsMixin, models.Model):
     """
     Association Logement / Commodite
     """
@@ -451,7 +465,7 @@ class LogementCommodite(models.Model):
         return f"{self.logement} a {self.quantite} de {self.commodite}"
 
 
-class AbriDUrgence(models.Model):
+class AbriDUrgence(AuditFieldsMixin, models.Model):
     """
     Abri d'urgence
     """
@@ -459,17 +473,13 @@ class AbriDUrgence(models.Model):
     id_abri_urgence = models.BigIntegerField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
-    created_by = models.CharField(max_length=50, null=True, blank=True)
-    created_on = models.DateTimeField(null=True, blank=True)
-    modified_by = models.CharField(max_length=50, null=True, blank=True)
-    modified_on = models.DateTimeField(null=True, blank=True)
     
     
     def __str__(self):
         return str(self.description)
 
 
-class AbriDUrgenceCommodite(models.Model):
+class AbriDUrgenceCommodite(AuditFieldsMixin, models.Model):
     """
     Association Abri d'urgence / Commodite
     """
@@ -487,7 +497,7 @@ class AbriDUrgenceCommodite(models.Model):
 
 
 
-class BeneficierDe(models.Model):
+class BeneficierDe(AuditFieldsMixin, models.Model):
     """
     Association Exploitant / Abri d'urgence
     """
@@ -503,7 +513,7 @@ class BeneficierDe(models.Model):
         return f"{self.exploitant} bénéficie de {self.abri_urgence}"
     
 # Ruche / Berger / Type Cheptel
-class Ruche(models.Model):
+class Ruche(AuditFieldsMixin, models.Model):
     """
     Ruche
     """
@@ -516,7 +526,7 @@ class Ruche(models.Model):
     def __str__(self):
         return str(self.description)
 
-class Berger(models.Model):
+class Berger(AuditFieldsMixin, models.Model):
     """
     Berger
     """
@@ -531,7 +541,7 @@ class Berger(models.Model):
     def __str__(self):
         return str(self.nom_berger)
 
-class GardeSituation(models.Model):
+class GardeSituation(AuditFieldsMixin, models.Model):
     """
     Garde situation
     """
@@ -549,7 +559,7 @@ class GardeSituation(models.Model):
 ##################
 # Mise à jour Cheptels / types de cheptel
 # le 9/2/26
-class Production(models.Model):
+class Production(AuditFieldsMixin, models.Model):
     """
     Production
     """
@@ -560,7 +570,7 @@ class Production(models.Model):
     def __str__(self):
         return str(self.description)
 
-class Categorie_pension(models.Model):
+class Categorie_pension(AuditFieldsMixin, models.Model):
     """
     Catégorie de pension
     """
@@ -571,7 +581,7 @@ class Categorie_pension(models.Model):
     def __str__(self):
         return str(self.description)
 
-class Espece(models.Model):
+class Espece(AuditFieldsMixin, models.Model):
     """
     Espèce
     """
@@ -582,7 +592,7 @@ class Espece(models.Model):
     def __str__(self):
         return str(self.description)
 
-class Race(models.Model):
+class Race(AuditFieldsMixin, models.Model):
     """
     Race
     """
@@ -594,7 +604,7 @@ class Race(models.Model):
     def __str__(self):
         return str(self.description)
 
-class Categorie_animaux(models.Model):
+class Categorie_animaux(AuditFieldsMixin, models.Model):
     """
     Catégorie d'animaux
     """
@@ -606,7 +616,7 @@ class Categorie_animaux(models.Model):
     def __str__(self):
         return str(self.description)
 
-class Cheptel(models.Model):
+class Cheptel(AuditFieldsMixin, models.Model):
     """
     Cheptel
     """
@@ -625,7 +635,7 @@ class Cheptel(models.Model):
     def __str__(self):
         return f"{self.eleveur} élève {self.type_cheptel} dans la situation {self.situation_exploitation}"
 
-class Type_cheptel(models.Model):
+class Type_cheptel(AuditFieldsMixin, models.Model):
     """
     Type de cheptel
     """
@@ -653,7 +663,7 @@ class Type_cheptel(models.Model):
 ##################
 
 # Evénements
-class TypeEvenement(models.Model):
+class TypeEvenement(AuditFieldsMixin, models.Model):
     """
     Type d'événement
     """
@@ -664,7 +674,7 @@ class TypeEvenement(models.Model):
     def __str__(self):
         return str(self.description)
 
-class Evenement(models.Model):
+class Evenement(AuditFieldsMixin, models.Model):
     """
     Evenement
     """
@@ -689,7 +699,7 @@ class Evenement(models.Model):
 
 
 # EQUIPEMENTS
-class TypeEquipement(models.Model):
+class TypeEquipement(AuditFieldsMixin, models.Model):
     """
     Type d'équipement
     """
@@ -701,7 +711,7 @@ class TypeEquipement(models.Model):
     def __str__(self):
         return str(self.description)
 
-class EquipementAlpage(models.Model):
+class EquipementAlpage(AuditFieldsMixin, models.Model):
     """
     Equipement d'alpage (lié à l'UP)
     """
@@ -713,7 +723,7 @@ class EquipementAlpage(models.Model):
     type_equipement = models.ForeignKey('alpages.TypeEquipement', on_delete=models.SET_NULL, blank=True, null=True, related_name='eqptsAlpage')
     unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.SET_NULL, blank=True, null=True, related_name='eqptsAlpage')
 
-class EquipementExploitant(models.Model):
+class EquipementExploitant(AuditFieldsMixin, models.Model):
     """
     Equipement d'exploitant
     """

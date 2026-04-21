@@ -17,9 +17,38 @@ from alpages.models import TypeEquipement, EquipementAlpage, EquipementExploitan
 from alpages.models import Production, Categorie_pension, Race, Categorie_animaux, Espece, Cheptel, Type_cheptel
 
 
+AUDIT_FIELD_NAMES = (
+    'created_by',
+    'created_on',
+    'modified_by',
+    'modified_on',
+)
+
+
+class AuditReadOnlyFieldsMixin:
+    """Expose and lock audit fields when they exist on the model."""
+
+    def get_fields(self):
+        fields = super().get_fields()
+        model = getattr(getattr(self, 'Meta', None), 'model', None)
+        if model is None:
+            return fields
+
+        model_field_names = {field.name for field in model._meta.concrete_fields}
+        for field_name in AUDIT_FIELD_NAMES:
+            if field_name not in model_field_names:
+                continue
+            if field_name in fields:
+                fields[field_name].read_only = True
+            else:
+                fields[field_name] = serializers.ReadOnlyField()
+
+        return fields
+
+
 
 # Bloc administratif (orange)
-class UnitePastoraleSerializer(GeoFeatureModelSerializer):
+class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     proprios = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
     )
@@ -108,14 +137,14 @@ class UnitePastoraleSerializer(GeoFeatureModelSerializer):
 
 
 # light serializer, pour les listes
-class UnitePastoraleLSerializer(serializers.ModelSerializer):
+class UnitePastoraleLSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     class Meta:
         model = UnitePastorale
         fields = [ 'id_unite_pastorale', 'nom_up', 'secteur' ]
 
 
-class ProprietaireFoncierSerializer(serializers.ModelSerializer):
+class ProprietaireFoncierSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     unites_pastorales = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     
     class Meta:
@@ -123,14 +152,14 @@ class ProprietaireFoncierSerializer(serializers.ModelSerializer):
         fields = [ 'id_proprietaire', 'nom_propr', 'prenom_propr',
                   'tel_propr', 'mail_propr', 'adresse_propr', 'commentaire', 'unites_pastorales' ]
 
-class ProprietaireUnitePastoraleSerializer(serializers.ModelSerializer):
+class ProprietaireUnitePastoraleSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     class Meta:
         model = ProprietaireUnitePastorale
         fields = [ 'proprietaire', 'unite_pastorale' ]
 
 
-class QuartierPastoSerializer(GeoFeatureModelSerializer):
+class QuartierPastoSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     
     class Meta:
         model = QuartierPasto
@@ -166,12 +195,12 @@ class QuartierPastoSerializer(GeoFeatureModelSerializer):
         return data
 
 # Bloc plans de suivi (bleu)
-class TypeDeSuiviSerializer(serializers.ModelSerializer):
+class TypeDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = TypeDeSuivi
         fields = [ 'id_type_suivi', 'description' ]
 
-class PlanDeSuiviSerializer(serializers.ModelSerializer):
+class PlanDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     unite_pastorale = serializers.PrimaryKeyRelatedField(
         queryset = UnitePastorale.objects.all(),
         allow_null = True
@@ -192,12 +221,12 @@ class PlanDeSuiviSerializer(serializers.ModelSerializer):
         model = PlanDeSuivi
         fields = [ 'id_plan_suivi', 'description', 'date_debut', 'date_fin', 'type_suivi', 'type_suivi_detail', 'unite_pastorale', 'unite_pastorale_detail' ]
 
-class TypeDeMesureSerializer(serializers.ModelSerializer):
+class TypeDeMesureSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = TypeDeMesure
         fields = [ 'id_type_mesure', 'description' ]
 
-class MesureDePlanSerializer(serializers.ModelSerializer):
+class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     plan_suivi = serializers.PrimaryKeyRelatedField(
         queryset = PlanDeSuivi.objects.all(),
         allow_null = True
@@ -219,13 +248,13 @@ class MesureDePlanSerializer(serializers.ModelSerializer):
         fields = [ 'id_mesure_plan', 'description', 'commentaire', 'debut_periode', 'fin_periode', 'type_mesure', 'type_mesure_detail', 'plan_suivi', 'plan_suivi_detail' ]
 
 # Bloc expoitation
-class TypeConventionSerializer(serializers.ModelSerializer):
+class TypeConventionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     class Meta:
         model = TypeConvention
         fields = [ 'id_type_convention', 'description' ]
 
-class ConventionDExploitationSerializer(GeoFeatureModelSerializer):
+class ConventionDExploitationSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     type_convention = serializers.PrimaryKeyRelatedField(
         queryset = TypeConvention.objects.all(), allow_null = True
     )
@@ -248,7 +277,7 @@ class ConventionDExploitationSerializer(GeoFeatureModelSerializer):
     
 
 
-class SituationDExploitationSerializer(serializers.ModelSerializer):
+class SituationDExploitationSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
 
     unite_pastorale = serializers.PrimaryKeyRelatedField(
         queryset = UnitePastorale.objects.all(),
@@ -277,7 +306,7 @@ class SituationDExploitationSerializer(serializers.ModelSerializer):
                   'exploitant', 'exploitant_nom', 'unite_pastorale', 'unite_pastorale_detail' ]
     
 
-class ExploiterSerializer(serializers.ModelSerializer):
+class ExploiterSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     nombre_animaux = serializers.IntegerField(required=False, allow_null=True, min_value=0)
     quartier_nom = serializers.CharField(source='quartier.nom_quartier', read_only=True)
@@ -358,7 +387,7 @@ class ExploiterSerializer(serializers.ModelSerializer):
                   'quartier_nom', 'cheptel_nom', 'cheptel_nombre_animaux', 'tous_troupeaux', 'situation_exploitation' ]
             
 
-class EleveurSerializer(serializers.ModelSerializer):
+class EleveurSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
 
     nom_complet = serializers.SerializerMethodField()
     
@@ -372,14 +401,14 @@ class EleveurSerializer(serializers.ModelSerializer):
         prenom = obj.prenom_eleveur or ""
         return f"{nom} {prenom}".strip()
         
-class TypeDExploitantSerializer(serializers.ModelSerializer):
+class TypeDExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     class Meta:
         model = TypeDExploitant
         fields = [ 'id_type_exploitant', 'description' ]
     
 
-class ExploitantSerializer(serializers.ModelSerializer):
+class ExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     membres = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
     )
@@ -443,13 +472,13 @@ class ExploitantSerializer(serializers.ModelSerializer):
         return instance
 
        
-class EtreComposeSerializer(serializers.ModelSerializer):
+class EtreComposeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     class Meta:
         model = EtreCompose
         fields = [ 'exploitant', 'eleveur' ]
 
-class SubventionPNVSerializer(serializers.ModelSerializer):
+class SubventionPNVSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     exploitant = serializers.PrimaryKeyRelatedField(
         queryset = Exploitant.objects.all(),
@@ -464,7 +493,7 @@ class SubventionPNVSerializer(serializers.ModelSerializer):
         model = SubventionPNV
         fields = [ 'id_subvention', 'description', 'montant', 'engage', 'paye', 'exploitant', 'exploitant_detail' ]
 
-class LogementSerializer(GeoFeatureModelSerializer):
+class LogementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     unite_pastorale = serializers.PrimaryKeyRelatedField(
         queryset = UnitePastorale.objects.all(),
         allow_null = True
@@ -486,13 +515,13 @@ class LogementSerializer(GeoFeatureModelSerializer):
         
         return super().to_representation(instance)
 
-class CommoditeSerializer(serializers.ModelSerializer):
+class CommoditeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     class Meta:
         model = Commodite
         fields = [ 'id_commodite', 'description']
 
-class LogementCommoditeSerializer(serializers.ModelSerializer):
+class LogementCommoditeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     logement_code = serializers.CharField(source='logement.logement_code', read_only=True)
     commodite_desc = serializers.CharField(source='commodite.description', read_only=True)
     
@@ -501,15 +530,16 @@ class LogementCommoditeSerializer(serializers.ModelSerializer):
         fields = [ 'id_logement_commodite', 'logement', 'commodite', 'etat', 'commentaire', 'quantite', 'logement_code', 'commodite_desc' ]
         
 
-class AbriDUrgenceSerializer(serializers.ModelSerializer):
+class AbriDUrgenceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
         
         class Meta:
             model = AbriDUrgence
-            fields = [ 'id_abri_urgence', 'description', 'etat', 'created_by', 'created_on', 'modified_by', 'modified_on' ]        
+            fields = [ 'id_abri_urgence', 'description', 'etat', 'created_by', 'created_on', 'modified_by', 'modified_on' ]
+            read_only_fields = ['created_by', 'created_on', 'modified_by', 'modified_on']
 
 
 
-class AbriDUrgenceCommoditeSerializer(serializers.ModelSerializer):
+class AbriDUrgenceCommoditeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     abri_urgence_description = serializers.CharField(source='abri_urgence.description', read_only=True)
     commodite_desc = serializers.CharField(source='commodite.description', read_only=True)
     
@@ -520,7 +550,7 @@ class AbriDUrgenceCommoditeSerializer(serializers.ModelSerializer):
 
 
 
-class BeneficierDeSerializer(GeoFeatureModelSerializer):
+class BeneficierDeSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     
     exploitant_nom = serializers.SerializerMethodField() # CharField(source='exploitant.nom_exploitant', read_only=True)
     abri_description = serializers.SerializerMethodField() #CharField(source='abri_urgence.description', read_only=True)
@@ -557,7 +587,7 @@ class BeneficierDeSerializer(GeoFeatureModelSerializer):
         return super().to_representation(instance)
 
 # Ruche / Berger / type_cheptel
-class RucheSerializer(GeoFeatureModelSerializer):
+class RucheSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     
     class Meta:
         model = Ruche
@@ -571,13 +601,13 @@ class RucheSerializer(GeoFeatureModelSerializer):
         
         return super().to_representation(instance)
 
-class BergerSerializer(serializers.ModelSerializer):
+class BergerSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     class Meta:
         model = Berger
         fields = [ 'id_berger', 'nom_berger', 'prenom_berger', 'adresse_berger', 'tel_berger', 'commentaire' ]
 
-class GardeSituationSerializer(serializers.ModelSerializer):
+class GardeSituationSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     berger_nom = serializers.CharField(source='berger.nom_berger', read_only=True)
     berger_prenom = serializers.CharField(source='berger.prenom_berger', read_only=True)
@@ -594,7 +624,7 @@ class GardeSituationSerializer(serializers.ModelSerializer):
 ##################
 # Mise à jour Cheptels / types de cheptel
 # le 9/2/26
-class ProductionSerializer(serializers.ModelSerializer):
+class ProductionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Production
     """
@@ -603,7 +633,7 @@ class ProductionSerializer(serializers.ModelSerializer):
         model = Production
         fields = [ 'id_production', 'description' ]
 
-class Categorie_pensionSerializer(serializers.ModelSerializer):
+class Categorie_pensionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Catégorie de pension
     """
@@ -612,7 +642,7 @@ class Categorie_pensionSerializer(serializers.ModelSerializer):
         model = Categorie_pension
         fields = [ 'id_categorie_pension', 'description' ]
 
-class EspeceSerializer(serializers.ModelSerializer):
+class EspeceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Espèce
     """
@@ -621,7 +651,7 @@ class EspeceSerializer(serializers.ModelSerializer):
         model = Espece
         fields = [ 'id_espece', 'description' ]
 
-class RaceSerializer(serializers.ModelSerializer):
+class RaceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Race
     """
@@ -632,7 +662,7 @@ class RaceSerializer(serializers.ModelSerializer):
         model = Race
         fields = [ 'id_race', 'description', 'espece', 'espece_description' ]
 
-class Categorie_animauxSerializer(serializers.ModelSerializer):
+class Categorie_animauxSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Catégorie d'animaux
     """
@@ -641,7 +671,7 @@ class Categorie_animauxSerializer(serializers.ModelSerializer):
         model = Categorie_animaux
         fields = [ 'id_categorie_animaux', 'description', 'espece' ]
 
-class Type_cheptelSerializer(serializers.ModelSerializer):
+class Type_cheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Type de cheptel
     """
@@ -650,7 +680,7 @@ class Type_cheptelSerializer(serializers.ModelSerializer):
         model = Type_cheptel
         fields = [ 'id_type_cheptel', 'description', 'coefficient_UGB', 'production', 'pension', 'race', 'categorie_animaux' ]
         
-class CheptelSerializer(serializers.ModelSerializer):
+class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Cheptel
     """
@@ -702,14 +732,22 @@ class CheptelSerializer(serializers.ModelSerializer):
 
 
 # Evenements
-class TypeEvenementSerializer(serializers.ModelSerializer):
+class TypeEvenementSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     class Meta:
         model = TypeEvenement
-        fields = [ 'id_type_evenement', 'description' ]
+        fields = [
+            'id_type_evenement',
+            'description',
+            'created_by',
+            'created_on',
+            'modified_by',
+            'modified_on',
+        ]
+        read_only_fields = ['created_by', 'created_on', 'modified_by', 'modified_on']
 
 
-class EvenementSerializer(GeoFeatureModelSerializer):
+class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     type_evenement_label = serializers.SerializerMethodField()
     
     class Meta:
@@ -789,14 +827,23 @@ class EvenementSerializer(GeoFeatureModelSerializer):
         return super().to_representation(instance)
 
 
-class TypeEquipementSerializer(serializers.ModelSerializer):    
+class TypeEquipementSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = TypeEquipement
-        fields = [ 'id_type_equipement', 'description', 'categorie' ]
+        fields = [
+            'id_type_equipement',
+            'description',
+            'categorie',
+            'created_by',
+            'created_on',
+            'modified_by',
+            'modified_on',
+        ]
+        read_only_fields = ['created_by', 'created_on', 'modified_by', 'modified_on']
 
 
 
-class EquipementAlpageSerializer(GeoFeatureModelSerializer):
+class EquipementAlpageSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     type_equipement = serializers.PrimaryKeyRelatedField(
         queryset = TypeEquipement.objects.filter(categorie__iexact='Alpage'),
         allow_null = True,
@@ -826,7 +873,7 @@ class EquipementAlpageSerializer(GeoFeatureModelSerializer):
         
         return super().to_representation(instance)
     
-class EquipementExploitantSerializer(GeoFeatureModelSerializer):
+class EquipementExploitantSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     type_equipement = serializers.PrimaryKeyRelatedField(
         queryset = TypeEquipement.objects.filter(categorie__iexact='Exploitant'),
         allow_null = True,

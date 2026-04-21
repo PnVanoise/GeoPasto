@@ -643,6 +643,10 @@ class TypeEvenementSerializerFieldsTest(TestCase):
         data = TypeEvenementSerializer(te).data
         self.assertIn('id_type_evenement', data)
         self.assertIn('description', data)
+        self.assertIn('created_by', data)
+        self.assertIn('created_on', data)
+        self.assertIn('modified_by', data)
+        self.assertIn('modified_on', data)
 
 
 class TypeEquipementSerializerFieldsTest(TestCase):
@@ -654,6 +658,10 @@ class TypeEquipementSerializerFieldsTest(TestCase):
         self.assertIn('id_type_equipement', data)
         self.assertIn('description', data)
         self.assertIn('categorie', data)
+        self.assertIn('created_by', data)
+        self.assertIn('created_on', data)
+        self.assertIn('modified_by', data)
+        self.assertIn('modified_on', data)
 
 
 class AbriDUrgenceSerializerFieldsTest(TestCase):
@@ -665,3 +673,7 @@ class AbriDUrgenceSerializerFieldsTest(TestCase):
         self.assertIn('id_abri_urgence', data)
         self.assertIn('description', data)
         self.assertIn('etat', data)
+        self.assertIn('created_by', data)
+        self.assertIn('created_on', data)
+        self.assertIn('modified_by', data)
+        self.assertIn('modified_on', data)

@@ -42,3 +42,23 @@ class ViewsetsSmokeTest(APITestCase):
         url = reverse('abridurgence-list')
         resp = self.client.post(url, {'id_abri_urgence': 30, 'description': 'A30', 'etat': 'OK'}, format='json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data.get('created_by'), 'vtest')
+        self.assertIsNone(resp.data.get('modified_by'))
+        self.assertIsNone(resp.data.get('modified_on'))
+
+    def test_type_evenement_endpoint_create_sets_audit_fields(self):
+        url = reverse('typeevenement-list')
+        resp = self.client.post(url, {'id_type_evenement': 30, 'description': 'Meteo'}, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data.get('created_by'), 'vtest')
+        self.assertIsNone(resp.data.get('modified_by'))
+        self.assertIsNone(resp.data.get('modified_on'))
+
+    def test_type_equipement_endpoint_create_sets_audit_fields(self):
+        url = reverse('typeequipement-list')
+        payload = {'id_type_equipement': 30, 'description': 'Passerelle', 'categorie': 'Alpage'}
+        resp = self.client.post(url, payload, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data.get('created_by'), 'vtest')
+        self.assertIsNone(resp.data.get('modified_by'))
+        self.assertIsNone(resp.data.get('modified_on'))

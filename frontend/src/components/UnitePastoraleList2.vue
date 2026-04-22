@@ -12,6 +12,7 @@
         itemLabel="une unité pastorale"
         idField="id"
         :columns="columns"
+        :filters="upFilters"
         :formComponent="UnitePastoraleForm2"
         :bgColor="'#808080'"
       />
@@ -46,7 +47,25 @@ import UnitePastoraleForm2 from "./UnitePastoraleForm2.vue";
 const columns = [
   { field: "nom_up", label: "UP", sortable: true },
   { field: "annee_version", label: "Année", sortable: true },
+  { field: "version_active", label: "Version active", sortable: true },
 ];
+
+const upFilters = ref([
+  {
+    key: "annee_courante",
+    type: "checkbox",
+    label: `Année courante (${new Date().getFullYear()})`,
+    default: true,
+    apply: (rows, value) => !value ? rows : rows.filter(r => r.annee_version === new Date().getFullYear())
+  },
+  {
+    key: "version_active",
+    type: "checkbox",
+    label: "Version active",
+    default: false,
+    apply: (rows, value) => !value ? rows : rows.filter(r => r.version_active === value)
+  }
+]);
 
 const isLoading = ref(true);
 const router = useRouter();

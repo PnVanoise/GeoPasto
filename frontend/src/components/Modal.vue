@@ -49,6 +49,8 @@ const handleOverlayClick = () => {
   border-radius: 8px;
   min-width: 400px;
   max-width: 90%;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
   position: relative;
 }
 .modal-close {
@@ -63,5 +65,15 @@ const handleOverlayClick = () => {
 
 :global(.eqpt-select-menu-overlay) {
   z-index: 2600 !important;
+}
+
+@media (max-width: 700px) {
+  .modal-content {
+    min-width: 0;
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    padding: 1rem;
+    border-radius: 6px;
+  }
 }
 </style>

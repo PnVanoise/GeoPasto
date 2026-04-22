@@ -140,12 +140,27 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
   };
 
   const deleteItem = async (payload, extraQueryParams = null) => {
-    const id = resolveItemId(payload);
-    if (!hasValidId(id)) throw new Error(`ID introuvable pour ${idField}`);
+  const id = resolveItemId(payload);
+  if (!hasValidId(id)) throw new Error(`ID introuvable pour ${idField}`);
+  try {
     await auth.axiosInstance.delete(`${config.API_BASE_URL}/api/${apiRouteName}/${id}/`);
     mainStore.setSuccessMessage("Supprimé !");
     await fetchAll(null, extraQueryParams);
-  };
+  } catch (err) {
+    // Extraire message back-end si possible
+    console.log('err :', err);
+    const backendMessage =
+      err?.response?.data?.detail ||
+      err?.response?.data?.message ||
+      (typeof err?.response?.data === "string" ? err.response.data : null) ||
+      err?.message ||
+      "Erreur lors de la suppression.";
+    mainStore.setErrorMessage(backendMessage);
+    console.error("Erreur suppression:", err);
+    alert(backendMessage); // Optionnel : afficher une alerte immédiate
+    throw err; // optionnel : laisser remonter si l'appelant veut réagir
+  }
+};
 
   // Open add modal, optionally with an initial item to prefill the form
   const openAdd = async (initialItem = null) => {

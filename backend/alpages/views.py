@@ -626,7 +626,7 @@ class QuartierPastoViewset(BaseModelViewSet):
             queryset = queryset.filter(situation_exploitation_id=id_situation)
 
         return queryset
-    
+        
     # def get_queryset(self):
     #     queryset = QuartierPasto.objects.all().order_by('unite_pastorale', 'code_quartier')
 

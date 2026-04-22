@@ -463,20 +463,44 @@ function handleDelete(item) {
   height: 40px;
 }
 
-/* Responsive: stack on small screens */
-@media (max-width: 600px) {
+/* Responsive: stack search, filters, then actions on small screens */
+@media (max-width: 900px) {
   .header-actions {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
-  .header-actions .search-field,
-  .header-actions .add-btn {
-    flex: 1 1 auto;
-    margin-left: 0;
+
+  .header-left {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .header-actions .search-field {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+    margin: 0;
+  }
+
+  .header-left > div:not(.search-field) {
+    flex: 0 0 auto;
+    margin: 0 !important;
   }
 
   .header-right {
+    width: 100%;
     margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-actions .add-btn {
+    margin-left: 0 !important;
   }
 }
 </style>

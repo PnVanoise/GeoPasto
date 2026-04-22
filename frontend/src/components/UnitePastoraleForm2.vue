@@ -94,7 +94,7 @@
               modelName="situationdexploitation"
               apiRouteName="situationExploitation"
               itemLabel="une situation"
-              idField="id"
+              idField="id_situation"
               :columns="situGridColumns"
               :formComponent="SituationExploitationForm2"
               :bgColor="'#154889'"
@@ -529,6 +529,11 @@ const closeModal = () => {
 }
 
 .up-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+
+.up-form :deep(.v-label),
+.up-form :deep(.v-chip__content) {
   font-size: 0.82rem;
 }
 

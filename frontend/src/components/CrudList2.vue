@@ -25,6 +25,8 @@
               v-model="activeFilters[filter.key]"
               :label="filter.label"
               dense
+              flat
+              color="primary"
               hide-details
               density="compact"
             />

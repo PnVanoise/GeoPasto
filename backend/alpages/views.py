@@ -1,7 +1,16 @@
 import logging
-from django.db.models import Q
-from rest_framework import status
+from calendar import monthrange
+from datetime import date
+
+from django.db import transaction
+from django.db.models import Max, Q
+
+from django.contrib.gis.geos import MultiPolygon
+from django.contrib.gis.db.models import Union
+from django.contrib.gis.db.models.functions import Transform, MakeValid, SnapToGrid
+
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.decorators import api_view, action
 
 from .pagination import DefaultPagination
@@ -149,124 +158,246 @@ class SituationDExploitationViewset(BaseModelViewSet):
         if id_up_filter is not None:
             queryset = queryset.filter(unite_pastorale_id=id_up_filter)
         return queryset
+
+    def _ensure_multipolygon(self, geometry):
+        """Force une géométrie en MultiPolygon (SRID 2154)."""
+        if geometry is None or geometry.empty:
+            return None
+
+        if geometry.srid != 2154:
+            geometry.transform(2154)
+
+        if geometry.geom_type == 'Polygon':
+            return MultiPolygon(geometry, srid=2154)
+
+        return geometry
+
+    def _replace_year_safe(self, value, new_year):
+        """Replace year while preserving month/day, clamping invalid month-end dates."""
+        if value is None:
+            return None
+
+        max_day = monthrange(new_year, value.month)[1]
+        return value.replace(year=new_year, day=min(value.day, max_day))
+
+    def _next_id(self, model, field_name):
+        return (model.objects.aggregate(max_id=Max(field_name))['max_id'] or 0) + 1
+
+    @action(detail=True, methods=['post'], url_path='mettre-a-jour-up')
+    def mettre_a_jour_up(self, request, pk=None):
+        with transaction.atomic():
+            situation = (
+                SituationDExploitation.objects.select_for_update()
+                .filter(pk=pk)
+                .first()
+            )
+            if situation is None:
+                return Response(
+                    {'detail': 'Situation introuvable.'},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            old_up = situation.unite_pastorale
+            if old_up is None:
+                return Response(
+                    {'detail': "La situation n'est rattachée à aucune UP."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            quartier_qs = QuartierPasto.objects.filter(
+                situation_exploitation=situation,
+                geometry__isnull=False,
+            )
+
+            if not quartier_qs.exists():
+                return Response(
+                    {'detail': 'Aucune géométrie de quartier disponible pour cette situation.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # 🔥 UNION EN BASE (PostGIS)
+            agg = quartier_qs.aggregate(
+                geom=Union(
+                    MakeValid(
+                        SnapToGrid(
+                            Transform('geometry', 2154),
+                            0.01  # tolérance à ajuster
+                        )
+                    )
+                )
+            )
+            
+
+            union_geometry = agg['geom']
+
+            if union_geometry:
+                union_geometry = union_geometry.buffer(0)
+
+            if union_geometry is None or union_geometry.empty:
+                return Response(
+                    {'detail': "L'union des quartiers ne produit pas de géométrie exploitable."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            union_multipolygon = self._ensure_multipolygon(union_geometry)
+            if union_multipolygon is None:
+                return Response(
+                    {'detail': "Impossible de générer un MultiPolygon valide."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            next_up_id = (
+                UnitePastorale.objects.aggregate(
+                    max_id=Max('id_unite_pastorale')
+                )['max_id'] or 0
+            ) + 1
+
+            new_up = UnitePastorale.objects.create(
+                id_unite_pastorale=next_up_id,
+                code_up=old_up.code_up,
+                nom_up=old_up.nom_up,
+                annee_version=situation.annee,
+                geometry=union_multipolygon,
+                version_active=True,
+                secteur=old_up.secteur,
+            )
+
+            # duplication des propriétaires
+            old_links = ProprietaireUnitePastorale.objects.filter(unite_pastorale=old_up)
+            for old_link in old_links:
+                ProprietaireUnitePastorale.objects.create(
+                    proprietaire=old_link.proprietaire,
+                    unite_pastorale=new_up,
+                )
+
+            # mise à jour situation
+            situation.unite_pastorale = new_up
+            situation.save(update_fields=['unite_pastorale'])
+
+            # désactivation ancienne version
+            UnitePastorale.objects.filter(
+                code_up=old_up.code_up,
+                version_active=True,
+            ).exclude(pk=new_up.pk).update(version_active=False)
+
+            return Response(
+                {
+                    'id_situation': situation.id_situation,
+                    'old_up_id': old_up.id_unite_pastorale,
+                    'new_up_id': new_up.id_unite_pastorale,
+                    'new_up_annee_version': new_up.annee_version,
+                    'quartiers_count': quartier_qs.count(),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+    @action(detail=True, methods=['post'], url_path='duplicate')
+    def duplicate(self, request, pk=None):
+        with transaction.atomic():
+            source = (
+                SituationDExploitation.objects.select_for_update()
+                .filter(pk=pk)
+                .first()
+            )
+            if source is None:
+                return Response(
+                    {'detail': 'Situation introuvable.'},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            target_year = source.annee + 1
+            if source.unite_pastorale_id and SituationDExploitation.objects.filter(
+                unite_pastorale_id=source.unite_pastorale_id,
+                annee=target_year,
+            ).exists():
+                return Response(
+                    {'detail': "Une situation existe déjà pour cette UP et l'année suivante."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            new_situation = SituationDExploitation.objects.create(
+                id_situation=self._next_id(SituationDExploitation, 'id_situation'),
+                annee=target_year,
+                nom_situation=source.nom_situation,
+                situation_active=source.situation_active,
+                date_debut=self._replace_year_safe(source.date_debut, target_year),
+                date_fin=self._replace_year_safe(source.date_fin, target_year),
+                unite_pastorale=source.unite_pastorale,
+                exploitant=source.exploitant,
+            )
+
+            # 1) Quartiers: clone and map old->new
+            quartier_id = self._next_id(QuartierPasto, 'id_quartier')
+            quartier_map = {}
+            for old_quartier in source.quartiers.all().order_by('id_quartier'):
+                new_quartier = QuartierPasto.objects.create(
+                    id_quartier=quartier_id,
+                    code_quartier=old_quartier.code_quartier,
+                    nom_quartier=old_quartier.nom_quartier,
+                    geometry=old_quartier.geometry,
+                    situation_exploitation=new_situation,
+                )
+                quartier_map[old_quartier.id_quartier] = new_quartier
+                quartier_id += 1
+
+            # 2) Cheptels: clone with full-year dates and map old->new
+            cheptel_id = self._next_id(Cheptel, 'id_cheptel')
+            cheptel_map = {}
+            for old_cheptel in source.cheptels.all().order_by('id_cheptel'):
+                new_cheptel = Cheptel.objects.create(
+                    id_cheptel=cheptel_id,
+                    description=old_cheptel.description,
+                    eleveur=old_cheptel.eleveur,
+                    situation_exploitation=new_situation,
+                    type_cheptel=old_cheptel.type_cheptel,
+                    nombre_animaux=old_cheptel.nombre_animaux,
+                    date_debut=date(target_year, 1, 1),
+                    date_fin=date(target_year, 12, 31),
+                )
+                cheptel_map[old_cheptel.id_cheptel] = new_cheptel
+                cheptel_id += 1
+
+            # 3) Parcours: clone with year-shifted dates and remap quartier/cheptel
+            exploiter_id = self._next_id(Exploiter, 'id_exploiter')
+            source_parcours_qs = Exploiter.objects.filter(
+                Q(cheptel__situation_exploitation=source)
+                | Q(quartier__situation_exploitation=source)
+            ).distinct().order_by('id_exploiter')
+
+            for old_parcours in source_parcours_qs:
+                new_cheptel = cheptel_map.get(old_parcours.cheptel_id)
+                new_quartier = quartier_map.get(old_parcours.quartier_id)
+                if new_cheptel is None and new_quartier is None:
+                    continue
+
+                Exploiter.objects.create(
+                    id_exploiter=exploiter_id,
+                    cheptel=new_cheptel,
+                    quartier=new_quartier,
+                    date_debut=self._replace_year_safe(old_parcours.date_debut, target_year),
+                    date_fin=self._replace_year_safe(old_parcours.date_fin, target_year),
+                    nombre_animaux=old_parcours.nombre_animaux,
+                    mode_conduite=old_parcours.mode_conduite,
+                    commentaire=old_parcours.commentaire,
+                )
+                exploiter_id += 1
+
+            # 4) Equipements exploitant: clone and reattach to new situation
+            equip_id = self._next_id(EquipementExploitant, 'id_equipement_exploitant')
+            for old_eq in source.eqptsExploitant.all().order_by('id_equipement_exploitant'):
+                EquipementExploitant.objects.create(
+                    id_equipement_exploitant=equip_id,
+                    description=old_eq.description,
+                    etat=old_eq.etat,
+                    geometry=old_eq.geometry,
+                    type_equipement=old_eq.type_equipement,
+                    situation_exploitation=new_situation,
+                )
+                equip_id += 1
+
+            serializer = self.get_serializer(new_situation)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-
-    # @action(detail=True, methods=['post'], url_path='duplicate')
-    # def duplicate(self, request, pk=None):
-    #     """
-    #     Duplique une SituationDExploitation :
-    #     - Met la situation d'origine en inactive et fixe sa date_fin à aujourd'hui
-    #     - Crée une nouvelle situation copiée depuis l'origine, avec date_debut = aujourd'hui, date_fin = None et situation_active = True
-    #     Retourne la nouvelle instance sérialisée.
-    #     """
-    #     from django.db import transaction
-    #     from datetime import date
-
-    #     try:
-    #         orig = self.get_object()
-    #     except Exception:
-    #         return Response({'detail': 'Original situation not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-    #     with transaction.atomic():
-    #         # close original
-    #         orig.date_fin = date.today()
-    #         orig.situation_active = False
-    #         orig.save()
-
-    #         # compute next id
-    #         last_situation = SituationDExploitation.objects.order_by('id_situation').last()
-    #         next_id = last_situation.id_situation + 1 if last_situation else 1
-
-    #         # duplicate fields (except PK and dates/active)
-    #         new = SituationDExploitation()
-    #         new.id_situation = next_id
-    #         new.nom_situation = orig.nom_situation
-    #         new.unite_pastorale = orig.unite_pastorale
-    #         new.exploitant = orig.exploitant
-    #         new.date_debut = date.today()
-    #         new.date_fin = None
-    #         new.situation_active = True
-    #         new.save()
-
-    #         # debug counts
-    #         # logger.debug(f"Orig related counts - exploitations={orig.exploitations.count()}, ruches={orig.ruches.count()}, gardes={orig.gardes_situation.count()}, elevers={getattr(orig, 'elevers').count() if hasattr(orig, 'elevers') else 'N/A'}")
-    #         logger.debug(f"Orig related counts - exploitations={orig.exploitations.count()}, ruches={orig.ruches.count()}, gardes={orig.gardes_situation.count()}, ")
-
-
-    #         # Clone related objects: OUI exploitation des quartiers (Exploiter), PAS ruches (Ruche), PAS gardes_situation (GardeSituation), PAS eleveurs (Elever)
-    #         # For each related object we create a copy linked to the new situation. For models that have date_debut/date_fin, set date_debut to today and date_fin to None.
-    #         # Exploiter
-    #         try:
-    #             for ex in orig.exploitations.all():
-    #                 last_ex = Exploiter.objects.order_by('id_exploiter').last()
-    #                 next_ex_id = last_ex.id_exploiter + 1 if last_ex else 1
-    #                 new_ex = Exploiter(
-    #                     id_exploiter=next_ex_id,
-    #                     quartier=ex.quartier,
-    #                     situation_exploitation=new,
-    #                     date_debut=date.today(),
-    #                     date_fin=None,
-    #                     commentaire=ex.commentaire,
-    #                 )
-    #                 new_ex.save()
-    #         except Exception:
-    #             # ignore if Exploiter model not present
-    #             pass
-
-    #         # Elever (livestock) - clone related Elever objects
-    #         # for el in orig.elevers.all():
-    #         #     logger.debug(f"Cloning Elever id={getattr(el,'id_elever',None)} eleveur={getattr(el,'eleveur_id',None)}")
-    #         #     last_el = Elever.objects.order_by('id_elever').last()
-    #         #     next_el_id = last_el.id_elever + 1 if last_el else 1
-    #         #     new_el = Elever(
-    #         #         id_elever=next_el_id,
-    #         #         situation_exploitation=new,
-    #         #         type_cheptel=el.type_cheptel,
-    #         #         eleveur=el.eleveur,
-    #         #         nombre_animaux=el.nombre_animaux,
-    #         #         pension=el.pension,
-    #         #         date_debut=date.today(),
-    #         #         date_fin=None,
-    #         #     )
-    #         #     new_el.save()
-
-    #         # Ruche - clone beehives linked to the situation
-    #         try:
-    #             for ru in orig.ruches.all():
-    #                 last_ru = Ruche.objects.order_by('id_ruche').last()
-    #                 next_ru_id = last_ru.id_ruche + 1 if last_ru else 1
-    #                 new_ru = Ruche(
-    #                     id_ruche=next_ru_id,
-    #                     description=ru.description,
-    #                     geometry=ru.geometry,
-    #                     situation_exploitation=new,
-    #                 )
-    #                 new_ru.save()
-    #         except Exception:
-    #             pass
-
-    #         # GardeSituation - clone gardes linked to the situation
-    #         try:
-    #             for gr in orig.gardes_situation.all():
-    #                 last_gr = GardeSituation.objects.order_by('id_garde_situation').last()
-    #                 next_gr_id = last_gr.id_garde_situation + 1 if last_gr else 1
-    #                 new_gr = GardeSituation(
-    #                     id_garde_situation=next_gr_id,
-    #                     date_debut=date.today(),
-    #                     date_fin=None,
-    #                     commentaire=gr.commentaire,
-    #                     situation_exploitation=new,
-    #                     berger=gr.berger,
-    #                 )
-    #                 new_gr.save()
-    #         except Exception:
-    #             pass
-
-    #         serializer = self.get_serializer(new)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    
-
 
 class Type_cheptelViewset(BaseModelViewSet):
     serializer_class = Type_cheptelSerializer

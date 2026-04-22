@@ -47,21 +47,20 @@ import UnitePastoraleForm2 from "./UnitePastoraleForm2.vue";
 const columns = [
   { field: "nom_up", label: "UP", sortable: true },
   { field: "annee_version", label: "Année", sortable: true },
-  { field: "version_active", label: "Version active", sortable: true },
 ];
 
 const upFilters = ref([
   {
     key: "annee_courante",
     type: "checkbox",
-    label: `Année courante (${new Date().getFullYear()})`,
+    label: `${new Date().getFullYear()}`,
     default: true,
     apply: (rows, value) => !value ? rows : rows.filter(r => r.annee_version === new Date().getFullYear())
   },
   {
     key: "version_active",
     type: "checkbox",
-    label: "Version active",
+    label: "Act ?",
     default: false,
     apply: (rows, value) => !value ? rows : rows.filter(r => r.version_active === value)
   }
@@ -222,13 +221,15 @@ onBeforeUnmount(() => {
 <style scoped>
 .main-container {
   display: grid;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
 }
 
 .main-item {
   padding: 20px;
   margin: 10px;
   text-align: center;
+  min-width: 0;
 }
 
 .maps-stack {
@@ -272,5 +273,16 @@ onBeforeUnmount(() => {
   /* Arrondi des coins de la grille */
   overflow: hidden;
   /* Assure que le contenu s'adapte à l'arrondi */
+}
+
+@media (max-width: 980px) {
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+
+  .main-item {
+    margin: 8px 0;
+    padding: 12px;
+  }
 }
 </style>

@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from django.utils import timezone
+from django.db.models.deletion import ProtectedError
+from django.db.utils import IntegrityError
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -80,6 +83,24 @@ class BaseModelViewSet(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         logger.warning(f"BaseModelViewset {self.__class__.__name__} - Validation errors during creation: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except ProtectedError:
+            return Response(
+                {"detail": "Suppression impossible : objet référencé."},
+                status=status.HTTP_409_CONFLICT
+            )
+
+        except IntegrityError:
+            return Response(
+                {"detail": "Erreur d'intégrité en base."},
+                status=status.HTTP_409_CONFLICT
+            )
 
     def update(self, request, *args, **kwargs):
         logger.debug(f"BaseModelViewset {self.__class__.__name__} - Received data for update: {request.data}")

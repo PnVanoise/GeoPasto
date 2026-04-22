@@ -507,6 +507,11 @@ const closeModal = () => {
   align-items: start;
 }
 
+.up-form {
+  display: flex;
+  flex-direction: column;
+}
+
 .up-form-col {
   min-width: 0;
 }
@@ -573,8 +578,36 @@ const closeModal = () => {
 }
 
 @media (max-width: 1100px) {
+  .up-form {
+    max-height: calc(100vh - 9rem);
+  }
+
   .up-form-layout {
     grid-template-columns: 1fr;
+    overflow-y: auto;
+    padding-right: 2px;
+    padding-bottom: 0.5rem;
+  }
+
+  .form-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 0.75rem 0 0.25rem;
+    margin-top: 0.5rem;
+    z-index: 2;
+  }
+}
+
+@media (max-width: 700px) {
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .form-actions :deep(.v-btn) {
+    width: 100%;
   }
 }
 

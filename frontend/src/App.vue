@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue"
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 
 import Notification from "./components/Notification.vue";
+import NotificationContainer from "./components/NotificationContainer.vue";
 import Login from "./components/Login.vue";
 import Logout from "./components/Logout.vue";
 
@@ -407,6 +408,7 @@ watch(
       <div :class="['app-main', { 'drawer-open': menuOpen }]">
         <main class="app-content">
           <RouterView />
+          <NotificationContainer />
         </main>
       </div>
     </template>
@@ -571,6 +573,11 @@ watch(
   right: 20px;
   z-index: 1000;
   width: min(360px, 92vw);
+}
+
+.notification-container {
+  position: fixed;
+  z-index: 999999;
 }
 
 .notification-container>div {

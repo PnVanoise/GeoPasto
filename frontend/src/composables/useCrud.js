@@ -3,6 +3,9 @@ import auth from "../../auth";
 import config from "../../config";
 import { useMainStore } from "../store";
 import { usePermissions } from "./usePermissions";
+import { useNotification } from "./useNotification"
+
+const { notify } = useNotification();
 
 export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
   const mainStore = useMainStore();
@@ -107,7 +110,10 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     // }
 
     await auth.axiosInstance.post(`${config.API_BASE_URL}/api/${apiRouteName}/`, sendBody);
-    mainStore.setSuccessMessage("Créé avec succès !");
+    notify({
+      message: "Créé avec succès !",
+      type: "success"
+    })
     await fetchAll(null, extraQueryParams);
   };
 
@@ -155,9 +161,13 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
       (typeof err?.response?.data === "string" ? err.response.data : null) ||
       err?.message ||
       "Erreur lors de la suppression.";
-    mainStore.setErrorMessage(backendMessage);
-    console.error("Erreur suppression:", err);
-    alert(backendMessage); // Optionnel : afficher une alerte immédiate
+    notify({
+      message: backendMessage,
+      type: "error"
+    });
+    // mainStore.setErrorMessage(backendMessage);
+    // console.error("Erreur suppression:", err);
+    // alert(backendMessage); // Optionnel : afficher une alerte immédiate
     throw err; // optionnel : laisser remonter si l'appelant veut réagir
   }
 };

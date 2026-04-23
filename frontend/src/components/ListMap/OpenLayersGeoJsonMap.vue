@@ -597,7 +597,7 @@ function escapeHtml(value) {
 }
 
 :deep(.layer-switcher input) {
-  transform: scale(0.9);
+  /* transform: scale(0.9); */
   margin-right: 4px;
 }
 
@@ -615,7 +615,7 @@ function escapeHtml(value) {
   border: 1px solid #cccccc;
   min-width: 170px;
   max-width: 260px;
-  transform: translate(-50%, -100%);
+  /* transform: translate(-50%, -100%); */
 }
 
 .ol-popup-closer {

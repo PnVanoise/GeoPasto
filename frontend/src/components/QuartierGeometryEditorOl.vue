@@ -809,7 +809,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.layer-switcher input) {
-  transform: scale(0.9);
+  /* transform: scale(0.9); */
   margin-right: 4px;
 }
 </style>

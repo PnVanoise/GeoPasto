@@ -699,7 +699,7 @@ const formatDisplayDate = (date) => {
   display: flex;
   align-items: center;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  /* transition: transform 120ms ease, box-shadow 120ms ease; */
 }
 
 .timeline-today-marker {
@@ -725,7 +725,7 @@ const formatDisplayDate = (date) => {
 }
 
 .timeline-segment:hover {
-  transform: translateY(-1px);
+  /* transform: translateY(-1px); */
   box-shadow: 0 4px 11px rgba(15, 23, 42, 0.25);
 }
 

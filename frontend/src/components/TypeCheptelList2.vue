@@ -1,7 +1,7 @@
 <template>
   <CrudList2
     title="Types de cheptel"
-    modelName="type_cheptel"
+    modelName="typecheptel"
     apiRouteName="type_cheptel"
     itemLabel="un type de cheptel"
     idField="id_type_cheptel"

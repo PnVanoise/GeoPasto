@@ -111,7 +111,7 @@ const props = defineProps({
   onClose: Function,
 });
 
-const { can } = usePermissions("type_cheptel");
+const { can } = usePermissions("typecheptel");
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;

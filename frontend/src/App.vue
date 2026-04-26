@@ -232,13 +232,13 @@ watch(
               <RouterLink to="/Productions2">Productions</RouterLink>
             </div>
             <div
-              v-if="hasPermissionForModel('categorie_pension')"
+              v-if="hasPermissionForModel('categoriepension')"
               :class="['nav-item w3-signal-grey transparent', { active: route.path === '/CategoriesPension2' }]"
             >
               <RouterLink to="/CategoriesPension2">Categories de pension</RouterLink>
             </div>
             <div
-              v-if="hasPermissionForModel('categorie_animaux')"
+              v-if="hasPermissionForModel('categorieanimaux')"
               :class="['nav-item w3-signal-grey transparent', { active: route.path === '/CategoriesAnimaux2' }]"
             >
               <RouterLink to="/CategoriesAnimaux2">Categories d'animaux</RouterLink>

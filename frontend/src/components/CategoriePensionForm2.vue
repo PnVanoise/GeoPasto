@@ -36,7 +36,7 @@ const props = defineProps({
   onClose: Function,
 });
 
-const { can } = usePermissions("categorie_pension");
+const { can } = usePermissions("categoriepension");
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;

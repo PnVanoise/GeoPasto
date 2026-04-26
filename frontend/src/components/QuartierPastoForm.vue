@@ -65,7 +65,9 @@
           ref="geometryEditorRef"
           v-model="form.geometry"
           :geometryType="'Polygon'"
-          :contextGeoData="contextQuartiersGeoData"
+          :contextLayers="contextLayers"
+          :drawOnly="!props.isEdit"
+          :editOnly="props.isEdit"
         />
       </section>
     </div>
@@ -77,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 
 import auth from "../../auth";
 import config from "../../config";
@@ -92,6 +94,47 @@ const props = defineProps({
 const ups = ref([]);
 const situations = ref([]);
 const contextQuartiersGeoData = ref(null);
+const upGeoData = ref(null);
+
+const contextLayers = computed(() => {
+  const layers = [];
+  if (contextQuartiersGeoData.value) {
+    layers.push({
+      id: "quartiers",
+      data: contextQuartiersGeoData.value,
+      visible: true,
+      style: { strokeColor: "#1565C0", strokeWidth: 1.4, lineDash: [10, 6], fillOpacity: 0.15 },
+    });
+  }
+  if (upGeoData.value) {
+    layers.push({
+      id: "up",
+      data: upGeoData.value,
+      visible: true,
+      style: { strokeColor: "#2E7D32", strokeWidth: 2, fillOpacity: 0.07 },
+    });
+  }
+  return layers;
+});
+
+const fetchUpGeometry = async (upId) => {
+  if (!upId) { upGeoData.value = null; return; }
+  try {
+    const response = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/${upId}/`);
+    const feature = response.data;
+    if (feature?.geometry) {
+      upGeoData.value = {
+        type: "FeatureCollection",
+        features: [{ type: "Feature", geometry: feature.geometry, properties: feature.properties || {} }],
+      };
+    } else {
+      upGeoData.value = null;
+    }
+  } catch (e) {
+    console.error("Erreur lors de la récupération de la géométrie de l'UP", e);
+    upGeoData.value = null;
+  }
+};
 
 const normalizeForm = (src) => {
   const base = src || {};
@@ -349,12 +392,20 @@ onMounted(() => {
     });
 
   fetchContextQuartiersForSituation(form.value?.properties?.situation_exploitation);
+  fetchUpGeometry(form.value?.properties?.unite_pastorale);
 });
 
 watch(
   () => form.value?.properties?.situation_exploitation,
   (newSituationId) => {
     fetchContextQuartiersForSituation(newSituationId);
+  }
+);
+
+watch(
+  () => form.value?.properties?.unite_pastorale,
+  (newUpId) => {
+    fetchUpGeometry(newUpId);
   }
 );
 

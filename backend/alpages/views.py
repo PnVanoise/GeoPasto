@@ -296,6 +296,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
         with transaction.atomic():
             source = (
                 SituationDExploitation.objects.select_for_update()
+                .select_related('unite_pastorale', 'exploitant')
                 .filter(pk=pk)
                 .first()
             )
@@ -315,10 +316,14 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            nom_up = source.unite_pastorale.nom_up if source.unite_pastorale else ''
+            nom_exploitant = source.exploitant.nom_exploitant if source.exploitant else ''
+            nom_situation = ' - '.join(filter(None, [nom_up, str(target_year), nom_exploitant]))
+
             new_situation = SituationDExploitation.objects.create(
                 id_situation=self._next_id(SituationDExploitation, 'id_situation'),
                 annee=target_year,
-                nom_situation=source.nom_situation,
+                nom_situation=nom_situation,
                 situation_active=source.situation_active,
                 date_debut=self._replace_year_safe(source.date_debut, target_year),
                 date_fin=self._replace_year_safe(source.date_fin, target_year),

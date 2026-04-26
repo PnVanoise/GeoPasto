@@ -88,24 +88,23 @@
               Enregistrez l'unité pastorale pour pouvoir ajouter des situations d'exploitation.
             </div>
           </template>
-          <template v-else>
-            <CrudList2
-              title="Situations d'exploitation"
+          <template v-else-if="form.id">
+            <CrudListPage
               modelName="situationdexploitation"
               apiRouteName="situationExploitation"
               itemLabel="une situation"
               idField="id_situation"
               :columns="situGridColumns"
-              :formComponent="SituationExploitationForm2"
               :bgColor="'#154889'"
               :showTitle="false"
               :showHeader="true"
               :showSearch="true"
               :showFilters="false"
-              :filters="situFilters"
+              :filters="[]"
               :forceAdd="false"
               :viewOnly="props.mode === 'view'"
-              :initialNewItem="{ unite_pastorale: form.id, exploitant: null }"
+              :requestParams="form.id ? { id_up: form.id } : null"
+              :addQueryParams="form.id ? { unite_pastorale: form.id } : {}"
             />
           </template>
         </div>
@@ -120,6 +119,9 @@
                 v-model="form.geometry"
                 geometryType="MultiPolygon"
                 :contextGeoData="refUPs"
+                :disabled="props.mode === 'view'"
+                :drawOnly="props.mode === 'add'"
+                :editOnly="props.mode === 'change'"
               />
         </div>
       </div>
@@ -155,8 +157,7 @@ import { usePermissions } from "../composables/usePermissions";
 
 import config from "../../config";
 import QuartierGeometryEditorOl from "./QuartierGeometryEditorOl.vue";
-import CrudList2 from "./CrudList2.vue";
-import SituationExploitationForm2 from "./SituationExploitationForm2.vue";
+import CrudListPage from "./CrudListPage.vue";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -186,7 +187,6 @@ const refUPs = ref([]);
 const showMissingGeometry = ref(false);
 
 const proprietaires = ref([]);
-const situationExploitations = ref([]);
 const evenementsGeoJSON = ref(null);
 const evenements = ref([]);
 
@@ -196,37 +196,6 @@ const situGridColumns = ref([
   { field: "situation_active", label: "Active ?", sortable: true },
 ]);
 
-const situFilters = ref([
-  {
-    key: "upFilter",
-    type: "hidden",
-    default: "",
-    apply: (items, _value) => {
-      if (!form.id) return [];
-      return (items || []).filter((i) => {
-        const upId = i.unite_pastorale ?? i.unite_pastorale_id ?? i.properties?.unite_pastorale;
-        return String(upId) === String(form.id);
-      });
-    },
-  },
-]);
-
-const fetchSituations = () => {
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/situationExploitation/?id_up=${form.id}`)
-    .then((response) => {
-      situationExploitations.value = response.data;
-      console.log("list response data:", response.data);
-      console.log("situationExploitation.value:", situationExploitations.value);
-    })
-    .catch((error) => {
-      console.error("There was an error!", error);
-    })
-    .finally(() => {
-      //isLoading.value = false;
-      console.log("fetchSituations done");
-    });
-};
 
 const fetchRefUPs = () => {
   console.log(`${config.API_BASE_URL}/api/unitePastorale/`);

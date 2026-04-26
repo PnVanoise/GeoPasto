@@ -290,7 +290,7 @@ watch(
               v-if="hasPermissionForModel('unitepastorale')"
               :class="['nav-item w3-signal-yellow transparent', { active: route.path === '/UnitePastorales2' }]"
             >
-              <RouterLink to="/UnitePastorales2">Unites pastorales</RouterLink>
+              <RouterLink to="/unite-pastorale">Unites pastorales</RouterLink>
             </div>
             <!-- <div
               v-if="hasPermissionForModel('unitepastorale')"
@@ -540,7 +540,7 @@ watch(
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  /* transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease; */
 }
 
 .user-info {
@@ -559,7 +559,7 @@ watch(
 .logout-chip:hover {
   background: rgba(235, 87, 87, 0.5);
   border-color: rgba(255, 255, 255, 0.72);
-  transform: translateY(-1px);
+  /* transform: translateY(-1px); */
 }
 
 .logout-chip:focus-visible {
@@ -669,7 +669,7 @@ watch(
   text-decoration: none;
 }
 
-.menu-slide-enter-active,
+/* .menu-slide-enter-active,
 .menu-slide-leave-active {
   transition: transform 0.24s ease;
 }
@@ -677,7 +677,7 @@ watch(
 .menu-slide-enter-from,
 .menu-slide-leave-to {
   transform: translateX(-100%);
-}
+} */
 
 .menu-fade-enter-active,
 .menu-fade-leave-active {
@@ -709,12 +709,12 @@ watch(
 
 .accordion-caret {
   margin-left: 8px;
-  transition: transform 0.2s ease;
+  /* transition: transform 0.2s ease; */
 }
 
-.accordion-caret.open {
+/* .accordion-caret.open {
   transform: rotate(180deg);
-}
+} */
 
 @media (max-width: 1024px) {
   .header-left h2 {

@@ -464,7 +464,7 @@ class LogementViewset(BaseModelViewSet):
     serializer_class = LogementSerializer
 
     def get_queryset(self):
-        queryset = Logement.objects.all().order_by('id')
+        queryset = Logement.objects.all().order_by('id_logement')
 
         logement_code = self.request.GET.get('logement_code')
         if logement_code is not None:

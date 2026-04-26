@@ -67,7 +67,8 @@ class ProprietaireUnitePastorale(AuditFieldsMixin, models.Model):
     """
     Association Propriétaire foncier / Unité pastorale
     """
-    
+
+    id_proprietaire_up = models.BigAutoField(primary_key=True, db_column='id')
     proprietaire = models.ForeignKey('alpages.ProprietaireFoncier', on_delete=models.PROTECT, blank=True, null=True, related_name='unites_pastorales_proprietaire')
     unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.PROTECT, blank=True, null=True, related_name='proprietaires_unite_pastorale')
 
@@ -435,6 +436,8 @@ class EtreCompose(AuditFieldsMixin, models.Model):
     """
     EtreCompose (association exploitant / éleveurs)
     """
+
+    id_etre_compose = models.BigAutoField(primary_key=True, db_column='id')
     exploitant = models.ForeignKey(Exploitant, on_delete=models.PROTECT, blank=True, null=True, )
     eleveur = models.ForeignKey(Eleveur, on_delete=models.PROTECT, blank=True, null=True, )
 
@@ -470,7 +473,8 @@ class Logement(AuditFieldsMixin, models.Model):
     Classe Logement
     Champs et valeurs issues des échanges avec la SEA73
     """
-    
+
+    id_logement = models.BigAutoField(primary_key=True, db_column='id')
     logement_code = models.CharField(max_length=10)
     # Ajouté le 28/10/2025
     nom_logement = models.CharField(max_length=50, null=True, blank=True)

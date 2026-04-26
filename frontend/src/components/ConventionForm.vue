@@ -163,12 +163,6 @@
           />
         </div>
 
-        <!-- next id is readonly -->
-        <div v-if="!isEdit" class="form-cell">
-          (Next ID:
-          {{ nextId }}
-          )
-        </div>
       </div>
       <div style="">
         <div class="form-cell">
@@ -224,16 +218,8 @@ const form = ref({
   },
 });
 
-// Variable pour stocker le nextId
-const nextId = ref(null);
-
 const submitForm = () => {
   console.log("Form submitted with:", form.value);
-
-  if (!props.isEdit) {
-    form.value.id = nextId.value;
-  }
-
   props
     .onSubmit(form.value)
     .then(() => {
@@ -252,11 +238,7 @@ watch(
   { deep: true }
 );
 
-// Hooks de cycle de vie pour déboguer
 onMounted(async () => {
-  console.log("ConventionForm component mounted");
-
-  // hargement des tables liées
   try {
     const [typeRes, exploitantRes, upRes] = await Promise.all([
       auth.axiosInstance.get(`${config.API_BASE_URL}/api/typeConvention/`),
@@ -266,20 +248,8 @@ onMounted(async () => {
     typeCs.value = typeRes.data;
     exploitants.value = exploitantRes.data;
     ups.value = upRes.data;
-
   } catch (err) {
     console.error("Erreur chargement convention form", err);
-  }
-
-
-  if (!props.isEdit) {
-    try {
-      const nextRes = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/conventionExploitation/getNextId/`);
-      nextId.value = nextRes.data.next_id;
-      form.value.id = nextId.value;
-    } catch (err) {
-      console.error("Erreur récupération Next ID", err);
-    }
   }
 });
 

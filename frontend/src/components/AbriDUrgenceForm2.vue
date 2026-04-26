@@ -136,21 +136,6 @@ const selectedCommodite = ref({});
 const mainStore = useMainStore();
 
 
-// Next ID pour l'ajout
-const nextId = ref(null);
-onMounted(() => {
-  if (props.mode === "add") {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/abriDUrgence/getNextId/`)
-      .then(res => {
-        nextId.value = res.data.next_id;
-        form.id_abri_urgence = nextId.value;
-      })
-      .catch(err => console.error("Erreur Next ID", err));
-  };
-});
-
-
 // Submits
 const submitForm = () => {
   if (props.onSubmit) {

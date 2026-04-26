@@ -68,7 +68,6 @@ import auth from '../../auth'
 import config from '../../config'
 
 const form = ref({
-  id_evenement: null,
   date_evenement: '',
   observateur: '',
   date_observation: '',
@@ -78,9 +77,6 @@ const form = ref({
   unite_pastorale: null,
   type_evenement: null,
 })
-
-const nextId = ref(null)
-const autoId = ref(true)
 
 const types = ref([])
 const ups = ref([])
@@ -104,16 +100,6 @@ const fetchUps = async () => {
     ups.value = res.data
   } catch (err) {
     console.error('Erreur fetch UP', err)
-  }
-}
-
-const fetchNextId = async () => {
-  try {
-    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/evenement/getNextId/`)
-    nextId.value = res.data.next_id
-    if (autoId.value) form.value.id_evenement = nextId.value
-  } catch (err) {
-    console.error('Erreur fetch next id evenement', err)
   }
 }
 
@@ -177,24 +163,20 @@ const clearGeometry = () => {
 const submitEvent = async () => {
   try {
     const payload = {
-      id_evenement: form.value.id_evenement || null,
       date_evenement: form.value.date_evenement || null,
       observateur: form.value.observateur || '',
       date_observation: form.value.date_observation || null,
       source: form.value.source || '',
       description: form.value.description || '',
-      geometry: form.value.geometry, // GeoJSON geometry or null
+      geometry: form.value.geometry,
       unite_pastorale: form.value.unite_pastorale || null,
       type_evenement: form.value.type_evenement || null,
     }
 
     const res = await auth.axiosInstance.post(`${config.API_BASE_URL}/api/evenement/`, payload)
     alert('Événement créé (id: ' + (res.data.id_evenement || res.data.id) + ')')
-    // reset form (conserver next id)
-    form.value = { id_evenement: autoId.value ? nextId.value + 1 : null, date_evenement:'', observateur:'', date_observation:'', source:'', description:'', geometry:null, unite_pastorale:null, type_evenement:null }
+    form.value = { date_evenement:'', observateur:'', date_observation:'', source:'', description:'', geometry:null, unite_pastorale:null, type_evenement:null }
     clearGeometry()
-    // refresh next id from server
-    await fetchNextId()
   } catch (err) {
     console.error('Erreur création événement', err)
     alert('Erreur création événement')
@@ -204,7 +186,6 @@ const submitEvent = async () => {
 onMounted(() => {
   fetchTypes()
   fetchUps()
-  fetchNextId()
   initMap()
 })
 </script>

@@ -110,7 +110,6 @@ const abris = ref([]);
 const commodites = ref([]);
 
 const form = reactive({
-  id_abri_urgence_commodite: null,
   abri_urgence: null,
   commodite: null,
   etat: "",
@@ -138,21 +137,7 @@ watch(
   { immediate: true }
 );
 
-// Next ID pour l'ajout
-const nextId = ref(null);
 onMounted(() => {
-  if (props.mode === "add") {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/abriDUrgenceCommodite/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.id_abri_urgence_commodite = nextId.value;
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
-
   // Récupère les abris
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/abriDUrgence/`)

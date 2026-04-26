@@ -136,22 +136,7 @@ watch(
   { immediate: true }
 );
 
-// Next ID pour l'ajout
-const nextId = ref(null);
-
 onMounted(() => {
-  if (props.mode === "add") {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/mesurePlan/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.id_mesure_plan = nextId.value; // Optionnel: lier cet ID au formulaire si besoin
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
-
   // Récupère les types de mesure
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/typeMesure/`)

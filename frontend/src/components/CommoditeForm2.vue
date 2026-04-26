@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { reactive, watch, ref, computed, onMounted } from "vue";
+import { reactive, watch, computed } from "vue";
 import config from "../../config";
 import auth from "../../auth";
 import { usePermissions } from "../composables/usePermissions";
@@ -53,7 +53,6 @@ const btTitle = computed(() => {
 
 // Formulaire réactif
 const form = reactive({
-  id_commodite: null,
   description: "",
 });
 
@@ -66,20 +65,6 @@ watch(
   },
   { immediate: true }
 );
-
-// Next ID pour l'ajout
-const nextId = ref(null);
-onMounted(() => {
-  if (props.mode === "add") {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/commodite/getNextId/`)
-      .then(res => {
-        nextId.value = res.data.next_id;
-        form.id_commodite = nextId.value;
-      })
-      .catch(err => console.error("Erreur Next ID", err));
-  }
-});
 
 // Submit
 const submitForm = () => {

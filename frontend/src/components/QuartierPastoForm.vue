@@ -40,14 +40,6 @@
           clearable
         />
 
-        <v-alert
-          v-if="!isEdit && nextId"
-          type="info"
-          variant="tonal"
-          density="compact"
-        >
-          Prochain identifiant: {{ nextId }}
-        </v-alert>
       </section>
 
       <section class="layout-card map-card">
@@ -185,7 +177,6 @@ const normalizeContextQuartiers = (payload) => {
 };
 
 const form = ref(normalizeForm(props.initialForm));
-const nextId = ref(null);
 const geometryEditorRef = ref(null);
 const geometryError = ref(false);
 
@@ -316,11 +307,7 @@ const fetchContextQuartiersForSituation = async (situationId) => {
 };
 
 const submitForm = () => {
-  if (!props.isEdit) {
-    form.value.id = nextId.value;
-    form.value.id_quartier = nextId.value;
-    form.value.properties.id_quartier = nextId.value;
-  } else {
+  if (props.isEdit) {
     const existingId =
       form.value.id
       ?? form.value.id_quartier
@@ -361,18 +348,6 @@ const submitForm = () => {
 };
 
 onMounted(() => {
-  if (!props.isEdit) {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/quartierPasto/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.value.id = nextId.value;
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
-
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/unitePastorale/`)
     .then((response) => {

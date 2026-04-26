@@ -36,12 +36,6 @@
             </option>
           </select>
         </div>
-        <!-- next id is readonly -->
-        <div v-if="!isEdit" class="form-cell">
-          (Next ID:
-          {{ nextId }}
-          )
-        </div>
       </div>
       <div style="">
         <div class="form-cell">
@@ -75,14 +69,7 @@ const situations = ref([]);
 
 const form = ref({ ...props.initialForm });
 
-// Variable pour stocker le nextId
-const nextId = ref(null);
-
 const submitForm = () => {
-  if (!props.isEdit) {
-    form.value.id = nextId.value;
-  }
-
   console.log("Form submitted with:", form.value);
   props
     .onSubmit(form.value)
@@ -105,18 +92,6 @@ watch(
 // Hooks de cycle de vie pour déboguer
 onMounted(() => {
   console.log("RucheForm component mounted");
-
-  if (!props.isEdit) {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/ruche/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.value.id = nextId.value; // Optionnel: lier cet ID au formulaire si besoin
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
 
   // Récupère les situations
   auth.axiosInstance

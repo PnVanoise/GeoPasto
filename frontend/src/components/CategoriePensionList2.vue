@@ -1,7 +1,7 @@
 <template>
   <CrudListPaginated
     title="Catégories de pension"
-    modelName="categorie_pension"
+    modelName="categoriepension"
     apiRouteName="categorie_pension"
     itemLabel="une catégorie de pension"
     idField="id_categorie_pension"

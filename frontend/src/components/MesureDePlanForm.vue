@@ -84,12 +84,6 @@
       </select>
     </div>
 
-    <!-- next id pour debug -->
-    <div v-if="!isEdit" class="form-cell">
-      (Next ID:
-      {{ nextId }}
-      )
-    </div>
     <!-- </div> -->
     <button v-if="!isReadOnly" type="submit">Enregistrer</button>
   </form>
@@ -116,9 +110,6 @@ const plansuivis = ref([]);
 
 const form = ref({ ...props.initialForm });
 
-// Variable pour stocker le nextId
-const nextId = ref(null);
-
 const submitForm = () => {
   console.log("Form submitted with:", form.value);
   props
@@ -139,46 +130,23 @@ watch(
   { deep: true }
 );
 
-// Hooks de cycle de vie pour déboguer
 onMounted(() => {
-  console.log("MesurePlanForm component mounted");
-
-  if (!props.isEdit) {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/mesurePlan/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.value.id_mesure_plan = nextId.value; // Optionnel: lier cet ID au formulaire si besoin
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
-
-  // Récupère les types de mesure
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/typeMesure/`)
     .then((response) => {
       typemesures.value = response.data;
     })
     .catch((error) => {
-      console.error(
-        "Erreur lors de la récupération de la liste des types de mesure",
-        error
-      );
+      console.error("Erreur lors de la récupération de la liste des types de mesure", error);
     });
 
-  // Récupère les plans de suivi
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/planSuivi/`)
     .then((response) => {
       plansuivis.value = response.data;
     })
     .catch((error) => {
-      console.error(
-        "Erreur lors de la récupération de la liste des plans de suivi",
-        error
-      );
+      console.error("Erreur lors de la récupération de la liste des plans de suivi", error);
     });
 });
 

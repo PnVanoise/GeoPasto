@@ -13,32 +13,6 @@
         <div class="w3-row form-ligne">
           <div class="w3-half form-cell">
             <v-text-field
-              id="id_evenement"
-              v-model.number="form.id_evenement"
-              type="number"
-              label="ID"
-              :disabled="props.mode === 'view' || autoId"
-              :readonly="autoId"
-              density="compact"
-              variant="underlined"
-              hide-details
-            />
-          </div>
-          <div class="w3-half form-cell">
-            <v-switch
-              v-model="autoId"
-              label="ID auto"
-              color="primary"
-              :disabled="props.mode === 'view' || !canEdit"
-              density="compact"
-              hide-details
-            />
-          </div>
-        </div>
-
-        <div class="w3-row form-ligne">
-          <div class="w3-half form-cell">
-            <v-text-field
               v-model="form.date_evenement"
               type="date"
               label="Date de l'événement"
@@ -278,7 +252,6 @@ const formTitle = computed(() => {
 const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"));
 
 const form = reactive({
-  id_evenement: null,
   date_evenement: "",
   observateur: "",
   date_observation: "",
@@ -301,7 +274,6 @@ const geometryTypeLabel = computed(() => {
 });
 
 const visualStyle = ref("admin");
-const autoId = ref(true);
 const submitted = ref(false);
 const geometryValidity = ref({ isValid: false, reason: "geometry_required" });
 
@@ -529,16 +501,6 @@ const fetchUps = async () => {
   }
 };
 
-const fetchNextId = async () => {
-  if (props.mode !== "add" || !autoId.value) return;
-  try {
-    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/evenement/getNextId/`);
-    form.id_evenement = res.data?.next_id ?? form.id_evenement;
-  } catch (err) {
-    console.error("Erreur next id événement", err);
-  }
-};
-
 const fetchUnitePastoraleContext = async (upId) => {
   if (!upId) {
     upContextGeoData.value = null;
@@ -592,11 +554,8 @@ watch(
   () => props.initialForm,
   (newVal) => {
     const base = newVal || {};
-    const src = base?.properties
-      ? { ...base.properties, id_evenement: base.id ?? base.properties.id_evenement }
-      : base;
+    const src = base?.properties ? { ...base.properties } : base;
 
-    form.id_evenement = src.id_evenement ?? src.id ?? null;
     form.date_evenement = src.date_evenement ?? "";
     form.observateur = src.observateur ?? "";
     form.date_observation = src.date_observation ?? "";
@@ -610,14 +569,9 @@ watch(
     form.geometry = base.geometry ?? src.geometry ?? null;
     geometryType.value = form.geometry?.type || geometryType.value;
 
-    if (props.mode !== "add") autoId.value = false;
   },
   { deep: true, immediate: true }
 );
-
-watch(autoId, (enabled) => {
-  if (enabled) fetchNextId();
-});
 
 watch(
   () => effectiveUpId.value,
@@ -664,7 +618,6 @@ const submitForm = async () => {
   }
 
   const payload = {
-    id_evenement: form.id_evenement,
     date_evenement: form.date_evenement || null,
     observateur: form.observateur || "",
     date_observation: form.date_observation || null,
@@ -684,7 +637,6 @@ const closeModal = () => {
 
 onMounted(async () => {
   await Promise.all([fetchTypes(), fetchUps()]);
-  await fetchNextId();
 });
 </script>
 

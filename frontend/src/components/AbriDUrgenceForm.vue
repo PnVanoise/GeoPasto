@@ -23,12 +23,6 @@
           :disabled="props.isReadOnly"
         />
       </div>
-      <!-- next id pour debug -->
-      <div v-if="!isEdit" class="form-cell">
-        (Next ID:
-        {{ nextId }}
-        )
-      </div>
     </div>
     <button v-if="!props.isReadOnly" @click="submitForm">Enregistrer</button>
 
@@ -84,9 +78,6 @@ const props = defineProps({
 });
 
 const form = ref({ ...props.initialForm });
-
-// Variable pour stocker le nextId
-const nextId = ref(null);
 
 const abriCommodites = ref([]);
 const commGridColumns = ref(['abri_urgence_description', 'commodite_desc', 'etat', 'quantite']);
@@ -149,17 +140,6 @@ watch(
 onMounted(() => {
   console.log("AbriForm component mounted");
 
-  if (!props.isEdit) {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/abriDUrgence/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.value.id_abri_urgence = nextId.value; // Optionnel: lier cet ID au formulaire si besoin
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
 });
 
 onBeforeUnmount(() => {

@@ -1,7 +1,7 @@
 <template>
   <CrudListPaginated
     title="Catégories d'animaux"
-    modelName="categorie_animaux"
+    modelName="categorieanimaux"
     apiRouteName="categorie_animaux"
     itemLabel="une catégorie d'animaux"
     idField="id_categorie_animaux"

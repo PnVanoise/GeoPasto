@@ -110,22 +110,7 @@ watch(
   { immediate: true }
 );
 
-// Next ID pour l'ajout
-const nextId = ref(null);
-
 onMounted(() => {
-  if (props.mode === "add") {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/gardeSituation/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.id_garde_situation = nextId.value;
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
-
   // Récupère les situations
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/situationExploitation/`)

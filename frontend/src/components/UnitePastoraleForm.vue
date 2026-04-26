@@ -143,12 +143,6 @@
           </button>
         </div> -->
 
-        <!-- next id is readonly -->
-        <div v-if="!isEdit" class="form-cell">
-          (Next ID:
-          {{ nextId }}
-          )
-        </div>
         <br />
       </div>
       <div style="">
@@ -439,9 +433,6 @@ const vectorLayers = computed(() => {
 
 const router = useRouter();
 
-// Variable pour stocker le nextId
-const nextId = ref(null);
-
 const goToQuartiersList = () => {
   // Utilisation de l'ID de l'UP pour la navigation
   if (form.value.id) {
@@ -453,11 +444,6 @@ const goToQuartiersList = () => {
 
 const submitForm = () => {
   console.log("Form submitted with:", form.value);
-
-  if (!props.isEdit) {
-    form.value.id = nextId.value;
-  }
-
   props
     .onSubmit(form.value)
     .then(() => {
@@ -468,22 +454,7 @@ const submitForm = () => {
     });
 };
 
-onMounted(() => {
-  console.log("Form mounted with geometry:", form.value.geometry);
-
-  // Récupére le prochain ID si on est en mode création uniquement
-  if (!props.isEdit) {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/unitePastorale/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.value.id = nextId.value;
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
-});
+onMounted(() => {});
 
 watch(
   () => props.initialForm,

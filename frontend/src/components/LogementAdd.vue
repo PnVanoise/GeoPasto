@@ -6,7 +6,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 import auth from "../../auth";
 
@@ -16,7 +17,7 @@ import { useMainStore } from "../store";
 
 const form = ref({
   properties: {
-    unite_pastorale,
+    unite_pastorale: null,
     logement_code: "",
     statut: "",
     acces_final: "",
@@ -46,6 +47,7 @@ const form = ref({
   },
 });
 
+const router = useRouter();
 const mainStore = useMainStore();
 
 const submitForm = async (formData) => {

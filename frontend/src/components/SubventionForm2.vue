@@ -147,7 +147,6 @@ const btTitle = computed(() => {
 });
 
 const form = reactive({
-  id_subvention: null,
   description: "",
   montant: "",
   engage: false,
@@ -167,19 +166,7 @@ watch(
   { immediate: true }
 );
 
-// Next ID pour l'ajout
-const nextId = ref(null);
 onMounted(() => {
-  if (props.mode === "add") {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/subventionPNV/getNextId/`)
-      .then(res => {
-        nextId.value = res.data.next_id;
-        form.id_subvention = nextId.value;
-      })
-      .catch(err => console.error("Erreur Next ID", err));
-  }
-
   // Récupère les exploitants
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/exploitant/`)

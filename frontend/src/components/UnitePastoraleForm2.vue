@@ -335,24 +335,6 @@ const form = reactive({
 
 const router = useRouter();
 
-// Variable pour stocker le nextId
-const nextId = ref(null);
-
-const fetchNextId = () => {
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/unitePastorale/getNextId/`)
-    .then((response) => {
-      console.log("Next ID response:", response.data);
-      nextId.value = response.data.next_id;
-      form.id = nextId.value;
-      if (!form.properties) form.properties = {};
-      form.properties.id_unite_pastorale = nextId.value;
-    })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération du Next ID", error);
-    });
-};
-
 const proprietairesOptions = computed(() => {
   return (proprietaires.value || []).map((p) => ({
     ...p,
@@ -364,8 +346,6 @@ onMounted(() => {
   console.log('UnitePastoraleForm initialForm prop at mount:', props.initialForm);
 
   fetchRefUPs();
-
-  if (props.mode === 'add') fetchNextId();
 
   // Récupère la liste des propriétaires fonciers pour le sélecteur de membres
     auth.axiosInstance
@@ -383,14 +363,6 @@ onMounted(() => {
     if (Array.isArray(initIds)) {
       form.properties.proprios = initIds.map((id) => Number(id));
     }
-});
-
-// Watch mode so that when modal opens in 'add' we fetch a next id
-watch(() => props.mode, (m) => {
-  if (m === 'add') {
-    // only fetch if not already set
-    if (!form.properties?.id_unite_pastorale && !form.id) fetchNextId();
-  }
 });
 
 watch(

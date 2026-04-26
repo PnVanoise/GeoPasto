@@ -3,7 +3,7 @@ from calendar import monthrange
 from datetime import date
 
 from django.db import transaction
-from django.db.models import Max, Q
+from django.db.models import Q
 
 from django.contrib.gis.geos import MultiPolygon
 from django.contrib.gis.db.models import Union
@@ -22,8 +22,8 @@ from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from alpages.models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe
 from alpages.models import SituationDExploitation, Exploiter
 
-from alpages.models import Cheptel, Type_cheptel, Production, Categorie_pension, Espece, Race, Categorie_animaux
-from alpages.serializers import CheptelSerializer, Type_cheptelSerializer, ProductionSerializer, Categorie_pensionSerializer, EspeceSerializer, RaceSerializer, Categorie_animauxSerializer
+from alpages.models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
+from alpages.serializers import CheptelSerializer, TypeCheptelSerializer, ProductionSerializer, CategoriePensionSerializer, EspeceSerializer, RaceSerializer, CategorieAnimauxSerializer
 
 from alpages.models import Ruche, Berger, GardeSituation
 from alpages.serializers import RucheSerializer, BergerSerializer, GardeSituationSerializer
@@ -43,8 +43,8 @@ from alpages.serializers import TypeEquipementSerializer, EquipementExploitantSe
 ##########
 # Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel
 # dlg le 10/2/26
-from alpages.models import Cheptel, Type_cheptel, Production, Categorie_pension, Espece, Race, Categorie_animaux
-from alpages.serializers import CheptelSerializer, Type_cheptelSerializer, ProductionSerializer, Categorie_pensionSerializer, EspeceSerializer, RaceSerializer, Categorie_animauxSerializer
+from alpages.models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
+from alpages.serializers import CheptelSerializer, TypeCheptelSerializer, ProductionSerializer, CategoriePensionSerializer, EspeceSerializer, RaceSerializer, CategorieAnimauxSerializer
 ##########
 
 from .choices_logement import LST_STATUT, LST_ACCES_FINAL, LST_PROPRIETE, LST_TYPE_LOGEMENT, LST_MULTIUSAGE, LST_ACCUEIL_PUBLIC,\
@@ -180,9 +180,6 @@ class SituationDExploitationViewset(BaseModelViewSet):
         max_day = monthrange(new_year, value.month)[1]
         return value.replace(year=new_year, day=min(value.day, max_day))
 
-    def _next_id(self, model, field_name):
-        return (model.objects.aggregate(max_id=Max(field_name))['max_id'] or 0) + 1
-
     @action(detail=True, methods=['post'], url_path='mettre-a-jour-up')
     def mettre_a_jour_up(self, request, pk=None):
         with transaction.atomic():
@@ -246,14 +243,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            next_up_id = (
-                UnitePastorale.objects.aggregate(
-                    max_id=Max('id_unite_pastorale')
-                )['max_id'] or 0
-            ) + 1
-
             new_up = UnitePastorale.objects.create(
-                id_unite_pastorale=next_up_id,
                 code_up=old_up.code_up,
                 nom_up=old_up.nom_up,
                 annee_version=situation.annee,
@@ -321,7 +311,6 @@ class SituationDExploitationViewset(BaseModelViewSet):
             nom_situation = ' - '.join(filter(None, [nom_up, str(target_year), nom_exploitant]))
 
             new_situation = SituationDExploitation.objects.create(
-                id_situation=self._next_id(SituationDExploitation, 'id_situation'),
                 annee=target_year,
                 nom_situation=nom_situation,
                 situation_active=source.situation_active,
@@ -332,25 +321,20 @@ class SituationDExploitationViewset(BaseModelViewSet):
             )
 
             # 1) Quartiers: clone and map old->new
-            quartier_id = self._next_id(QuartierPasto, 'id_quartier')
             quartier_map = {}
             for old_quartier in source.quartiers.all().order_by('id_quartier'):
                 new_quartier = QuartierPasto.objects.create(
-                    id_quartier=quartier_id,
                     code_quartier=old_quartier.code_quartier,
                     nom_quartier=old_quartier.nom_quartier,
                     geometry=old_quartier.geometry,
                     situation_exploitation=new_situation,
                 )
                 quartier_map[old_quartier.id_quartier] = new_quartier
-                quartier_id += 1
 
             # 2) Cheptels: clone with full-year dates and map old->new
-            cheptel_id = self._next_id(Cheptel, 'id_cheptel')
             cheptel_map = {}
             for old_cheptel in source.cheptels.all().order_by('id_cheptel'):
                 new_cheptel = Cheptel.objects.create(
-                    id_cheptel=cheptel_id,
                     description=old_cheptel.description,
                     eleveur=old_cheptel.eleveur,
                     situation_exploitation=new_situation,
@@ -360,10 +344,8 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     date_fin=date(target_year, 12, 31),
                 )
                 cheptel_map[old_cheptel.id_cheptel] = new_cheptel
-                cheptel_id += 1
 
             # 3) Parcours: clone with year-shifted dates and remap quartier/cheptel
-            exploiter_id = self._next_id(Exploiter, 'id_exploiter')
             source_parcours_qs = Exploiter.objects.filter(
                 Q(cheptel__situation_exploitation=source)
                 | Q(quartier__situation_exploitation=source)
@@ -376,7 +358,6 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     continue
 
                 Exploiter.objects.create(
-                    id_exploiter=exploiter_id,
                     cheptel=new_cheptel,
                     quartier=new_quartier,
                     date_debut=self._replace_year_safe(old_parcours.date_debut, target_year),
@@ -385,30 +366,26 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     mode_conduite=old_parcours.mode_conduite,
                     commentaire=old_parcours.commentaire,
                 )
-                exploiter_id += 1
 
             # 4) Equipements exploitant: clone and reattach to new situation
-            equip_id = self._next_id(EquipementExploitant, 'id_equipement_exploitant')
-            for old_eq in source.eqptsExploitant.all().order_by('id_equipement_exploitant'):
+            for old_eq in source.eqptsExploitant.all():
                 EquipementExploitant.objects.create(
-                    id_equipement_exploitant=equip_id,
                     description=old_eq.description,
                     etat=old_eq.etat,
                     geometry=old_eq.geometry,
                     type_equipement=old_eq.type_equipement,
                     situation_exploitation=new_situation,
                 )
-                equip_id += 1
 
             serializer = self.get_serializer(new_situation)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
-class Type_cheptelViewset(BaseModelViewSet):
-    serializer_class = Type_cheptelSerializer
+class TypeCheptelViewset(BaseModelViewSet):
+    serializer_class = TypeCheptelSerializer
 
     def get_queryset(self):
-        queryset = Type_cheptel.objects.all().order_by('id_type_cheptel')
+        queryset = TypeCheptel.objects.all().order_by('id_type_cheptel')
         id_type_cheptel = self.request.GET.get('id_type_cheptel')
         if id_type_cheptel is not None:
             queryset = queryset.filter(id_type_cheptel=id_type_cheptel)
@@ -464,7 +441,7 @@ class LogementViewset(BaseModelViewSet):
     serializer_class = LogementSerializer
 
     def get_queryset(self):
-        queryset = Logement.objects.all().order_by('id')
+        queryset = Logement.objects.all().order_by('id_logement')
 
         logement_code = self.request.GET.get('logement_code')
         if logement_code is not None:
@@ -576,11 +553,11 @@ class CheptelViewset(BaseModelViewSet):
         return queryset
 
 
-class Categorie_pensionViewset(BaseModelViewSet):
-    serializer_class = Categorie_pensionSerializer
+class CategoriePensionViewset(BaseModelViewSet):
+    serializer_class = CategoriePensionSerializer
 
     def get_queryset(self):
-        queryset = Categorie_pension.objects.all().order_by('id_categorie_pension')
+        queryset = CategoriePension.objects.all().order_by('id_categorie_pension')
         id_categorie_pension = self.request.GET.get('id_categorie_pension')
         if id_categorie_pension is not None:
             queryset = queryset.filter(id_categorie_pension=id_categorie_pension)
@@ -600,11 +577,11 @@ class EspeceViewset(BaseModelViewSet):
 
 
 
-class Categorie_animauxViewset(BaseModelViewSet):
-    serializer_class = Categorie_animauxSerializer
+class CategorieAnimauxViewset(BaseModelViewSet):
+    serializer_class = CategorieAnimauxSerializer
 
     def get_queryset(self):
-        queryset = Categorie_animaux.objects.all().order_by('id_categorie_animaux')
+        queryset = CategorieAnimaux.objects.all().order_by('id_categorie_animaux')
         return queryset
     
 # Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel

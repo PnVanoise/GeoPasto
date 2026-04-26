@@ -19,7 +19,7 @@ import TypeCheptelForm2 from "@/components/TypeCheptelForm2.vue";
 const route = useRoute();
 const router = useRouter();
 
-const crud = useCrudPage("type_cheptel", "type_cheptel", "id_type_cheptel");
+const crud = useCrudPage("typecheptel", "type_cheptel", "id_type_cheptel");
 
 /**
  * Mode déduit depuis le nom de la route :

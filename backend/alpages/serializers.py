@@ -14,7 +14,7 @@ from alpages.models import SituationDExploitation, Exploiter
 from alpages.models import Ruche, Berger, GardeSituation
 from alpages.models import TypeEvenement, Evenement
 from alpages.models import TypeEquipement, EquipementAlpage, EquipementExploitant
-from alpages.models import Production, Categorie_pension, Race, Categorie_animaux, Espece, Cheptel, Type_cheptel
+from alpages.models import Production, CategoriePension, Race, CategorieAnimaux, Espece, Cheptel, TypeCheptel
 
 
 AUDIT_FIELD_NAMES = (
@@ -653,13 +653,13 @@ class ProductionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer
         model = Production
         fields = [ 'id_production', 'description' ]
 
-class Categorie_pensionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+class CategoriePensionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Catégorie de pension
     """
-    
+
     class Meta:
-        model = Categorie_pension
+        model = CategoriePension
         fields = [ 'id_categorie_pension', 'description' ]
 
 class EspeceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
@@ -682,22 +682,22 @@ class RaceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
         model = Race
         fields = [ 'id_race', 'description', 'espece', 'espece_description' ]
 
-class Categorie_animauxSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+class CategorieAnimauxSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Catégorie d'animaux
     """
-    
+
     class Meta:
-        model = Categorie_animaux
+        model = CategorieAnimaux
         fields = [ 'id_categorie_animaux', 'description', 'espece' ]
 
-class Type_cheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+class TypeCheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Type de cheptel
     """
-    
+
     class Meta:
-        model = Type_cheptel
+        model = TypeCheptel
         fields = [ 'id_type_cheptel', 'description', 'coefficient_UGB', 'production', 'pension', 'race', 'categorie_animaux' ]
         
 class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
@@ -719,10 +719,10 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     
     # Type de cheptel
     type_cheptel = serializers.PrimaryKeyRelatedField(
-        queryset = Type_cheptel.objects.all(),
+        queryset = TypeCheptel.objects.all(),
         allow_null = True,
     )
-    type_cheptel_detail = Type_cheptelSerializer(
+    type_cheptel_detail = TypeCheptelSerializer(
         source='type_cheptel',
         read_only=True,
     )

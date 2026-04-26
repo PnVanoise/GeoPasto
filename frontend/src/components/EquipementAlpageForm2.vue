@@ -4,30 +4,6 @@
   <form class="eqpt-form" @submit.prevent="submitForm">
     <div class="eqpt-layout">
       <section class="layout-card">
-        <div class="w3-row form-ligne">
-          <div class="w3-half form-cell">
-            <v-text-field
-              v-model.number="form.id_equipement_alpage"
-              type="number"
-              label="ID"
-              :disabled="props.mode === 'view' || autoId"
-              :readonly="autoId"
-              density="compact"
-              variant="outlined"
-              hide-details
-            />
-          </div>
-          <div class="w3-half form-cell">
-            <v-switch
-              v-model="autoId"
-              label="ID auto"
-              color="primary"
-              :disabled="props.mode === 'view'"
-              density="compact"
-              hide-details
-            />
-          </div>
-        </div>
 
         <div class="w3-row form-ligne">
           <div class="w3-half form-cell">
@@ -138,13 +114,11 @@ const hasGeometry = computed(() => {
   return Array.isArray(geom.coordinates) && geom.coordinates.length >= 2;
 });
 
-const autoId = ref(true);
 const typesEquipement = ref([]);
 const ups = ref([]);
 const upContextGeoData = ref(null);
 
 const form = reactive({
-  id_equipement_alpage: null,
   description: "",
   etat: "",
   type_equipement: null,
@@ -200,20 +174,6 @@ const fetchUnitePastoraleContext = async (upId) => {
   }
 };
 
-const fetchNextId = async () => {
-  if (props.mode !== "add" || !autoId.value) return;
-  try {
-    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/equipementAlpage/getNextId/`);
-    form.id_equipement_alpage = res.data?.next_id ?? form.id_equipement_alpage;
-  } catch (err) {
-    console.error("Erreur next id equipement alpage", err);
-  }
-};
-
-watch(autoId, (enabled) => {
-  if (enabled) fetchNextId();
-});
-
 watch(
   () => form.unite_pastorale,
   (newUpId) => {
@@ -225,11 +185,8 @@ watch(
   () => props.initialForm,
   (newVal) => {
     const base = newVal || {};
-    const src = base?.properties
-      ? { ...base.properties, id_equipement_alpage: base.id ?? base.properties.id_equipement_alpage }
-      : base;
+    const src = base?.properties ? { ...base.properties } : base;
 
-    form.id_equipement_alpage = src.id_equipement_alpage ?? src.id ?? null;
     form.description = src.description ?? "";
     form.etat = src.etat ?? "";
     form.type_equipement = normalizeFkId(
@@ -241,14 +198,12 @@ watch(
       ["id_unite_pastorale", "id"]
     );
     form.geometry = base.geometry ?? src.geometry ?? null;
-    if (props.mode !== "add") autoId.value = false;
   },
   { deep: true, immediate: true }
 );
 
 const submitForm = async () => {
   const payload = {
-    id_equipement_alpage: form.id_equipement_alpage,
     description: form.description,
     etat: form.etat,
     type_equipement: form.type_equipement,
@@ -273,7 +228,6 @@ onMounted(async () => {
   if (form.unite_pastorale) {
     await fetchUnitePastoraleContext(form.unite_pastorale);
   }
-  await fetchNextId();
 });
 </script>
 

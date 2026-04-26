@@ -60,12 +60,6 @@
           :disabled="props.isReadOnly"
         />
       </div>
-      <!-- next id pour debug -->
-      <div v-if="!isEdit" class="form-cell">
-        (Next ID:
-        {{ nextId }}
-        )
-      </div>
     </div>
     <div class="form-cell">
       Géométrie:
@@ -102,14 +96,8 @@ const abris = ref([]);
 
 const form = ref({ ...props.initialForm });
 
-// Variable pour stocker le nextId
-const nextId = ref(null);
-
 const submitForm = () => {
   console.log("Form submitted with:", form.value);
-  if (!props.isEdit) {
-    form.value.id = nextId.value;
-  }
   props
     .onSubmit(form.value)
     .then(() => {
@@ -131,18 +119,6 @@ watch(
 // Hooks de cycle de vie pour déboguer
 onMounted(() => {
   console.log("AbriForm component mounted");
-
-  if (!props.isEdit) {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/beneficierDe/getNextId/`)
-      .then((response) => {
-        nextId.value = response.data.next_id;
-        form.value.id = nextId.value;
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du Next ID", error);
-      });
-  }
 
   // Récupère les exploitants
   auth.axiosInstance

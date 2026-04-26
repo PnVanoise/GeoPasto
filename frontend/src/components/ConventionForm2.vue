@@ -322,9 +322,6 @@ const form = reactive({
   },
 });
 
-// Variable pour stocker le nextId
-const nextId = ref(null);
-
 // Submits
 const submitForm = () => {
   if (props.onSubmit) {
@@ -406,18 +403,6 @@ watch(
   }
 );
 
-
-onMounted(() => {
-  if (props.mode === "add") {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/conventionExploitation/getNextId/`)
-      .then(res => {
-        nextId.value = res.data.next_id;
-        form.id_berger = nextId.value;
-      })
-      .catch(err => console.error("Erreur Next ID", err));
-  };
-});
 
 const fetchTypesConvention = () => {
   auth.axiosInstance

@@ -9,7 +9,7 @@ from .models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from .models import Ruche, Berger, GardeSituation
 from .models import TypeEquipement, EquipementAlpage, EquipementExploitant
 from .models import TypeEvenement, Evenement
-from .models import Cheptel, Type_cheptel, Production, Categorie_pension, Espece, Race, Categorie_animaux
+from .models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
 
 admin.site.register(Logement, LeafletGeoAdmin)
 admin.site.register(Commodite, LeafletGeoAdmin)
@@ -58,12 +58,12 @@ admin.site.register(EquipementAlpage, LeafletGeoAdmin)
 # le 9/2/26
 
 admin.site.register(Cheptel, LeafletGeoAdmin)
-admin.site.register(Type_cheptel, LeafletGeoAdmin)
+admin.site.register(TypeCheptel, LeafletGeoAdmin)
 admin.site.register(Production, LeafletGeoAdmin)
-admin.site.register(Categorie_pension, LeafletGeoAdmin)
+admin.site.register(CategoriePension, LeafletGeoAdmin)
 admin.site.register(Espece, LeafletGeoAdmin)
 admin.site.register(Race, LeafletGeoAdmin)
-admin.site.register(Categorie_animaux, LeafletGeoAdmin) 
+admin.site.register(CategorieAnimaux, LeafletGeoAdmin)
 
 # FIN Mise à jour Cheptels / types de cheptel
 ##################

@@ -284,6 +284,7 @@ const props = defineProps({
 });
 
 const fetchCommodites = () => {
+    if (!form.value.id) return;
     console.log(`${config.API_BASE_URL}/api/logementCommodite/?logementId=${form.value.id}`);
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/logementCommodite/?logementId=${form.value.id}`)

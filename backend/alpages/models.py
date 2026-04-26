@@ -28,7 +28,7 @@ class UnitePastorale(AuditFieldsMixin, models.Model):
     Unité pastorales
     """
 
-    id_unite_pastorale = models.BigIntegerField(primary_key=True)  
+    id_unite_pastorale = models.BigAutoField(primary_key=True)
     code_up = models.CharField(max_length=50, null=False, blank=False)
     nom_up = models.CharField(max_length=50, null=False, blank=False)
     annee_version = models. BigIntegerField(null=False, blank=False)
@@ -48,7 +48,7 @@ class ProprietaireFoncier(AuditFieldsMixin, models.Model):
     Proprétaire foncier
     """
 
-    id_proprietaire = models.BigIntegerField(primary_key=True)  
+    id_proprietaire = models.BigAutoField(primary_key=True)
     nom_propr = models.CharField(max_length=50, null=False, blank=False)
     prenom_propr = models.CharField(max_length=50, null=True, blank=True)
     tel_propr = models. CharField(max_length=30, null=True, blank=True)
@@ -67,7 +67,8 @@ class ProprietaireUnitePastorale(AuditFieldsMixin, models.Model):
     """
     Association Propriétaire foncier / Unité pastorale
     """
-    
+
+    id_proprietaire_up = models.BigAutoField(primary_key=True, db_column='id')
     proprietaire = models.ForeignKey('alpages.ProprietaireFoncier', on_delete=models.PROTECT, blank=True, null=True, related_name='unites_pastorales_proprietaire')
     unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.PROTECT, blank=True, null=True, related_name='proprietaires_unite_pastorale')
 
@@ -83,7 +84,7 @@ class QuartierPasto(AuditFieldsMixin, models.Model):
     Quartier d'alpage
     """
 
-    id_quartier = models.BigIntegerField(primary_key=True)  
+    id_quartier = models.BigAutoField(primary_key=True)
     code_quartier = models.CharField(max_length=50, null=True, blank=True)
     nom_quartier = models.CharField(max_length=50, null=True, blank=True)
     geometry = models.PolygonField(srid=2154, null=True, blank=True)
@@ -131,7 +132,7 @@ class PlanDeSuivi(AuditFieldsMixin, models.Model):
     Plan de Suivi
     """
 
-    id_plan_suivi = models.BigIntegerField(primary_key=True)  
+    id_plan_suivi = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
@@ -168,7 +169,7 @@ class MesureDePlan(AuditFieldsMixin, models.Model):
     Mesure de plan
     """
 
-    id_mesure_plan = models.BigIntegerField(primary_key=True)
+    id_mesure_plan = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     commentaire = models.CharField(max_length=50, null=True, blank=True)
     debut_periode = models.DateField(null=True, blank=True)
@@ -207,7 +208,7 @@ class ConventionDExploitation(AuditFieldsMixin, models.Model):
     Convention d'exploitation
     """
     
-    id_convention = models.BigIntegerField(primary_key=True)
+    id_convention = models.BigAutoField(primary_key=True)
     surface_location = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     surface_exploitable = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     date_debut = models.DateField(null=True, blank=True)
@@ -242,7 +243,7 @@ class SituationDExploitation(AuditFieldsMixin, models.Model):
     Situation d'exploitation
     """
     
-    id_situation = models.BigIntegerField(primary_key=True)
+    id_situation = models.BigAutoField(primary_key=True)
     annee = models.PositiveSmallIntegerField()
     nom_situation = models.CharField(max_length=150, null=False, blank=False)
     situation_active = models.BooleanField(null=False, blank=False)
@@ -287,7 +288,7 @@ class Exploiter(AuditFieldsMixin, models.Model):
     Exploiter
     """
     
-    id_exploiter = models.BigIntegerField(primary_key=True)
+    id_exploiter = models.BigAutoField(primary_key=True)
 
     cheptel = models.ForeignKey(
         'alpages.Cheptel',
@@ -435,6 +436,8 @@ class EtreCompose(AuditFieldsMixin, models.Model):
     """
     EtreCompose (association exploitant / éleveurs)
     """
+
+    id_etre_compose = models.BigAutoField(primary_key=True, db_column='id')
     exploitant = models.ForeignKey(Exploitant, on_delete=models.PROTECT, blank=True, null=True, )
     eleveur = models.ForeignKey(Eleveur, on_delete=models.PROTECT, blank=True, null=True, )
 
@@ -451,7 +454,7 @@ class SubventionPNV(AuditFieldsMixin, models.Model):
     Subvention PNV
     """
     
-    id_subvention = models.BigIntegerField(primary_key=True)
+    id_subvention = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     montant = models.DecimalField(max_digits=15, decimal_places=2, null=False, blank=False)
     engage = models.BooleanField(null=False, blank=False, default=False)
@@ -470,7 +473,8 @@ class Logement(AuditFieldsMixin, models.Model):
     Classe Logement
     Champs et valeurs issues des échanges avec la SEA73
     """
-    
+
+    id_logement = models.BigAutoField(primary_key=True, db_column='id')
     logement_code = models.CharField(max_length=10)
     # Ajouté le 28/10/2025
     nom_logement = models.CharField(max_length=50, null=True, blank=True)
@@ -509,7 +513,7 @@ class Commodite(AuditFieldsMixin, models.Model):
     Commodite
     """
     
-    id_commodite = models.BigIntegerField(primary_key=True)
+    id_commodite = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=100, null=False, blank=False)
     
     class Meta:
@@ -525,7 +529,7 @@ class LogementCommodite(AuditFieldsMixin, models.Model):
     Association Logement / Commodite
     """
     
-    id_logement_commodite = models.BigIntegerField(primary_key=True)
+    id_logement_commodite = models.BigAutoField(primary_key=True)
     logement = models.ForeignKey('alpages.Logement', on_delete=models.PROTECT, blank=True, null=True, related_name='commodites')
     commodite = models.ForeignKey('alpages.Commodite', on_delete=models.PROTECT, blank=True, null=True, related_name='logements')
     etat = models.CharField(max_length=50, null=False, blank=False)
@@ -546,7 +550,7 @@ class AbriDUrgence(AuditFieldsMixin, models.Model):
     Abri d'urgence
     """
     
-    id_abri_urgence = models.BigIntegerField(primary_key=True)
+    id_abri_urgence = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
 
@@ -563,7 +567,7 @@ class AbriDUrgenceCommodite(AuditFieldsMixin, models.Model):
     Association Abri d'urgence / Commodite
     """
     
-    id_abri_urgence_commodite = models.BigIntegerField(primary_key=True)
+    id_abri_urgence_commodite = models.BigAutoField(primary_key=True)
     abri_urgence = models.ForeignKey('alpages.AbriDUrgence', on_delete=models.PROTECT, blank=True, null=True, related_name='commodites')
     commodite = models.ForeignKey('alpages.Commodite', on_delete=models.PROTECT, blank=True, null=True, related_name='abris_urgence')
     etat = models.CharField(max_length=50, null=False, blank=False)
@@ -586,7 +590,7 @@ class BeneficierDe(AuditFieldsMixin, models.Model):
     Association Exploitant / Abri d'urgence
     """
     
-    id_beneficier_de = models.BigIntegerField(primary_key=True)  
+    id_beneficier_de = models.BigAutoField(primary_key=True)
     exploitant = models.ForeignKey('alpages.Exploitant', on_delete=models.PROTECT, blank=True, null=True, related_name='beneficiaires')
     abri_urgence = models.ForeignKey('alpages.AbriDUrgence', on_delete=models.PROTECT, blank=True, null=True, related_name='beneficiaires')
     date_debut = models.DateField(null=False, blank=False)
@@ -612,7 +616,7 @@ class Ruche(AuditFieldsMixin, models.Model):
     Ruche
     """
     
-    id_ruche = models.BigIntegerField(primary_key=True)
+    id_ruche = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.PointField(srid=2154, null=False, blank=False)
     situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='ruches')
@@ -629,7 +633,7 @@ class Berger(AuditFieldsMixin, models.Model):
     Berger
     """
     
-    id_berger = models.BigIntegerField(primary_key=True)
+    id_berger = models.BigAutoField(primary_key=True)
     nom_berger = models.CharField(max_length=50, null=False, blank=False)
     prenom_berger = models.CharField(max_length=50, null=False, blank=False)
     tel_berger = models.CharField(max_length=50, null=True, blank=True)
@@ -648,7 +652,7 @@ class GardeSituation(AuditFieldsMixin, models.Model):
     Garde situation
     """
     
-    id_garde_situation = models.BigIntegerField(primary_key=True)
+    id_garde_situation = models.BigAutoField(primary_key=True)
     date_debut = models.DateField(null=False, blank=False)
     date_fin = models.DateField(null=True, blank=True)
     commentaire = models.CharField(max_length=500, null=True, blank=True)
@@ -686,7 +690,7 @@ class Production(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
-class Categorie_pension(AuditFieldsMixin, models.Model):
+class CategoriePension(AuditFieldsMixin, models.Model):
     """
     Catégorie de pension
     """
@@ -695,6 +699,7 @@ class Categorie_pension(AuditFieldsMixin, models.Model):
     description = models.CharField(max_length=50, null=False, blank=False)
     
     class Meta:
+        db_table = 'alpages_categorie_pension'
         verbose_name = "catégorie de pension"
         verbose_name_plural = "catégories de pension"
 
@@ -732,7 +737,7 @@ class Race(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
-class Categorie_animaux(AuditFieldsMixin, models.Model):
+class CategorieAnimaux(AuditFieldsMixin, models.Model):
     """
     Catégorie d'animaux
     """
@@ -742,6 +747,7 @@ class Categorie_animaux(AuditFieldsMixin, models.Model):
     espece = models.ForeignKey('alpages.Espece', on_delete=models.PROTECT, blank=True, null=True, related_name='categories_animaux')
     
     class Meta:
+        db_table = 'alpages_categorie_animaux'
         verbose_name = "catégorie d'animaux"
         verbose_name_plural = "catégories d'animaux"
     
@@ -753,12 +759,12 @@ class Cheptel(AuditFieldsMixin, models.Model):
     Cheptel
     """
     
-    id_cheptel = models.BigIntegerField(primary_key=True)
+    id_cheptel = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
 
     eleveur = models.ForeignKey('alpages.Eleveur', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
     situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
-    type_cheptel = models.ForeignKey('alpages.Type_cheptel', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
+    type_cheptel = models.ForeignKey('alpages.TypeCheptel', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
 
     nombre_animaux = models.IntegerField(null=False, blank=False)
     date_debut = models.DateField(null=True, blank=True)
@@ -777,7 +783,7 @@ class Cheptel(AuditFieldsMixin, models.Model):
     def __str__(self):
         return f"{self.eleveur} élève {self.type_cheptel} dans la situation {self.situation_exploitation}"
 
-class Type_cheptel(AuditFieldsMixin, models.Model):
+class TypeCheptel(AuditFieldsMixin, models.Model):
     """
     Type de cheptel
     """
@@ -793,11 +799,12 @@ class Type_cheptel(AuditFieldsMixin, models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(1)],
     )
     production = models.ForeignKey('alpages.Production', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
-    pension = models.ForeignKey('alpages.Categorie_pension', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
+    pension = models.ForeignKey('alpages.CategoriePension', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
     race = models.ForeignKey('alpages.Race', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
-    categorie_animaux = models.ForeignKey('alpages.Categorie_animaux', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
+    categorie_animaux = models.ForeignKey('alpages.CategorieAnimaux', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
 
     class Meta:
+        db_table = 'alpages_type_cheptel'
         verbose_name = "type de cheptel"
         verbose_name_plural = "types de cheptel"
 
@@ -829,7 +836,7 @@ class Evenement(AuditFieldsMixin, models.Model):
     Evenement
     """
     
-    id_evenement = models.BigIntegerField(primary_key=True)
+    id_evenement = models.BigAutoField(primary_key=True)
     date_evenement = models.DateField(null=False, blank=False)
     observateur = models.CharField(max_length=50, null=False, blank=False)
     date_observation = models.DateField(null=False, blank=False)
@@ -874,7 +881,7 @@ class EquipementAlpage(AuditFieldsMixin, models.Model):
     Equipement d'alpage (lié à l'UP)
     """
 
-    id_equipement_alpage = models.BigIntegerField(primary_key=True)
+    id_equipement_alpage = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
@@ -890,7 +897,7 @@ class EquipementExploitant(AuditFieldsMixin, models.Model):
     Equipement d'exploitant
     """
 
-    id_equipement_exploitant = models.BigIntegerField(primary_key=True)
+    id_equipement_exploitant = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)

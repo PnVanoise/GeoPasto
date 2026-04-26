@@ -1,5 +1,5 @@
 export const selectMenuProps = Object.freeze({
   attach: "body",
-  zIndex: 2600,
+  zIndex: 3000,
   contentClass: "eqpt-select-menu-overlay",
 });

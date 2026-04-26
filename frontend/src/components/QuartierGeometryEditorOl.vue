@@ -4,6 +4,7 @@
 
     <div v-if="!props.disabled" class="geometry-toolbar">
       <v-btn
+        v-if="!props.editOnly && !isDrawing && !isModifying"
         size="small"
         color="primary"
         variant="tonal"
@@ -13,6 +14,7 @@
         Dessiner
       </v-btn>
       <v-btn
+        v-if="!isDrawing && !isModifying && (!props.drawOnly || hasDrawn)"
         size="small"
         color="primary"
         variant="tonal"
@@ -22,6 +24,17 @@
         Modifier
       </v-btn>
       <v-btn
+        v-if="isDrawing || isModifying"
+        size="small"
+        color="success"
+        variant="tonal"
+        prepend-icon="mdi-check"
+        @click="handleValider"
+      >
+        Valider
+      </v-btn>
+      <v-btn
+        v-if="!props.drawOnly && !props.editOnly"
         size="small"
         color="error"
         variant="tonal"
@@ -75,10 +88,21 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  drawOnly: {
+    type: Boolean,
+    default: false,
+  },
+  editOnly: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "geometry-validity-change"]);
 const mapElement = ref(null);
+const isDrawing = ref(false);
+const isModifying = ref(false);
+const hasDrawn = ref(false);
 
 let map = null;
 let source = null;
@@ -494,6 +518,9 @@ const removeInteractions = () => {
 const enableDraw = () => {
   if (!map || !source) return;
   removeInteractions();
+  isDrawing.value = true;
+  hasDrawn.value = false;
+  isModifying.value = false;
 
   drawInteraction = new Draw({
     source,
@@ -510,7 +537,13 @@ const enableDraw = () => {
     emit("update:modelValue", outputGeometry);
     emitGeometryValidity(outputGeometry);
     fitToGeometry(event.feature?.getGeometry?.());
-    enableModify();
+    if (props.drawOnly) {
+      isDrawing.value = false;
+      hasDrawn.value = true;
+      removeInteractions();
+    } else {
+      enableModify();
+    }
   });
 
   map.addInteraction(drawInteraction);
@@ -528,7 +561,7 @@ const enableModify = () => {
 
   modifyInteraction = new Modify({ source });
   modifyInteraction.on("modifyend", () => {
-    emitGeometry();
+    if (!props.editOnly && !props.drawOnly) emitGeometry();
   });
 
   map.addInteraction(modifyInteraction);
@@ -538,6 +571,24 @@ const enableModify = () => {
     contextSnapInteraction = new Snap({ source: contextSource });
     map.addInteraction(contextSnapInteraction);
   }
+
+  if (props.editOnly || props.drawOnly) isModifying.value = true;
+};
+
+const validateModification = () => {
+  emitGeometry();
+  removeInteractions();
+  isModifying.value = false;
+};
+
+const finishDraw = () => {
+  if (!drawInteraction) return;
+  try { drawInteraction.finishDrawing(); } catch (_) { /* pas assez de points */ }
+};
+
+const handleValider = () => {
+  if (isDrawing.value) finishDraw();
+  else if (isModifying.value) validateModification();
 };
 
 const clearGeometry = () => {
@@ -551,6 +602,8 @@ const applyInteractionMode = () => {
   if (!map || !source) return;
   removeInteractions();
   if (props.disabled) return;
+  if (props.drawOnly) return;
+  if (props.editOnly) return;
 
   if (source.getFeatures().length) {
     enableModify();
@@ -685,7 +738,21 @@ watch(
 
 watch(
   () => props.disabled,
-  () => {
+  () => { applyInteractionMode(); }
+);
+
+watch(
+  () => props.editOnly,
+  (val) => {
+    if (!val) isModifying.value = false;
+    applyInteractionMode();
+  }
+);
+
+watch(
+  () => props.drawOnly,
+  (val) => {
+    if (!val) { isDrawing.value = false; hasDrawn.value = false; isModifying.value = false; }
     applyInteractionMode();
   }
 );

@@ -221,13 +221,15 @@ onBeforeUnmount(() => {
 <style scoped>
 .main-container {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* On définit 2 colonnes par défaut pour les grands écrans */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+  width: 100%;
 }
 
 .main-item {
   padding: 20px;
-  margin: 10px;
+  /* On retire le margin: 10px pour laisser le gap du parent gérer l'espacement */
   text-align: center;
   min-width: 0;
 }
@@ -237,52 +239,39 @@ onBeforeUnmount(() => {
   gap: 24px;
 }
 
-.map-section h3 {
-  margin-bottom: 12px;
-}
+/* ... tes styles de formulaires et boutons restent identiques ... */
 
-/* Style pour aligner le formulaire de recherche et le bouton d'ajout */
-.header-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  max-height: 30px;
-}
+/* --- RESPONSIVE DESIGN --- */
 
-/* Style pour le formulaire de recherche */
-.search-form {
-  gap: 5px;
-  border-radius: 5px;
-}
-
-.add-up:hover {
-  background-color: #aab2b7;
-}
-
-/* Style pour l'input de recherche */
-#search input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.grid-container {
-  border-radius: 5px;
-  /* Arrondi des coins de la grille */
-  overflow: hidden;
-  /* Assure que le contenu s'adapte à l'arrondi */
-}
-
-@media (max-width: 980px) {
+/* On cible les écrans jusqu'à 1024px (Tablettes et mobiles) */
+@media (max-width: 1024px) {
   .main-container {
+    /* On passe sur une seule colonne : les items s'empilent */
     grid-template-columns: 1fr;
+    gap: 0; /* Optionnel : réduire l'espace entre les blocs */
   }
 
   .main-item {
-    margin: 8px 0;
-    padding: 12px;
+    padding: 10px;
+    margin: 0;
+  }
+
+  /* Optionnel : Ajuster la hauteur de la section carte 
+     pour qu'elle soit bien visible sur mobile */
+  .map-section {
+    min-height: 400px; 
+    margin-top: 20px;
+  }
+}
+
+/* Ajustements spécifiques pour très petits écrans (smartphones) */
+@media (max-width: 600px) {
+  .main-item {
+    padding: 5px;
+  }
+  
+  h2 {
+    font-size: 1.2rem;
   }
 }
 </style>

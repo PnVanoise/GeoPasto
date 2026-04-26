@@ -95,9 +95,84 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/unite-pastorale',
+      children: [
+        {
+          path: '',
+          name: 'unitepastorale-list',
+          component: () => import('@/views/unite_pastorale/UnitePastoraleList.vue'),
+        },
+        {
+          path: 'add',
+          name: 'unitepastorale-add',
+          component: () => import('@/views/unite_pastorale/UnitePastoraleForm.vue'),
+        },
+        {
+          path: ':id',
+          name: 'unitepastorale-view',
+          component: () => import('@/views/unite_pastorale/UnitePastoraleForm.vue'),
+        },
+        {
+          path: ':id/edit',
+          name: 'unitepastorale-edit',
+          component: () => import('@/views/unite_pastorale/UnitePastoraleForm.vue'),
+        },
+      ],
+    },
+    {
+      path: '/situation-exploitation',
+      children: [
+        {
+          path: '',
+          name: 'situationdexploitation-list',
+          component: () => import('@/views/situation_exploitation/SituationExploitationList.vue'),
+        },
+        {
+          path: 'add',
+          name: 'situationdexploitation-add',
+          component: () => import('@/views/situation_exploitation/SituationExploitationForm.vue'),
+        },
+        {
+          path: ':id',
+          name: 'situationdexploitation-view',
+          component: () => import('@/views/situation_exploitation/SituationExploitationForm.vue'),
+        },
+        {
+          path: ':id/edit',
+          name: 'situationdexploitation-edit',
+          component: () => import('@/views/situation_exploitation/SituationExploitationForm.vue'),
+        },
+      ],
+    },
+    {
+      path: '/type-cheptel',
+      children: [
+        {
+          path: '',
+          name: 'type_cheptel-list',
+          component: () => import('@/views/type_cheptel/TypeCheptelList.vue'),
+        },
+        {
+          path: 'add',
+          name: 'type_cheptel-add',
+          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
+        },
+        {
+          path: ':id',
+          name: 'type_cheptel-view',
+          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
+        },
+        {
+          path: ':id/edit',
+          name: 'type_cheptel-edit',
+          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
+        },
+      ],
+    },
+    {
       path: '/',
       name: 'home',
-      component: UnitePastoraleList2,
+      component: () => import('@/views/unite_pastorale/UnitePastoraleList.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {

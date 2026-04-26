@@ -686,7 +686,7 @@ class Production(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
-class Categorie_pension(AuditFieldsMixin, models.Model):
+class CategoriePension(AuditFieldsMixin, models.Model):
     """
     Catégorie de pension
     """
@@ -695,6 +695,7 @@ class Categorie_pension(AuditFieldsMixin, models.Model):
     description = models.CharField(max_length=50, null=False, blank=False)
     
     class Meta:
+        db_table = 'alpages_categorie_pension'
         verbose_name = "catégorie de pension"
         verbose_name_plural = "catégories de pension"
 
@@ -732,7 +733,7 @@ class Race(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
-class Categorie_animaux(AuditFieldsMixin, models.Model):
+class CategorieAnimaux(AuditFieldsMixin, models.Model):
     """
     Catégorie d'animaux
     """
@@ -742,6 +743,7 @@ class Categorie_animaux(AuditFieldsMixin, models.Model):
     espece = models.ForeignKey('alpages.Espece', on_delete=models.PROTECT, blank=True, null=True, related_name='categories_animaux')
     
     class Meta:
+        db_table = 'alpages_categorie_animaux'
         verbose_name = "catégorie d'animaux"
         verbose_name_plural = "catégories d'animaux"
     
@@ -758,7 +760,7 @@ class Cheptel(AuditFieldsMixin, models.Model):
 
     eleveur = models.ForeignKey('alpages.Eleveur', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
     situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
-    type_cheptel = models.ForeignKey('alpages.Type_cheptel', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
+    type_cheptel = models.ForeignKey('alpages.TypeCheptel', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
 
     nombre_animaux = models.IntegerField(null=False, blank=False)
     date_debut = models.DateField(null=True, blank=True)
@@ -777,7 +779,7 @@ class Cheptel(AuditFieldsMixin, models.Model):
     def __str__(self):
         return f"{self.eleveur} élève {self.type_cheptel} dans la situation {self.situation_exploitation}"
 
-class Type_cheptel(AuditFieldsMixin, models.Model):
+class TypeCheptel(AuditFieldsMixin, models.Model):
     """
     Type de cheptel
     """
@@ -793,11 +795,12 @@ class Type_cheptel(AuditFieldsMixin, models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(1)],
     )
     production = models.ForeignKey('alpages.Production', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
-    pension = models.ForeignKey('alpages.Categorie_pension', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
+    pension = models.ForeignKey('alpages.CategoriePension', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
     race = models.ForeignKey('alpages.Race', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
-    categorie_animaux = models.ForeignKey('alpages.Categorie_animaux', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
+    categorie_animaux = models.ForeignKey('alpages.CategorieAnimaux', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
 
     class Meta:
+        db_table = 'alpages_type_cheptel'
         verbose_name = "type de cheptel"
         verbose_name_plural = "types de cheptel"
 

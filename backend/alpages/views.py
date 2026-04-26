@@ -22,8 +22,8 @@ from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from alpages.models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe
 from alpages.models import SituationDExploitation, Exploiter
 
-from alpages.models import Cheptel, Type_cheptel, Production, Categorie_pension, Espece, Race, Categorie_animaux
-from alpages.serializers import CheptelSerializer, Type_cheptelSerializer, ProductionSerializer, Categorie_pensionSerializer, EspeceSerializer, RaceSerializer, Categorie_animauxSerializer
+from alpages.models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
+from alpages.serializers import CheptelSerializer, TypeCheptelSerializer, ProductionSerializer, CategoriePensionSerializer, EspeceSerializer, RaceSerializer, CategorieAnimauxSerializer
 
 from alpages.models import Ruche, Berger, GardeSituation
 from alpages.serializers import RucheSerializer, BergerSerializer, GardeSituationSerializer
@@ -43,8 +43,8 @@ from alpages.serializers import TypeEquipementSerializer, EquipementExploitantSe
 ##########
 # Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel
 # dlg le 10/2/26
-from alpages.models import Cheptel, Type_cheptel, Production, Categorie_pension, Espece, Race, Categorie_animaux
-from alpages.serializers import CheptelSerializer, Type_cheptelSerializer, ProductionSerializer, Categorie_pensionSerializer, EspeceSerializer, RaceSerializer, Categorie_animauxSerializer
+from alpages.models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
+from alpages.serializers import CheptelSerializer, TypeCheptelSerializer, ProductionSerializer, CategoriePensionSerializer, EspeceSerializer, RaceSerializer, CategorieAnimauxSerializer
 ##########
 
 from .choices_logement import LST_STATUT, LST_ACCES_FINAL, LST_PROPRIETE, LST_TYPE_LOGEMENT, LST_MULTIUSAGE, LST_ACCUEIL_PUBLIC,\
@@ -404,11 +404,11 @@ class SituationDExploitationViewset(BaseModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
-class Type_cheptelViewset(BaseModelViewSet):
-    serializer_class = Type_cheptelSerializer
+class TypeCheptelViewset(BaseModelViewSet):
+    serializer_class = TypeCheptelSerializer
 
     def get_queryset(self):
-        queryset = Type_cheptel.objects.all().order_by('id_type_cheptel')
+        queryset = TypeCheptel.objects.all().order_by('id_type_cheptel')
         id_type_cheptel = self.request.GET.get('id_type_cheptel')
         if id_type_cheptel is not None:
             queryset = queryset.filter(id_type_cheptel=id_type_cheptel)
@@ -576,11 +576,11 @@ class CheptelViewset(BaseModelViewSet):
         return queryset
 
 
-class Categorie_pensionViewset(BaseModelViewSet):
-    serializer_class = Categorie_pensionSerializer
+class CategoriePensionViewset(BaseModelViewSet):
+    serializer_class = CategoriePensionSerializer
 
     def get_queryset(self):
-        queryset = Categorie_pension.objects.all().order_by('id_categorie_pension')
+        queryset = CategoriePension.objects.all().order_by('id_categorie_pension')
         id_categorie_pension = self.request.GET.get('id_categorie_pension')
         if id_categorie_pension is not None:
             queryset = queryset.filter(id_categorie_pension=id_categorie_pension)
@@ -600,11 +600,11 @@ class EspeceViewset(BaseModelViewSet):
 
 
 
-class Categorie_animauxViewset(BaseModelViewSet):
-    serializer_class = Categorie_animauxSerializer
+class CategorieAnimauxViewset(BaseModelViewSet):
+    serializer_class = CategorieAnimauxSerializer
 
     def get_queryset(self):
-        queryset = Categorie_animaux.objects.all().order_by('id_categorie_animaux')
+        queryset = CategorieAnimaux.objects.all().order_by('id_categorie_animaux')
         return queryset
     
 # Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel

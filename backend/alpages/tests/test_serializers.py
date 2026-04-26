@@ -22,8 +22,8 @@ from alpages.models import (
     Logement, Commodite, LogementCommodite,
     AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe,
     Berger, GardeSituation,
-    Production, Categorie_pension, Espece, Race, Categorie_animaux,
-    Cheptel, Type_cheptel,
+    Production, CategoriePension, Espece, Race, CategorieAnimaux,
+    Cheptel, TypeCheptel,
     TypeEvenement, TypeEquipement,
 )
 from alpages.serializers import (
@@ -34,8 +34,8 @@ from alpages.serializers import (
     SubventionPNVSerializer, LogementCommoditeSerializer,
     TypeConventionSerializer, TypeDeSuiviSerializer, TypeDeMesureSerializer,
     BergerSerializer, ProductionSerializer,
-    Categorie_pensionSerializer, EspeceSerializer, RaceSerializer,
-    Categorie_animauxSerializer, CheptelSerializer, Type_cheptelSerializer,
+    CategoriePensionSerializer, EspeceSerializer, RaceSerializer,
+    CategorieAnimauxSerializer, CheptelSerializer, TypeCheptelSerializer,
     TypeEvenementSerializer, TypeEquipementSerializer, AbriDUrgenceSerializer,
     CommoditeSerializer, AbriDUrgenceCommoditeSerializer,
 )
@@ -567,12 +567,12 @@ class ProductionSerializerFieldsTest(TestCase):
         self.assertIn('description', data)
 
 
-class Categorie_pensionSerializerFieldsTest(TestCase):
+class CategoriePensionSerializerFieldsTest(TestCase):
     def test_fields_present(self):
-        cp = Categorie_pension.objects.create(
+        cp = CategoriePension.objects.create(
             id_categorie_pension=100, description='PensionTest',
         )
-        data = Categorie_pensionSerializer(cp).data
+        data = CategoriePensionSerializer(cp).data
         self.assertIn('id_categorie_pension', data)
         self.assertIn('description', data)
 
@@ -597,13 +597,13 @@ class RaceSerializerFieldsTest(TestCase):
         self.assertEqual(data['espece_description'], 'Bovin')
 
 
-class Categorie_animauxSerializerFieldsTest(TestCase):
+class CategorieAnimauxSerializerFieldsTest(TestCase):
     def test_fields_present(self):
         esp = Espece.objects.create(id_espece=102, description='Ovin')
-        ca = Categorie_animaux.objects.create(
+        ca = CategorieAnimaux.objects.create(
             id_categorie_animaux=100, description='Agneau', espece=esp,
         )
-        data = Categorie_animauxSerializer(ca).data
+        data = CategorieAnimauxSerializer(ca).data
         self.assertIn('id_categorie_animaux', data)
         self.assertIn('description', data)
         self.assertIn('espece', data)
@@ -624,12 +624,12 @@ class CheptelSerializerFieldsTest(TestCase):
         self.assertIn('description', data)
 
 
-class Type_cheptelSerializerFieldsTest(TestCase):
+class TypeCheptelSerializerFieldsTest(TestCase):
     def test_fields_present(self):
-        tc = Type_cheptel.objects.create(
+        tc = TypeCheptel.objects.create(
             id_type_cheptel=100, description='TypeCheptelTest',
         )
-        data = Type_cheptelSerializer(tc).data
+        data = TypeCheptelSerializer(tc).data
         self.assertIn('id_type_cheptel', data)
         self.assertIn('description', data)
         self.assertIn('coefficient_UGB', data)

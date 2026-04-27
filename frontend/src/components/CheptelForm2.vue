@@ -1,5 +1,5 @@
 <template>
-  <h3 class="w3-center w3-margin">{{ formTitle }}</h3>
+  <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
   <!-- <div class="debug-block" style="margin:0.5rem 0;padding:0.5rem;border:1px dashed #ccc;">
     <div style="font-weight:600;margin-bottom:0.25rem;">initialForm (parent / selectedItem):</div>
     <pre style="max-height:160px;overflow:auto;margin:0 0 0.5rem 0;">{{ JSON.stringify(props.initialForm, null, 2) }}</pre>
@@ -7,7 +7,8 @@
     <pre style="max-height:160px;overflow:auto;margin:0">{{ JSON.stringify(form, null, 2) }}</pre>
   </div> -->
 
-  <form @submit.prevent="submitForm">
+  <form class="cheptel-form" @submit.prevent="submitForm">
+    <section class="layout-card">
     <!-- Ligne 1 : Situation | Eleveur -->
     <div class="w3-row form-ligne">
       <div class="w3-half form-cell">
@@ -113,7 +114,8 @@
         />
       </div>
     </div>
-    
+    </section>
+
     <div class="form-actions">
       <v-btn density="comfortable" color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
       <v-btn density="comfortable" v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">{{ btTitle }}</v-btn>
@@ -239,20 +241,7 @@ watch(
   { immediate: true }
 );
 
-// Next ID pour l'ajout
-const nextId = ref(null);
 onMounted(() => {
-  if (props.mode === "add") {
-    // next id for cheptel
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/cheptel/getNextId/`)
-      .then(res => {
-        nextId.value = res.data.next_id;
-        form.id_cheptel = nextId.value;
-      })
-      .catch(err => console.error("Erreur Next ID cheptel", err));
-  };
-
   // Récupère les situations
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/situationExploitation/`)
@@ -308,19 +297,6 @@ const submitForm = () => {
       const type = (typeCs.value || []).find(t => t.id_type_cheptel === form.type_cheptel) || {};
       form.description = `${ev.nom_complet || (ev.nom_eleveur ? `${ev.nom_eleveur} ${ev.prenom_eleveur}` : '')} ${type.description ? ' - ' + type.description : ''}`.trim();
     }
-    if (!form.id_cheptel) {
-      // try to fetch next id synchronously-ish
-      auth.axiosInstance.get(`${config.API_BASE_URL}/api/cheptel/getNextId/`).then(res => {
-        form.id_cheptel = res.data.next_id;
-        props.onSubmit(form).then(() => console.log("Form submitted OK")).catch(err => console.error(err));
-      }).catch(err => {
-        console.error('Erreur Next ID cheptel', err);
-        // fallback: still try to submit
-        props.onSubmit(form).then(() => console.log("Form submitted OK")).catch(err => console.error(err));
-      });
-      return;
-    }
-
     props.onSubmit(form)
       .then(() => console.log("Form submitted OK"))
       .catch(err => console.error(err));
@@ -333,6 +309,43 @@ const closeModal = () => {
 };
 </script>
 <style scoped>
+.layout-card {
+  background: #ffffff;
+  border: 1px solid #d7dde6;
+  border-left: 3px solid #64748b;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.layout-card:hover {
+  border-color: #c8d0db;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+}
+
+.cheptel-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.cheptel-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+
+.cheptel-form :deep(.v-input) {
+  font-size: 0.88rem;
+}
+
+.cheptel-form :deep(.v-field__input),
+.cheptel-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
+}
+
+.form-ligne { padding: 4px; }
+.form-cell { padding: 4px; }
+
 .form-actions {
   display: flex;
   justify-content: center;
@@ -342,6 +355,6 @@ const closeModal = () => {
 }
 
 .disable-events {
-  pointer-events: none
+  pointer-events: none;
 }
 </style>

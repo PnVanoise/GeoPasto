@@ -145,6 +145,180 @@ const router = createRouter({
       ],
     },
     {
+      path: '/equipement-alpage',
+      children: [
+        {
+          path: '',
+          name: 'equipementalpage-list',
+          component: () => import('@/views/equipement_alpage/EquipementAlpageList.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'add',
+          name: 'equipementalpage-add',
+          component: () => import('@/views/equipement_alpage/EquipementAlpagePageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id',
+          name: 'equipementalpage-view',
+          component: () => import('@/views/equipement_alpage/EquipementAlpagePageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id/edit',
+          name: 'equipementalpage-edit',
+          component: () => import('@/views/equipement_alpage/EquipementAlpagePageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
+    {
+      path: '/equipement-exploitant',
+      children: [
+        {
+          path: '',
+          name: 'equipementexploitant-list',
+          component: () => import('@/views/equipement_exploitant/EquipementExploitantList.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'add',
+          name: 'equipementexploitant-add',
+          component: () => import('@/views/equipement_exploitant/EquipementExploitantPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id',
+          name: 'equipementexploitant-view',
+          component: () => import('@/views/equipement_exploitant/EquipementExploitantPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id/edit',
+          name: 'equipementexploitant-edit',
+          component: () => import('@/views/equipement_exploitant/EquipementExploitantPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
+    {
+      path: '/evenement',
+      children: [
+        {
+          path: '',
+          name: 'evenement-list',
+          component: () => import('@/views/evenement/EvenementList.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'add',
+          name: 'evenement-add',
+          component: () => import('@/views/evenement/EvenementPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id',
+          name: 'evenement-view',
+          component: () => import('@/views/evenement/EvenementPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id/edit',
+          name: 'evenement-edit',
+          component: () => import('@/views/evenement/EvenementPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
+    {
+      path: '/exploiter',
+      children: [
+        {
+          path: '',
+          name: 'exploiter-list',
+          component: () => import('@/views/exploiter/ExploiterList.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'add',
+          name: 'exploiter-add',
+          component: () => import('@/views/exploiter/ExploiterPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id',
+          name: 'exploiter-view',
+          component: () => import('@/views/exploiter/ExploiterPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id/edit',
+          name: 'exploiter-edit',
+          component: () => import('@/views/exploiter/ExploiterPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
+    {
+      path: '/quartier-pasto',
+      children: [
+        {
+          path: '',
+          name: 'quartierpasto-list',
+          component: () => import('@/views/quartier_pasto/QuartierPastoList.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'add',
+          name: 'quartierpasto-add',
+          component: () => import('@/views/quartier_pasto/QuartierPastoPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id',
+          name: 'quartierpasto-view',
+          component: () => import('@/views/quartier_pasto/QuartierPastoPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id/edit',
+          name: 'quartierpasto-edit',
+          component: () => import('@/views/quartier_pasto/QuartierPastoPageForm.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
+    {
+      path: '/cheptel',
+      children: [
+        {
+          path: '',
+          name: 'cheptel-list',
+          component: () => import('@/views/cheptel/CheptelList.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'add',
+          name: 'cheptel-add',
+          component: () => import('@/views/cheptel/CheptelForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id',
+          name: 'cheptel-view',
+          component: () => import('@/views/cheptel/CheptelForm.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: ':id/edit',
+          name: 'cheptel-edit',
+          component: () => import('@/views/cheptel/CheptelForm.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
+    {
       path: '/type-cheptel',
       children: [
         {

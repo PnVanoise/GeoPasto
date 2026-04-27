@@ -1,4 +1,6 @@
 <template>
+  <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
+
   <v-form class="quartier-form" @submit.prevent="submitForm">
     <div class="quartier-layout">
       <section class="layout-card fields-card">
@@ -18,16 +20,6 @@
           required
         />
 
-        <v-select
-          v-model="form.properties.unite_pastorale"
-          :items="ups.features || []"
-          item-title="properties.nom_up"
-          item-value="id"
-          label="Unité pastorale"
-          variant="underlined"
-          density="comfortable"
-          clearable
-        />
 
         <v-select
           v-model="form.properties.situation_exploitation"
@@ -65,7 +57,8 @@
     </div>
 
     <div class="actions-row">
-      <v-btn type="submit" color="primary">Enregistrer</v-btn>
+      <v-btn density="comfortable" color="info" prepend-icon="mdi-arrow-left-circle" @click="closeForm">Retour</v-btn>
+      <v-btn density="comfortable" color="success" type="submit" prepend-icon="mdi-content-save">Enregistrer</v-btn>
     </div>
   </v-form>
 </template>
@@ -77,11 +70,30 @@ import auth from "../../auth";
 import config from "../../config";
 import QuartierGeometryEditorOl from "./QuartierGeometryEditorOl.vue";
 
+const resolvedMode = computed(() => {
+  if (props.mode === "add" || props.mode === "change" || props.mode === "view") {
+    return props.mode;
+  }
+  return props.isEdit ? "change" : "add";
+});
+
+
 const props = defineProps({
   initialForm: Object,
+  mode: { type: String, default: null },
   isEdit: Boolean,
   onSubmit: Function,
+  onClose: Function,
+  itemLabel: { type: String, default: "un quartier pastoral" },
 });
+
+const formTitle = computed(() => {
+  if (resolvedMode.value === "add") return `Ajouter ${props.itemLabel}`;
+  if (resolvedMode.value === "change") return `Modifier ${props.itemLabel}`;
+  return `Voir les détails de ${props.itemLabel}`;
+});
+
+const closeForm = () => props.onClose?.();
 
 const ups = ref([]);
 const situations = ref([]);
@@ -425,10 +437,37 @@ watch(
 }
 
 .layout-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px;
   background: #ffffff;
+  border: 1px solid #d7dde6;
+  border-left: 3px solid #64748b;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.layout-card:hover {
+  border-color: #c8d0db;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+}
+
+.quartier-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.quartier-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+
+.quartier-form :deep(.v-input) {
+  font-size: 0.88rem;
+}
+
+.quartier-form :deep(.v-field__input),
+.quartier-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
 }
 
 .fields-card {
@@ -449,7 +488,8 @@ watch(
 .actions-row {
   margin-top: 14px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 @media (max-width: 980px) {

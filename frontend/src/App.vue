@@ -332,8 +332,8 @@ watch(
               <RouterLink to="/PretAbris">Prets d'abris</RouterLink>
             </div>
 
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/Cheptels2' }]">
-              <RouterLink to="/Cheptels2">Cheptels</RouterLink>
+            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/cheptel') }]">
+              <RouterLink to="/cheptel">Cheptels</RouterLink>
             </div>
 
             <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/Bergers2' }]">

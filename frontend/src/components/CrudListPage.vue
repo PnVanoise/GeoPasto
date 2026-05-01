@@ -80,6 +80,7 @@
     </div>
 
     <Grid3
+      ref="gridRef"
       :data="filteredEntries"
       :showActions="false"
       @export-all="handleExportAll"
@@ -87,9 +88,12 @@
       :actions="computedActions"
       :idField="idField"
       :bgColor="bgColor"
+      :selectedId="selectedId"
       @view="crud.openView"
       @edit="handleEdit"
       @delete="handleDelete"
+      @row-hover="$emit('row-hover', $event)"
+      @row-click="$emit('row-click', $event)"
     />
   </div>
 </template>
@@ -120,6 +124,15 @@ const props = defineProps({
   viewOnly:         { type: Boolean,  default: false },
   requestParams:    { type: Object,   default: null },
   addQueryParams:   { type: Object,   default: () => ({}) },
+  selectedId:       { type: [Number, String], default: null },
+});
+
+const emit = defineEmits(["update:filteredItems", "row-hover", "row-click"]);
+
+const gridRef = ref(null);
+
+defineExpose({
+  scrollToId(id) { gridRef.value?.scrollToId(id); },
 });
 
 // ── useCrudPage à la place de useCrud ────────────────────────────────────────
@@ -161,6 +174,8 @@ const filteredEntries = computed(() => {
 
   return items;
 });
+
+watch(filteredEntries, (val) => emit("update:filteredItems", val));
 
 // ── Cycle de vie ─────────────────────────────────────────────────────────────
 

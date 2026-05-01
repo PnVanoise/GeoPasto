@@ -27,9 +27,22 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  selectedId: {
+    type: [Number, String],
+    default: null,
+  },
 });
 
-const emit = defineEmits(["edit", "delete", "view", "export-all"]);
+const emit = defineEmits(["edit", "delete", "view", "export-all", "row-hover", "row-click"]);
+
+const tbodyEl = ref(null);
+
+defineExpose({
+  scrollToId(id) {
+    const row = tbodyEl.value?.querySelector(`[data-row-id="${id}"]`);
+    row?.scrollIntoView({ behavior: "smooth", block: "center" });
+  },
+});
 
 // Sorting state (unifié)
 const sortField = ref(null);
@@ -240,8 +253,14 @@ function performDelete() {
           <th class="actions-col" :style="{ backgroundColor: bgColor }">Actions</th>
         </tr>
       </thead>
-      <tbody>
-        <tr v-for="entry in displayedData" :key="getItemId(entry)">
+      <tbody ref="tbodyEl">
+        <tr v-for="entry in displayedData" :key="getItemId(entry)"
+            class="data-row"
+            :data-row-id="getItemId(entry)"
+            :class="{ 'row-selected': selectedId != null && getItemId(entry) == selectedId }"
+            @mouseenter="$emit('row-hover', entry)"
+            @mouseleave="$emit('row-hover', null)"
+            @click="$emit('row-click', entry)">
           <td v-for="col in columns" :key="col.field">
             <template v-if="isBooleanCell(entry, col)">
               <input type="checkbox" :checked="nestedValue(entry, col.field)" disabled />
@@ -250,7 +269,7 @@ function performDelete() {
               {{ formatCellValue(entry, col) }}
             </template>
           </td>
-          <td class="actions-col">
+          <td class="actions-col" @click.stop>
             <div class="actions-cell-inner">
               <template v-if="actions.view">
                 <font-awesome-icon
@@ -362,6 +381,19 @@ function performDelete() {
   min-width: 1%;
   white-space: nowrap;
   text-align: right;
+}
+
+.data-row {
+  cursor: pointer;
+}
+
+.data-row:hover td {
+  background-color: #fff7ed;
+}
+
+.data-row.row-selected td {
+  background-color: #fef2f2;
+  box-shadow: inset 3px 0 0 #DC2626;
 }
 
 .table-with-fixed-header td.actions-col {

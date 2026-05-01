@@ -20,7 +20,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
-import EventForm2 from "@/components/EventForm2.vue";
+import EventForm2 from "../../features/evenement/EventForm2.vue";
 import auth from '@/services/axios';
 import config from "@/../config";
 

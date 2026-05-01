@@ -14,7 +14,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import TypeCheptelForm2 from "@/components/TypeCheptelForm2.vue";
+import TypeCheptelForm2 from "../../features/nomenclatures/TypeCheptelForm2.vue";
 
 const route = useRoute();
 const router = useRouter();

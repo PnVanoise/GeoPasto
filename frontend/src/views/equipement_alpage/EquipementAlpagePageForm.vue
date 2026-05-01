@@ -18,7 +18,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
-import EquipementAlpageForm2 from "@/components/EquipementAlpageForm2.vue";
+import EquipementAlpageForm2 from "../../features/equipement/EquipementAlpageForm2.vue";
 import auth from '@/services/axios';
 import config from "@/../config";
 

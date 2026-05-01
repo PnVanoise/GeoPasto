@@ -18,7 +18,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
-import CheptelForm2 from "@/components/CheptelForm2.vue";
+import CheptelForm2 from "../../features/cheptel/CheptelForm2.vue";
 import auth from '@/services/axios';
 import config from "@/../config";
 

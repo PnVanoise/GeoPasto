@@ -14,7 +14,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import CrudListPage from '@/components/CrudListPage.vue';
+import CrudListPage from '../../components/crud/CrudListPage.vue';
 import auth from '@/services/axios';
 
 const columns = [

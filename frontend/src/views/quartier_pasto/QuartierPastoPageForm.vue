@@ -20,7 +20,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import QuartierPastoForm from "@/components/QuartierPastoForm.vue";
+import QuartierPastoForm from "../../features/quartier_pasto/QuartierPastoForm.vue";
 import auth from '@/services/axios';
 import config from "@/../config";
 

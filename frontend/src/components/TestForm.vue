@@ -22,7 +22,7 @@
 
 <script setup>
 import { ref } from "vue";
-import MapEditMultipolygon2 from "./MapEditMultipolygon2.vue";
+import MapEditMultipolygon2 from "./map/MapEditMultipolygon2.vue";
 
 const quartierNom = ref("test");
 const quartierGeom = ref({

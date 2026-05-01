@@ -2,10 +2,10 @@
 import { computed, ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 
-import Notification from "./components/Notification.vue";
-import NotificationContainer from "./components/NotificationContainer.vue";
-import Login from "./components/Login.vue";
-import Logout from "./components/Logout.vue";
+import Notification from "./components/ui/Notification.vue";
+import NotificationContainer from "./components/ui/NotificationContainer.vue";
+import Login from "./components/auth/Login.vue";
+import Logout from "./components/auth/Logout.vue";
 
 import { useMainStore } from "./store";
 import auth from '@/services/axios';

@@ -16,6 +16,7 @@ import GeoJSON from "ol/format/GeoJSON";
 import Map from "ol/Map";
 import View from "ol/View";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
+import Control from "ol/control/Control";
 import { Fill, Stroke, Style, Circle as CircleStyle, RegularShape } from "ol/style";
 import Overlay from "ol/Overlay";
 import TileLayer from "ol/layer/Tile";
@@ -27,22 +28,55 @@ import XYZ from "ol/source/XYZ";
 import LayerSwitcher from "ol-layerswitcher";
 import "ol-layerswitcher/dist/ol-layerswitcher.css";
 
-const emit = defineEmits(["open-popup-item"]);
+const emit = defineEmits(["open-popup-item", "feature-click"]);
 
 const props = defineProps({
   layers: {
     type: Array,
     default: () => [],
   },
+  highlightedId: {
+    type: [Number, String],
+    default: null,
+  },
+  selectedId: {
+    type: [Number, String],
+    default: null,
+  },
 });
 
 const mapElement = ref(null);
 const popupElement = ref(null);
+
+let mapHoveredId = null;
 const popupContent = ref(null);
 
 let map = null;
 let vectorLayer = null;
 let popupOverlay = null;
+
+const fitToData = () => {
+  if (!map || !vectorLayer) return;
+  const extent = vectorLayer.getSource().getExtent();
+  if (extent && extent.every((v) => Number.isFinite(v))) {
+    map.getView().fit(extent, { duration: 300, padding: [30, 30, 30, 30], maxZoom: 16 });
+  }
+};
+
+const buildFitControl = () => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.title = "Ajuster la vue aux données";
+  button.innerHTML = `<svg viewBox="0 0 18 18" width="12" height="12" fill="currentColor">
+    <path d="M1 1h5V3H3v3H1zM1 17h5v-2H3v-3H1zM17 1h-5v2h3v3h2zM17 17h-5v-2h3v-3h2z"/>
+  </svg>`;
+  button.addEventListener("click", fitToData);
+
+  const div = document.createElement("div");
+  div.className = "ol-fit-extent ol-unselectable ol-control";
+  div.appendChild(button);
+  return new Control({ element: div });
+};
 
 const buildXyzSource = (url) => {
   return new XYZ({
@@ -58,24 +92,32 @@ const buildStyle = () => {
     const isUpOutline = layerName === "up_outline";
     const isEvent = layerName === "evenement" || layerName === "evenement_marker";
     const isEventMarker = layerName === "evenement_marker";
+    const isSelected = props.selectedId != null && feature.getId() == props.selectedId;
+    const isHovered  = !isSelected && (
+      (props.highlightedId != null && feature.getId() == props.highlightedId) ||
+      (mapHoveredId        != null && feature.getId() == mapHoveredId)
+    );
 
-    const strokeColor = layerStyle.strokeColor || (isUpOutline
+    const baseStrokeColor = layerStyle.strokeColor || (isUpOutline
       ? "#dc2626"
       : isEvent
         ? "#dc2626"
         : "#008000");
+    const strokeColor = isSelected ? "#DC2626" : isHovered ? "#F97316" : baseStrokeColor;
 
-    const strokeWidth = layerStyle.strokeWidth ?? (isUpOutline
-      ? 2
-      : isEvent
-        ? 2
-        : 2);
+    const baseStrokeWidth = layerStyle.strokeWidth ?? 2;
+    const strokeWidth = isSelected ? baseStrokeWidth + 4 : isHovered ? baseStrokeWidth + 2 : baseStrokeWidth;
 
-    const fillOpacity = layerStyle.fillOpacity ?? (isUpOutline
+    const baseFillOpacity = layerStyle.fillOpacity ?? (isUpOutline
       ? 0
       : isEvent
         ? 0.15
         : 0.3);
+    const fillOpacity = isSelected
+      ? Math.min(baseFillOpacity + 0.3, 0.75)
+      : isHovered
+        ? Math.min(baseFillOpacity + 0.15, 0.55)
+        : baseFillOpacity;
 
     const radius = layerStyle.pointRadius ?? (isEventMarker
       ? 8
@@ -466,7 +508,7 @@ const initMap = () => {
       vectorLayer,
     ],
     overlays: [popupOverlay],
-    controls: defaultControls().extend([new ScaleLine()]),
+    controls: defaultControls().extend([new ScaleLine(), buildFitControl()]),
     view: new View({
       center: [0, 0],
       zoom: 2,
@@ -481,14 +523,26 @@ const initMap = () => {
   });
   map.addControl(layerSwitcher);
 
+  map.on("pointermove", (event) => {
+    const feature = map.forEachFeatureAtPixel(event.pixel, (f) => f) ?? null;
+    const id = feature ? feature.getId() : null;
+    if (id !== mapHoveredId) {
+      mapHoveredId = id;
+      vectorLayer.getSource().changed();
+    }
+    map.getTargetElement().style.cursor = id != null ? "pointer" : "";
+  });
+
   map.on("singleclick", (event) => {
     const pickedFeature = pickFeatureForPopup(event);
 
     if (pickedFeature) {
       zoomToFeature(pickedFeature);
       openPopupForFeature(pickedFeature, event.coordinate);
+      emit("feature-click", { id: pickedFeature.getId(), layer: pickedFeature.get("__layer") ?? null });
     } else {
       closePopup();
+      emit("feature-click", { id: null, layer: null });
     }
   });
 
@@ -502,6 +556,40 @@ watch(
   },
   { deep: true }
 );
+
+watch(
+  () => props.highlightedId,
+  () => { if (vectorLayer) vectorLayer.getSource().changed(); }
+);
+
+watch(
+  () => props.selectedId,
+  () => { if (vectorLayer) vectorLayer.getSource().changed(); }
+);
+
+defineExpose({
+  zoomToId(id) {
+    if (!map || !vectorLayer || id == null) return;
+    const feature = vectorLayer.getSource().getFeatureById(id);
+    if (feature) zoomToFeature(feature);
+  },
+  showPopupForId(id) {
+    if (!map || !vectorLayer || id == null) return;
+    const feature = vectorLayer.getSource().getFeatureById(id);
+    if (!feature) return;
+    const geometry = feature.getGeometry?.();
+    if (!geometry) return;
+    let coordinate;
+    if (geometry.getType?.() === "Point") {
+      coordinate = geometry.getCoordinates?.();
+    } else {
+      const extent = geometry.getExtent?.();
+      if (!extent || !extent.every((v) => Number.isFinite(v))) return;
+      coordinate = [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2];
+    }
+    if (coordinate) openPopupForFeature(feature, coordinate);
+  },
+});
 
 onMounted(() => {
   initMap();
@@ -714,5 +802,18 @@ function escapeHtml(value) {
 
 :deep(.popup-action-link--edit:hover::before) {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232980b9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z'/%3E%3C/svg%3E");
+}
+
+:deep(.ol-fit-extent) {
+  top: 5em;
+  left: 0.5em;
+}
+
+:deep(.ol-fit-extent button) {
+  width: 1.375em;
+  height: 1.375em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

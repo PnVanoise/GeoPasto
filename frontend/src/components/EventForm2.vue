@@ -494,7 +494,7 @@ const fetchTypes = async () => {
 
 const fetchUps = async () => {
   try {
-    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/light/`);
+    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/light/?version_active=true`);
     ups.value = res.data || [];
   } catch (err) {
     console.error("Erreur chargement UP", err);

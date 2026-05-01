@@ -1,10 +1,8 @@
 <template>
-  <div v-if="isLoading" class="w3-center">
-    <img src="/spinner_2.gif" />
-  </div>
-  <div v-else class="main-container">
+  <div class="main-container">
     <div class="main-item">
       <CrudListPage
+        ref="listRef"
         title="Unités pastorales"
         modelName="unitepastorale"
         apiRouteName="unitePastorale"
@@ -14,6 +12,10 @@
         :columns="columns"
         :filters="upFilters"
         :bgColor="'#808080'"
+        :selectedId="selectedId"
+        @update:filtered-items="onFilteredItems"
+        @row-hover="onRowHover"
+        @row-click="onRowClick"
       />
     </div>
     <div class="main-item">
@@ -21,8 +23,12 @@
       <div class="maps-stack">
         <section class="map-section">
           <OpenLayersGeoJsonMap
+            ref="mapRef"
             :layers="openLayersLayers"
+            :highlightedId="hoveredId"
+            :selectedId="selectedId"
             @open-popup-item="onMapPopupItem"
+            @feature-click="onMapFeatureClick"
           />
         </section>
       </div>
@@ -31,15 +37,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, toRaw, markRaw } from "vue";
 import { useRouter } from "vue-router";
 import { usePermissions } from "@/composables/usePermissions";
 
 import OpenLayersGeoJsonMap from "@/components/ListMap/OpenLayersGeoJsonMap.vue";
 import CrudListPage from "@/components/CrudListPage.vue";
-
-import config from "@/../config";
-import auth from "@/../auth";
 
 const columns = [
   { field: "nom_up",        label: "UP",    sortable: true },
@@ -51,7 +54,7 @@ const upFilters = ref([
     key: "annee_courante",
     type: "checkbox",
     label: `${new Date().getFullYear()}`,
-    default: true,
+    default: false,
     apply: (rows, value) =>
       !value ? rows : rows.filter((r) => r.annee_version === new Date().getFullYear()),
   },
@@ -64,28 +67,35 @@ const upFilters = ref([
   },
 ]);
 
-const isLoading = ref(true);
 const router = useRouter();
 const { can } = usePermissions("unitepastorale");
 
-// ── Données carte ─────────────────────────────────────────────────────────────
-const unitepastorales = ref([]);
+// ── Données carte (alimentées par CrudListPage) ───────────────────────────────
+const listRef = ref(null);
+const mapRef = ref(null);
+const mapItems = ref([]);
+const hoveredId = ref(null);
+const selectedId = ref(null);
 
-const layerStyle = {
-  color: "#008000",
-  weight: 2,
-  fillOpacity: 0.3,
-};
+const mapFeatureCollection = computed(() => {
+  const features = mapItems.value
+    .filter(item => item.geometry)
+    .map(item => {
+      const { geometry, id, ...properties } = toRaw(item);
+      return { type: "Feature", id, geometry: toRaw(geometry), properties };
+    });
+  return markRaw({ type: "FeatureCollection", features });
+});
 
 const openLayersLayers = computed(() => [
   {
     id: "unitepastorale",
     visible: true,
-    data: unitepastorales.value,
+    data: mapFeatureCollection.value,
     style: {
-      strokeColor: layerStyle.color,
-      strokeWidth: layerStyle.weight,
-      fillOpacity: layerStyle.fillOpacity,
+      strokeColor: "#008000",
+      strokeWidth: 2,
+      fillOpacity: 0.3,
       zIndex: 10,
     },
     popup: {
@@ -99,21 +109,22 @@ const openLayersLayers = computed(() => [
   },
 ]);
 
-const fetchUnitePastorales = () => {
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/unitePastorale/`)
-    .then((response) => {
-      unitepastorales.value = response.data;
-    })
-    .catch((error) => {
-      console.error("Erreur fetchUnitePastorales:", error);
-    })
-    .finally(() => {
-      isLoading.value = false;
-    });
+const onFilteredItems = (items) => { mapItems.value = items; };
+const onMapFeatureClick = ({ id }) => {
+  selectedId.value = selectedId.value === id ? null : id;
+  if (selectedId.value != null) listRef.value?.scrollToId(id);
+};
+const onRowHover = (item) => { hoveredId.value = item?.id ?? null; };
+const onRowClick = (item) => {
+  const id = item?.id ?? null;
+  selectedId.value = selectedId.value === id ? null : id;
+  if (selectedId.value != null) {
+    mapRef.value?.zoomToId(selectedId.value);
+    mapRef.value?.showPopupForId(selectedId.value);
+  }
 };
 
-// ── Popup carte → navigation (remplace les CustomEvents crud-open-*) ──────────
+// ── Popup carte → navigation ──────────────────────────────────────────────────
 const onMapPopupItem = (payload) => {
   const id     = payload?.id;
   const action = payload?.action || "view";
@@ -125,24 +136,6 @@ const onMapPopupItem = (payload) => {
     router.push({ name: "unitepastorale-view", params: { id } });
   }
 };
-
-// ── Cycle de vie ──────────────────────────────────────────────────────────────
-onMounted(fetchUnitePastorales);
-
-const onGeoDataChanged = (e) => {
-  try {
-    const model = e?.detail?.modelName;
-    if (!model || model === "unitepastorale") fetchUnitePastorales();
-  } catch {
-    fetchUnitePastorales();
-  }
-};
-
-window.addEventListener("geo-data-changed", onGeoDataChanged);
-
-onBeforeUnmount(() => {
-  window.removeEventListener("geo-data-changed", onGeoDataChanged);
-});
 </script>
 
 <style scoped>

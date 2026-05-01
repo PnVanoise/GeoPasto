@@ -90,11 +90,15 @@ class UnitePastoraleViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = UnitePastorale.objects.all().order_by('nom_up')
-        
+
         nom_up_filter = self.request.GET.get('nom_up')
         if nom_up_filter is not None:
             queryset = queryset.filter(nom_up=nom_up_filter)
-          
+
+        version_active_filter = self.request.GET.get('version_active')
+        if version_active_filter is not None:
+            queryset = queryset.filter(version_active=version_active_filter.lower() == 'true')
+
         return queryset
 
     # /unitePastorale/light/ → Serializer Light

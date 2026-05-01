@@ -782,6 +782,13 @@ class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
         except Exception:
             return None
 
+    def validate_unite_pastorale(self, value):
+        if value is not None and not value.version_active:
+            raise serializers.ValidationError(
+                "L'unité pastorale sélectionnée n'est pas active."
+            )
+        return value
+
     def _find_unite_pastorale(self, geometry):
         # Rechercher l'unité pastorale qui contient la géométrie de l'événement
 

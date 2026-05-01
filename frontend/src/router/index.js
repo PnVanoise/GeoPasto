@@ -27,11 +27,6 @@ import TypeDeMesureList2 from '../features/nomenclatures/TypeDeMesureList2.vue'
 import ConventionList2 from '../features/convention_exploitation/ConventionList2.vue'
 
 
-import UnitePastoraleList2 from '../features/unite_pastorale/UnitePastoraleList2.vue'
-import UnitePastoraleList from '../features/unite_pastorale/UnitePastoraleList.vue'
-import UnitePastoraleAdd from '../features/unite_pastorale/UnitePastoraleAdd.vue'
-import UnitePastoraleEdit from '../features/unite_pastorale/UnitePastoraleEdit.vue'
-
 import ProprietaireFoncierList2 from '../features/proprietaire/ProprietaireFoncierList2.vue'
 
 import UPProprietaireList from '../features/proprietaire/UPProprietaireList.vue'
@@ -43,9 +38,6 @@ import QuartierPastoAdd from '../features/quartier_pasto/QuartierPastoAdd.vue'
 import QuartierPastoEdit from '../features/quartier_pasto/QuartierPastoEdit.vue'
 
 import PlanDeSuiviList2 from '../features/plan_suivi/PlanDeSuiviList2.vue'
-import PlanDeSuiviList from '../features/plan_suivi/PlanDeSuiviList.vue'
-import PlanDeSuiviAdd from '../features/plan_suivi/PlanDeSuiviAdd.vue'
-import PlanDeSuiviEdit from '../features/plan_suivi/PlanDeSuiviEdit.vue'
 
 import SituationExploitationList2 from '../features/situation_exploitation/SituationExploitationList2.vue'
 
@@ -54,26 +46,12 @@ import ExploiterAdd from '../features/exploiter/ExploiterAdd.vue'
 import ExploiterEdit from '../features/exploiter/ExploiterEdit.vue'
 
 import MesureDePlanList2 from '../features/plan_suivi/MesureDePlanList2.vue'
-import MesureDePlanList from '../features/plan_suivi/MesureDePlanList.vue'
-import MesureDePlanAdd from '../features/plan_suivi/MesureDePlanAdd.vue'
-import MesureDePlanEdit from '../features/plan_suivi/MesureDePlanEdit.vue'
 
-import AbriDUrgenceList from '../features/abri_urgence/AbriDUrgenceList.vue'
-import AbriDUrgenceAdd from '../features/abri_urgence/AbriDUrgenceAdd.vue'
-import AbriDUrgenceEdit from '../features/abri_urgence/AbriDUrgenceEdit.vue'
-
-import PretAbriList from '../features/abri_urgence/PretAbriList.vue'
-import PretAbriAdd from '../features/abri_urgence/PretAbriAdd.vue'
-import PretAbriEdit from '../features/abri_urgence/PretAbriEdit.vue'
 
 import RucheList from '../features/ruche/RucheList.vue'
 import RucheAdd from '../features/ruche/RucheAdd.vue'
 import RucheEdit from '../features/ruche/RucheEdit.vue'
 
-import EvenementEdit from '../features/evenement/EvenementEdit.vue'
-import EvenementAdd from '../features/evenement/EvenementAdd.vue'
-import EvenementList from '../features/evenement/EvenementList.vue'
-import EventForm from '../features/evenement/EventForm.vue'
 import EventList2 from '../features/evenement/EventList2.vue'
 
 import LogementCommoditeList from '../features/commodite/LogementCommoditeList.vue'
@@ -84,9 +62,6 @@ import LogementList from '../features/logement/LogementList.vue'
 import LogementEdit from '../features/logement/LogementEdit.vue'
 import LogementAdd from '../features/logement/LogementAdd.vue'
 
-import EquipementList from '../features/equipement/EquipementList.vue'
-import EquipementEdit from '../features/equipement/EquipementEdit.vue'
-import EquipementAdd from '../features/equipement/EquipementAdd.vue'
 
 import QuartieralpageView from '../features/quartier_pasto/QuartieralpageView.vue'
 
@@ -355,28 +330,6 @@ const router = createRouter({
       component: Login
     },
     {
-      path: '/UnitePastorales2',
-      name: 'unitepastorales2',
-      component: UnitePastoraleList2,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/UnitePastorales',
-      name: 'unitepastorales',
-      component: UnitePastoraleList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/UnitePastorale/add',
-      name: 'addUP',
-      component: UnitePastoraleAdd
-    },
-    {
-      path: '/UnitePastorale/edit/:id',
-      name: 'editUP',
-      component: UnitePastoraleEdit
-    },
-    {
       path: '/ProprietaireFonciers2',
       name: 'proprietairefonciers2',
       component: ProprietaireFoncierList2,
@@ -449,24 +402,6 @@ const router = createRouter({
       meta: { requiresAuth: true },  // Route protégée
     },
     {
-      path: '/PlanSuivis',
-      name: 'plansuivis',
-      component: PlanDeSuiviList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/PlanSuivi/add',
-      name: 'addPlanSuivi',
-      component: PlanDeSuiviAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/PlanSuivi/edit/:id',
-      name: 'editPlanSuivi',
-      component: PlanDeSuiviEdit,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
       path: '/TypeMesures2',
       name: 'typeMesures2',
       component: TypeDeMesureList2,
@@ -476,24 +411,6 @@ const router = createRouter({
       path: '/MesurePlans2',
       name: 'mesurePlans2',
       component: MesureDePlanList2,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/MesurePlans',
-      name: 'mesurePlans',
-      component: MesureDePlanList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/MesurePlan/add',
-      name: 'addMesurePlan',
-      component: MesureDePlanAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/MesurePlan/edit/:id',
-      name: 'editMesurePlan',
-      component: MesureDePlanEdit,
       meta: { requiresAuth: true },  // Route protégée
     },
     {
@@ -555,45 +472,9 @@ const router = createRouter({
       meta: { requiresAuth: true },  // Route protégée
     },
     {
-      path: '/AbriUrgences',
-      name: 'abris',
-      component: AbriDUrgenceList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/AbriUrgence/add',
-      name: 'addAbriUrgence',
-      component: AbriDUrgenceAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/AbriUrgence/edit/:id',
-      name: 'editAbriUrgence',
-      component: AbriDUrgenceEdit,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
       path: '/AbriUrgences2',
       name: 'abris2',
       component: AbriDUrgenceList2,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/PretAbris',
-      name: 'prets',
-      component: PretAbriList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/PretAbri/add',
-      name: 'addPret',
-      component: PretAbriAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/PretAbri/edit/:id',
-      name: 'editPret',
-      component: PretAbriEdit,
       meta: { requiresAuth: true },  // Route protégée
     },
     {
@@ -695,34 +576,10 @@ const router = createRouter({
       meta: { requiresAuth: true },  // Route protégée
     },
     {
-      path: '/Evenements',
-      name: 'evenements',
-      component: EvenementList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
       path: '/Evenements2',
       name: 'evenements2',
       component: EventList2,
       meta: { requiresAuth: true },
-    },
-    {
-      path: '/Evenement/add',
-      name: 'addEvenement',
-      component: EvenementAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/Evenement/create-map',
-      name: 'addEvenementMap',
-      component: EventForm,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/Evenement/edit/:id',
-      name: 'editEvenement',
-      component: EvenementEdit,
-      meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/TypeEvenements2',
@@ -784,22 +641,6 @@ const router = createRouter({
       path: '/LogementCommodite/edit/:id',
       name: 'editLogementCommodite',
       component: LogementCommoditeEdit
-    },
-    {
-      path: '/Equipements',
-      name: 'equipements',
-      component: EquipementList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/Equipement/add',
-      name: 'addEquipement',
-      component: EquipementAdd
-    },
-    {
-      path: '/Equipement/edit/:id',
-      name: 'editEquipement',
-      component: EquipementEdit
     },
     {
       path: '/QuartieralpageView/:id',

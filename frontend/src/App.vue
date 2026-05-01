@@ -288,16 +288,10 @@ watch(
             </div>
             <div
               v-if="hasPermissionForModel('unitepastorale')"
-              :class="['nav-item w3-signal-yellow transparent', { active: route.path === '/UnitePastorales2' }]"
+              :class="['nav-item w3-signal-yellow transparent', { active: route.path.startsWith('/unite-pastorale') }]"
             >
               <RouterLink to="/unite-pastorale">Unites pastorales</RouterLink>
             </div>
-            <!-- <div
-              v-if="hasPermissionForModel('unitepastorale')"
-              :class="['nav-item w3-signal-yellow transparent', { active: route.path === '/UnitePastorales' }]"
-            >
-              <RouterLink to="/UnitePastorales">Unites pastorales</RouterLink>
-            </div> -->
           </div>
 
           <!-- Accordeon 'Exploitation'-->
@@ -328,10 +322,6 @@ watch(
               <RouterLink to="/Subventions2">Subventions</RouterLink>
             </div>
 
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/PretAbris' }]">
-              <RouterLink to="/PretAbris">Prets d'abris</RouterLink>
-            </div>
-
             <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/cheptel') }]">
               <RouterLink to="/cheptel">Cheptels</RouterLink>
             </div>
@@ -352,18 +342,10 @@ watch(
           </div>
           <div v-show="isAccordionOpen('plan')" class="w3-white w3-card">
             <div :class="['nav-item w3-signal-red transparent', { active: route.path === '/PlanSuivis2' }]">
-              <RouterLink to="/PlanSuivis2">Plans par alpage 2</RouterLink>
+              <RouterLink to="/PlanSuivis2">Plans par alpage</RouterLink>
             </div>
-
-            <div :class="['nav-item w3-signal-red transparent', { active: route.path === '/PlanSuivis' }]">
-              <RouterLink to="/PlanSuivis">Plans par alpage</RouterLink>
-            </div>
-
             <div :class="['nav-item w3-signal-red transparent', { active: route.path === '/MesurePlans2' }]">
-              <RouterLink to="/MesurePlans2">Mesures de suivi 2</RouterLink>
-            </div>
-            <div :class="['nav-item w3-signal-red transparent', { active: route.path === '/MesurePlans' }]">
-              <RouterLink to="/MesurePlans">Mesures de suivi</RouterLink>
+              <RouterLink to="/MesurePlans2">Mesures de suivi</RouterLink>
             </div>
           </div>
 
@@ -373,17 +355,9 @@ watch(
             <i class="fa fa-caret-down accordion-caret" :class="{ open: isAccordionOpen('eve') }"></i>
           </div>
           <div v-show="isAccordionOpen('eve')" class="w3-white w3-card">
-            <!-- <div :class="['nav-item w3-signal-violet transparent', { active: route.path === '/Evenements' }]">
-              <RouterLink to="/Evenements">Evenements</RouterLink>
-            </div> -->
             <div :class="['nav-item w3-signal-violet transparent', { active: route.path === '/Evenements2' }]">
               <RouterLink to="/Evenements2">Evenements</RouterLink>
             </div>
-            <!-- <div
-              :class="['nav-item w3-signal-violet transparent', { active: route.path === '/Evenement/create-map' }]"
-            >
-              <RouterLink to="/Evenement/create-map">Ajouter evenement (carte)</RouterLink>
-            </div> -->
           </div>
 
           <!-- Accordeon 'Equipements'-->

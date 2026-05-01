@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
+import { isDateField, toFrDate } from "@/helpers/dates.js";
 
 const props = defineProps({
   data: {
@@ -79,33 +80,6 @@ function nestedValue(obj, path) {
   return String(path || "").split('.').reduce((o, key) => (o ? o[key] : null), obj);
 }
 
-function isDateField(fieldPath) {
-  return /(^|\.)date(_|$)/i.test(String(fieldPath || ""));
-}
-
-function toFrDate(value) {
-  if (value == null || value === "") return "";
-
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    const dd = String(value.getDate()).padStart(2, "0");
-    const mm = String(value.getMonth() + 1).padStart(2, "0");
-    const yyyy = String(value.getFullYear());
-    return `${dd}/${mm}/${yyyy}`;
-  }
-
-  const raw = String(value);
-  const isoDateMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (isoDateMatch) {
-    return `${isoDateMatch[3]}/${isoDateMatch[2]}/${isoDateMatch[1]}`;
-  }
-
-  const isoDateTimeMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})T/);
-  if (isoDateTimeMatch) {
-    return `${isoDateTimeMatch[3]}/${isoDateTimeMatch[2]}/${isoDateTimeMatch[1]}`;
-  }
-
-  return raw;
-}
 
 function isBooleanCell(entry, col) {
   return typeof nestedValue(entry, col.field) === "boolean";

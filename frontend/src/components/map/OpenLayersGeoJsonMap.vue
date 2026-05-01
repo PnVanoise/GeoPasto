@@ -10,6 +10,7 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { normalizeGeoData } from "@/helpers/geojson.js";
 import "ol/ol.css";
 
 import GeoJSON from "ol/format/GeoJSON";
@@ -184,17 +185,6 @@ const buildStyle = () => {
   };
 };
 
-const normalizeGeoData = (input) => {
-  if (!input) return null;
-  if (input.type === "FeatureCollection" || input.type === "Feature") return input;
-  if (Array.isArray(input)) {
-    return {
-      type: "FeatureCollection",
-      features: input,
-    };
-  }
-  return null;
-};
 
 const updateVectorLayer = () => {
   if (!map || !vectorLayer) return;

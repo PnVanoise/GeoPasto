@@ -49,6 +49,7 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, nextTick, ref, watch } from "vue";
+import { normalizeGeoData } from "@/helpers/geojson.js";
 import "ol/ol.css";
 
 import GeoJSON from "ol/format/GeoJSON";
@@ -128,31 +129,6 @@ const geometryTypeForDraw = () => {
   return props.geometryType || "Polygon";
 };
 
-const normalizeGeoData = (payload) => {
-  if (!payload) return null;
-  if (payload.type === "FeatureCollection" && Array.isArray(payload.features)) {
-    return payload;
-  }
-  if (payload.type === "Feature") {
-    return { type: "FeatureCollection", features: [payload] };
-  }
-  if (Array.isArray(payload)) {
-    return { type: "FeatureCollection", features: payload };
-  }
-  if (payload.geometry) {
-    return {
-      type: "FeatureCollection",
-      features: [
-        {
-          type: "Feature",
-          geometry: payload.geometry,
-          properties: payload.properties || {},
-        },
-      ],
-    };
-  }
-  return null;
-};
 
 const hexToRgba = (hexColor, alpha = 0.2) => {
   if (typeof hexColor !== "string") return `rgba(51, 65, 85, ${alpha})`;

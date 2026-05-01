@@ -50,7 +50,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import auth from "../../auth";
+import auth from '@/services/axios';
 import config from "../../config";
 import EventForm2 from "./EventForm2.vue";
 import CrudList2 from "./CrudList2.vue";

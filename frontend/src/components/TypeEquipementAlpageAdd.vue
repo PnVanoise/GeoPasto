@@ -12,7 +12,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
-import auth from "../../auth";
+import auth from '@/services/axios';
 import TypeEquipementAlpageForm from "./TypeEquipementAlpageForm.vue";
 import config from "../../config";
 import { useMainStore } from "../store";

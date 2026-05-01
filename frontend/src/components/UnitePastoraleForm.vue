@@ -170,7 +170,7 @@
 import { ref, watch, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 import config from "../../config";
 import MapEditMultipolygon2 from "./MapEditMultipolygon2.vue";

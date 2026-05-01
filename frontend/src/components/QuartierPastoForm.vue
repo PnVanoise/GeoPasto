@@ -66,7 +66,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 import config from "../../config";
 import QuartierGeometryEditorOl from "./QuartierGeometryEditorOl.vue";
 

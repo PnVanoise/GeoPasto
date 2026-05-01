@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import auth from "../../auth";
+import auth from '@/services/axios';
 import config from "../../config";
 import { useMainStore } from "../store";
 import { usePermissions } from "./usePermissions";

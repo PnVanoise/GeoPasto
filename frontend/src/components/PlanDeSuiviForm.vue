@@ -75,7 +75,7 @@
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 
 import config from "../../config";
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 const props = defineProps({
   initialForm: Object,

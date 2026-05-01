@@ -13,7 +13,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useMainStore } from "../store";
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 const router = useRouter();
 const mainStore = useMainStore();

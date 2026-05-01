@@ -56,7 +56,7 @@
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 
 import config from "../../config";
-import auth from "../../auth";
+import auth from '@/services/axios';
 import Grid from './Grid.vue';
 import Modal from './Modal.vue';
 import AbriDUrgenceCommoditeForm from './AbriDUrgenceCommoditeForm.vue';

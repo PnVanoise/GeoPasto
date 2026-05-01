@@ -270,7 +270,7 @@
 import MapEditMultipolygon2 from "./MapEditMultipolygon2.vue";
 import { reactive, watch, ref, computed, onMounted } from "vue";
 import config from "../../config";
-import auth from "../../auth";
+import auth from '@/services/axios';
 import { usePermissions } from "../composables/usePermissions";
 
 const props = defineProps({

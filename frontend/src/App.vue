@@ -8,7 +8,7 @@ import Login from "./components/Login.vue";
 import Logout from "./components/Logout.vue";
 
 import { useMainStore } from "./store";
-import auth from "../auth";
+import auth from '@/services/axios';
 
 const mainStore = useMainStore();
 const isAuthenticated = computed(() => mainStore.isAuthenticated);

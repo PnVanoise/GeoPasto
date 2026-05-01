@@ -14,7 +14,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 import config from "../../config";
 import { useMainStore } from "../store";
 import PlanDeSuiviForm from "./PlanDeSuiviForm.vue";

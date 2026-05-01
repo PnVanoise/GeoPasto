@@ -19,7 +19,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
 import EquipementAlpageForm2 from "@/components/EquipementAlpageForm2.vue";
-import auth from "@/../auth";
+import auth from '@/services/axios';
 import config from "@/../config";
 
 const route = useRoute();

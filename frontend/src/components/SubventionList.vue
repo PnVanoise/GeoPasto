@@ -31,7 +31,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 import Grid from "./Grid.vue";
 import config from "../../config";
 import { useMainStore } from "../store";

@@ -15,7 +15,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import auth from '../../auth';
+import auth from '@/services/axios';
 import CheptelForm2 from './CheptelForm2.vue';
 import CrudList2 from './CrudList2.vue';
 

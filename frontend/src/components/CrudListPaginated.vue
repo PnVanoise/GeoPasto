@@ -137,7 +137,7 @@ import { ref, unref, computed, onMounted, watch } from "vue";
 import Grid3 from "./Grid3.vue";
 import Modal from "./Modal.vue";
 import { useCrud } from "../composables/useCrud";
-import auth from "../../auth";
+import auth from '@/services/axios';
 import config from "../../config";
 
 const props = defineProps({

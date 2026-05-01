@@ -9,7 +9,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 import LogementForm from "./LogementForm.vue";
 import config from "../../config.js";

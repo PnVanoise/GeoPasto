@@ -9,7 +9,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 import UnitePastoraleForm from "./UnitePastoraleForm.vue";
 import config from "../../config";

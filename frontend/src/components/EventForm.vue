@@ -64,7 +64,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-draw/dist/leaflet.draw.css'
 import 'leaflet-draw'
-import auth from '../../auth'
+import auth from '@/services/axios'
 import config from '../../config'
 
 const form = ref({

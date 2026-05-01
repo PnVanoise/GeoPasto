@@ -40,7 +40,7 @@ import OpenLayersGeoJsonMap from "./ListMap/OpenLayersGeoJsonMap.vue";
 
 import config from "../../config";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 import CrudList2 from "./CrudList2.vue";
 import UnitePastoraleForm2 from "./UnitePastoraleForm2.vue";
 

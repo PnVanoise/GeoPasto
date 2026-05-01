@@ -268,7 +268,7 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue';
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 import { useRouter } from 'vue-router';
 

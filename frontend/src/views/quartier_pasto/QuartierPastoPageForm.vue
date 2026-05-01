@@ -21,7 +21,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
 import QuartierPastoForm from "@/components/QuartierPastoForm.vue";
-import auth from "@/../auth";
+import auth from '@/services/axios';
 import config from "@/../config";
 
 const route = useRoute();

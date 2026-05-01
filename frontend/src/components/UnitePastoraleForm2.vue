@@ -152,7 +152,7 @@
 import { reactive, ref, watch, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 import { usePermissions } from "../composables/usePermissions";
 
 import config from "../../config";

@@ -48,7 +48,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 import MapList from "./MapList.vue";
 import Grid from "./Grid.vue";

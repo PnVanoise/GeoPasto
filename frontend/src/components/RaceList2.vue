@@ -15,7 +15,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import auth from '../../auth';
+import auth from '@/services/axios';
 import config from '../../config';
 import RaceForm2 from './RaceForm2.vue';
 import CrudListPaginated from './CrudListPaginated.vue';

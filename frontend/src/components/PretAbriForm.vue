@@ -77,7 +77,7 @@
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 
 import config from "../../config";
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 import MapEditMultipolygon2 from "./MapEditMultipolygon2.vue";
 

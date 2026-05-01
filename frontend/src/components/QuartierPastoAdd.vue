@@ -9,7 +9,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 import QuartierPastoForm from "./QuartierPastoForm.vue";
 import config from "../../config";

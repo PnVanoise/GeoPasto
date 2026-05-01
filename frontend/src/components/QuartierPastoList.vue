@@ -62,7 +62,7 @@ import BaseLayersControl from "./ListMap/BaseLayersControl.vue";
 import GeoJsonLayer from "./ListMap/GeoJsonLayer.vue";
 
 import config from "../../config";
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 const isLoading = ref(true);
 const mapRef = ref(null);

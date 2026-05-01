@@ -1,7 +1,7 @@
 // store/index.js
 import { defineStore } from 'pinia';
 
-import auth from '../../auth';
+import auth from '@/services/axios';
 
 export const useMainStore = defineStore("main", {
     state: () => ({

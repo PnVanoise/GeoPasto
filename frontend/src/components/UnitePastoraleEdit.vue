@@ -13,7 +13,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
-import auth from "../../auth";
+import auth from '@/services/axios';
 
 import { useMainStore } from "../store";
 import UnitePastoraleForm from "./UnitePastoraleForm.vue";

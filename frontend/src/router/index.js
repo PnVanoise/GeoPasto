@@ -7,25 +7,13 @@ import Login from '../components/auth/Login.vue'
 
 
 
-import UPProprietaireList from '../features/proprietaire/UPProprietaireList.vue'
-import UPProprietaireAdd from '../features/proprietaire/UPProprietaireAdd.vue'
-import UPProprietaireEdit from '../features/proprietaire/UPProprietaireEdit.vue'
 
 
 
 
-import RucheList from '../features/ruche/RucheList.vue'
-import RucheAdd from '../features/ruche/RucheAdd.vue'
-import RucheEdit from '../features/ruche/RucheEdit.vue'
 
 
-import LogementCommoditeList from '../features/commodite/LogementCommoditeList.vue'
-import LogementCommoditeAdd from '../features/commodite/LogementCommoditeAdd.vue'
-import LogementCommoditeEdit from '../features/commodite/LogementCommoditeEdit.vue'
 
-import LogementList from '../features/logement/LogementList.vue'
-import LogementEdit from '../features/logement/LogementEdit.vue'
-import LogementAdd from '../features/logement/LogementAdd.vue'
 
 
 import QuartieralpageView from '../features/quartier_pasto/QuartieralpageView.vue'
@@ -303,26 +291,8 @@ const router = createRouter({
     {
       path: '/UPProprietaires',
       name: 'upproprietaires',
-      component: UPProprietaireList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/UPProprietaire/add',
-      name: 'addUpproprietaire',
-      component: UPProprietaireAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/UPProprietaire/add/:UPId',
-      name: 'addUPProprWithUPId',
-      component: UPProprietaireAdd,
-      props: true
-    },
-    {
-      path: '/UPProprietaire/edit/:id',
-      name: 'editUPPropr',
-      component: UPProprietaireEdit,
-      meta: { requiresAuth: true },  // Route protégée
+      component: () => import('@/features/proprietaire/UPProprietaireList2.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/TypeSuivis2',
@@ -478,20 +448,8 @@ const router = createRouter({
     {
       path: '/Ruches',
       name: 'ruches',
-      component: RucheList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/Ruche/add',
-      name: 'addRuche',
-      component: RucheAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/Ruche/edit/:id',
-      name: 'editRuche',
-      component: RucheEdit,
-      meta: { requiresAuth: true },  // Route protégée
+      component: () => import('@/features/ruche/RucheList2.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/Evenements2',
@@ -518,18 +476,8 @@ const router = createRouter({
     {
       path: '/Logements',
       name: 'logements',
-      component: LogementList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/Logement/add',
-      name: 'addLogement',
-      component: LogementAdd
-    },
-    {
-      path: '/Logement/edit/:id',
-      name: 'editLogement',
-      component: LogementEdit
+      component: () => import('@/features/logement/LogementList2.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/Commodites2',
@@ -540,35 +488,13 @@ const router = createRouter({
     {
       path: '/LogementCommodites',
       name: 'logementCommodites',
-      component: LogementCommoditeList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/LogementCommodite/add',
-      name: 'addLogementCommodite',
-      component: LogementCommoditeAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/LogementCommodite/add/:logementId',
-      name: 'addLogementCommoditeWithLogementId',
-      component: LogementCommoditeAdd,
-      props: true
-    },
-    {
-      path: '/LogementCommodite/edit/:id',
-      name: 'editLogementCommodite',
-      component: LogementCommoditeEdit
+      component: () => import('@/features/commodite/LogementCommoditeList2.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/QuartieralpageView/:id',
       name: 'quartieralpageview',
       component: QuartieralpageView
-    },
-    {
-      path: '/LogementList',
-      name: 'LogementList',
-      component: LogementList
     },
   ]
 });

@@ -3,56 +3,21 @@ import { useMainStore } from '../store'
 
 import Login from '../components/auth/Login.vue'
 
-import EleveurList2 from '../features/eleveur/EleveurList2.vue'
-import ExploitantList2 from '../features/exploitant/ExploitantList2.vue'
-import SubventionList2 from '../features/subvention/SubventionList2.vue'
-import AbriDUrgenceList2 from '../features/abri_urgence/AbriDUrgenceList2.vue'
-import EspeceList2 from '../features/nomenclatures/EspeceList2.vue'
-import ProductionList2 from '../features/nomenclatures/ProductionList2.vue'
-import CategoriePensionList2 from '../features/nomenclatures/CategoriePensionList2.vue'
-import CategorieAnimauxList2 from '../features/nomenclatures/CategorieAnimauxList2.vue'
-import RaceList2 from '../features/nomenclatures/RaceList2.vue'
-import BergerList2 from '../features/berger/BergerList2.vue'
-import GardeTroupeauList2 from '../features/garde_troupeau/GardeTroupeauList2.vue'
-import CommoditeList2 from '../features/commodite/CommoditeList2.vue'
-import TypeDExploitantList2 from '../features/nomenclatures/TypeDExploitantList2.vue'
-import TypeEquipementList2 from '../features/equipement/TypeEquipementList2.vue'
-import TypeDeConventionList2 from '../features/nomenclatures/TypeDeConventionList2.vue'
-import TypeCheptelList2 from '../features/nomenclatures/TypeCheptelList2.vue'
-import TypeDeSuiviList2 from '../features/nomenclatures/TypeDeSuiviList2.vue'
-import TypeEvenementList2 from '../features/evenement/TypeEvenementList2.vue'
-import CheptelList2 from '../features/cheptel/CheptelList2.vue'
-import TypeDeMesureList2 from '../features/nomenclatures/TypeDeMesureList2.vue'
-
-import ConventionList2 from '../features/convention_exploitation/ConventionList2.vue'
 
 
-import ProprietaireFoncierList2 from '../features/proprietaire/ProprietaireFoncierList2.vue'
+
 
 import UPProprietaireList from '../features/proprietaire/UPProprietaireList.vue'
 import UPProprietaireAdd from '../features/proprietaire/UPProprietaireAdd.vue'
 import UPProprietaireEdit from '../features/proprietaire/UPProprietaireEdit.vue'
 
-import QuartierPastoList from '../features/quartier_pasto/QuartierPastoList.vue'
-import QuartierPastoAdd from '../features/quartier_pasto/QuartierPastoAdd.vue'
-import QuartierPastoEdit from '../features/quartier_pasto/QuartierPastoEdit.vue'
 
-import PlanDeSuiviList2 from '../features/plan_suivi/PlanDeSuiviList2.vue'
-
-import SituationExploitationList2 from '../features/situation_exploitation/SituationExploitationList2.vue'
-
-import ExploiterList from '../features/exploiter/ExploiterList.vue'
-import ExploiterAdd from '../features/exploiter/ExploiterAdd.vue'
-import ExploiterEdit from '../features/exploiter/ExploiterEdit.vue'
-
-import MesureDePlanList2 from '../features/plan_suivi/MesureDePlanList2.vue'
 
 
 import RucheList from '../features/ruche/RucheList.vue'
 import RucheAdd from '../features/ruche/RucheAdd.vue'
 import RucheEdit from '../features/ruche/RucheEdit.vue'
 
-import EventList2 from '../features/evenement/EventList2.vue'
 
 import LogementCommoditeList from '../features/commodite/LogementCommoditeList.vue'
 import LogementCommoditeAdd from '../features/commodite/LogementCommoditeAdd.vue'
@@ -298,22 +263,22 @@ const router = createRouter({
       children: [
         {
           path: '',
-          name: 'type_cheptel-list',
+          name: 'typecheptel-list',
           component: () => import('@/views/type_cheptel/TypeCheptelList.vue'),
         },
         {
           path: 'add',
-          name: 'type_cheptel-add',
+          name: 'typecheptel-add',
           component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
         },
         {
           path: ':id',
-          name: 'type_cheptel-view',
+          name: 'typecheptel-view',
           component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
         },
         {
           path: ':id/edit',
-          name: 'type_cheptel-edit',
+          name: 'typecheptel-edit',
           component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
         },
       ],
@@ -332,7 +297,7 @@ const router = createRouter({
     {
       path: '/ProprietaireFonciers2',
       name: 'proprietairefonciers2',
-      component: ProprietaireFoncierList2,
+      component: () => import('@/features/proprietaire/ProprietaireFoncierList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
@@ -360,174 +325,127 @@ const router = createRouter({
       meta: { requiresAuth: true },  // Route protégée
     },
     {
-      path: '/QuartierPastos',
-      name: 'quartiers',
-      component: QuartierPastoList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/QuartierPastos/:up_id',
-      name: 'quartiersUP',
-      component: QuartierPastoList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/QuartierPasto/add',
-      name: 'addQuartier',
-      component: QuartierPastoAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/QuartierPasto/add/:UPId',
-      name: 'addQuartierWithUPId',
-      component: QuartierPastoAdd,
-      props: true
-    },
-    {
-      path: '/QuartierPasto/edit/:id',
-      name: 'editQuartier',
-      component: QuartierPastoEdit,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
       path: '/TypeSuivis2',
       name: 'typesuivis2',
-      component: TypeDeSuiviList2,
+      component: () => import('@/features/nomenclatures/TypeDeSuiviList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/PlanSuivis2',
       name: 'plansuivis2',
-      component: PlanDeSuiviList2,
+      component: () => import('@/features/plan_suivi/PlanDeSuiviList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/TypeMesures2',
       name: 'typeMesures2',
-      component: TypeDeMesureList2,
+      component: () => import('@/features/nomenclatures/TypeDeMesureList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/MesurePlans2',
       name: 'mesurePlans2',
-      component: MesureDePlanList2,
+      component: () => import('@/features/plan_suivi/MesureDePlanList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/TypeConventions2',
       name: 'typeconventions2',
-      component: TypeDeConventionList2,
+      component: () => import('@/features/nomenclatures/TypeDeConventionList2.vue'),
     },
     {
       path: '/Conventions2',
       name: 'conventions2',
-      component: ConventionList2,
+      component: () => import('@/features/convention_exploitation/ConventionList2.vue'),
     },
     {
       path: '/SituationExploitations2',
       name: 'situations2',
-      component: SituationExploitationList2,
-    },
-    {
-      path: '/Exploiters',
-      name: 'exploiters',
-      component: ExploiterList,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/Exploiter/add',
-      name: 'addExploiter',
-      component: ExploiterAdd,
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/Exploiter/edit/:id',
-      name: 'editExploiter',
-      component: ExploiterEdit,
-      meta: { requiresAuth: true },  // Route protégée
+      component: () => import('@/features/situation_exploitation/SituationExploitationList2.vue'),
     },
     {
       path: '/Eleveurs2',
       name: 'eleveurs2',
-      component: EleveurList2,
+      component: () => import('@/features/eleveur/EleveurList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
 
     {
       path: '/TypeExploitants2',
       name: 'typeExploitants2',
-      component: TypeDExploitantList2,
+      component: () => import('@/features/nomenclatures/TypeDExploitantList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/Exploitants2',
       name: 'exploitants2',
-      component: ExploitantList2,
+      component: () => import('@/features/exploitant/ExploitantList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/Subventions2',
       name: 'subventions2',
-      component: SubventionList2,
+      component: () => import('@/features/subvention/SubventionList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/AbriUrgences2',
       name: 'abris2',
-      component: AbriDUrgenceList2,
+      component: () => import('@/features/abri_urgence/AbriDUrgenceList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/Especes2',
       name: 'especes2',
-      component: EspeceList2,
+      component: () => import('@/features/nomenclatures/EspeceList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path : "/Productions2",
       name : "productions2",
-      component : ProductionList2
+      component: () => import('@/features/nomenclatures/ProductionList2.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/CategoriesPension2',
       name: 'categories_pension2',
-      component: CategoriePensionList2,
+      component: () => import('@/features/nomenclatures/CategoriePensionList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/CategoriesAnimaux2',
       name: 'categories_animaux2',
-      component: CategorieAnimauxList2,
+      component: () => import('@/features/nomenclatures/CategorieAnimauxList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/Races2',
       name: 'races2',
-      component: RaceList2,
+      component: () => import('@/features/nomenclatures/RaceList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/Bergers2',
       name: 'bergers2',
-      component: BergerList2,
+      component: () => import('@/features/berger/BergerList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/TypeCheptels2',
       name: 'typecheptels2',
-      component: TypeCheptelList2,
+      component: () => import('@/features/nomenclatures/TypeCheptelList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/GardeTroupeaux2',
       name: 'gardetroupeaux2',
-      component: GardeTroupeauList2,
+      component: () => import('@/features/garde_troupeau/GardeTroupeauList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/Cheptels2',
       name: 'cheptels2',
-      component: CheptelList2,
+      component: () => import('@/features/cheptel/CheptelList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     // {
@@ -578,19 +496,19 @@ const router = createRouter({
     {
       path: '/Evenements2',
       name: 'evenements2',
-      component: EventList2,
+      component: () => import('@/features/evenement/EventList2.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/TypeEvenements2',
       name: 'typeevenements2',
-      component: TypeEvenementList2,
+      component: () => import('@/features/evenement/TypeEvenementList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {
       path: '/TypeEquipements2',
       name: 'typeequipements2',
-      component: TypeEquipementList2,
+      component: () => import('@/features/equipement/TypeEquipementList2.vue'),
       meta: {
         modelName: 'typeequipement',
         requiredPermission: 'view_typeequipement',
@@ -616,7 +534,7 @@ const router = createRouter({
     {
       path: '/Commodites2',
       name: 'commodites2',
-      component: CommoditeList2,
+      component: () => import('@/features/commodite/CommoditeList2.vue'),
       meta: { requiresAuth: true },  // Route protégée
     },
     {

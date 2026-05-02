@@ -16,7 +16,6 @@ import Login from '../components/auth/Login.vue'
 
 
 
-import QuartieralpageView from '../features/quartier_pasto/QuartieralpageView.vue'
 
 
 const router = createRouter({
@@ -490,11 +489,6 @@ const router = createRouter({
       name: 'logementCommodites',
       component: () => import('@/features/commodite/LogementCommoditeList2.vue'),
       meta: { requiresAuth: true },
-    },
-    {
-      path: '/QuartieralpageView/:id',
-      name: 'quartieralpageview',
-      component: QuartieralpageView
     },
   ]
 });

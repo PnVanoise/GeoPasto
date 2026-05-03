@@ -153,11 +153,11 @@ import { reactive, ref, watch, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
 import auth from '@/services/axios';
-import { usePermissions } from "../../composables/usePermissions";
+import { usePermissions } from "@/composables/usePermissions";
 
-import config from "../../../config";
-import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
-import CrudListPage from "../../components/crud/CrudListPage.vue";
+import config from "@/../config";
+import QuartierGeometryEditorOl from "@/components/map/QuartierGeometryEditorOl.vue";
+import CrudListPage from "@/components/crud/CrudListPage.vue";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -278,61 +278,6 @@ const form = reactive({
   geometry: props.initialForm?.geometry || null,
  });
 
-
-
-// prepare vectorLayers for the map: include quartiers and evenements when available
-// const vectorLayers = computed(() => {
-//   const layers = [];
-//   if (quartiersGeoJSON.value) {
-//     layers.push({
-//       id: "quartiers",
-//       label: "Quartiers",
-//       data: quartiersGeoJSON.value,
-//       visible: true,
-//       style: {
-//         color: "#00E5FF",
-//         weight: 3,
-//         fill: false,
-//       },
-//       onEachFeature: (feature, layer) => {
-//         const props = feature.properties || {};
-//         const title = props.nom_quartier || props.code_quartier || "Quartier";
-//         layer.bindPopup(title);
-//       },
-//     });
-//   }
-
-//   if (evenementsGeoJSON.value) {
-//     layers.push({
-//       id: "evenements",
-//       label: "Événements",
-//       data: evenementsGeoJSON.value,
-//       visible: true,
-//       // use point style for events (if points), fallback to red outline for polygons
-//       style: (feature) => {
-//         if (feature.geometry && feature.geometry.type === "Point") return {
-//           radius: 8,
-//           color: "#F4511E",
-//           fillColor: "#F4511E",
-//           fillOpacity: 0,
-//           weight: 2,
-//         };
-//         // markers default
-//         return { color: "#ff3333", weight: 2, fill: false };
-//       },
-//       onEachFeature: (feature, layer) => {
-//         const props = feature.properties || {};
-//         const title = props.description || props.source || "Événement";
-//         const date = props.date_evenement || props.date_observation || null;
-//         const content = date ? `${title}<br/><small>${date}</small>` : title;
-//         layer.bindPopup(content);
-//       },
-//     });
-//   }
-
-//   return layers;
-// });
-
 const router = useRouter();
 
 const proprietairesOptions = computed(() => {
@@ -348,21 +293,21 @@ onMounted(() => {
   fetchRefUPs();
 
   // Récupère la liste des propriétaires fonciers pour le sélecteur de membres
-    auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/proprietaireFoncier/`)
-    .then((response) => {
-      proprietaires.value = response.data;
-      console.log("proprietaires:", proprietaires.value);
-    })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des propriétaires.", error);
-    });
+  auth.axiosInstance
+  .get(`${config.API_BASE_URL}/api/proprietaireFoncier/`)
+  .then((response) => {
+    proprietaires.value = response.data;
+    console.log("proprietaires:", proprietaires.value);
+  })
+  .catch((error) => {
+    console.error("Erreur lors de la récupération de la liste des propriétaires.", error);
+  });
 
-    // initialize proprietaires selection from various possible input shapes
-    const initIds = props.initialForm?.properties?.proprios_ids || props.initialForm?.membres_ids || props.initialForm?.proprios_ids;
-    if (Array.isArray(initIds)) {
-      form.properties.proprios = initIds.map((id) => Number(id));
-    }
+  // initialize proprietaires selection from various possible input shapes
+  const initIds = props.initialForm?.properties?.proprios_ids || props.initialForm?.membres_ids || props.initialForm?.proprios_ids;
+  if (Array.isArray(initIds)) {
+    form.properties.proprios = initIds.map((id) => Number(id));
+  }
 });
 
 watch(

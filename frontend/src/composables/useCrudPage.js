@@ -51,12 +51,12 @@ export function useCrudPage(modelName, apiRouteName, idField = "id", options = {
 
   const createItem = async (payload, extraQueryParams = null) => {
     await crud.createItem(payload, extraQueryParams);
-    router.push({ name: `${modelName}-list` });
+    router.back();
   };
 
   const updateItem = async (payload, extraQueryParams = null) => {
     await crud.updateItem(payload, extraQueryParams);
-    router.push({ name: `${modelName}-list` });
+    router.back();
   };
 
   // deleteItem : pas de redirection, on reste sur la liste

@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import UnitePastoraleFormFields from "../../features/unite_pastorale/UnitePastoraleForm2.vue";
+import UnitePastoraleFormFields from "@/features/unite_pastorale/UnitePastoraleForm2.vue";
 import auth from '@/services/axios';
 import config from "@/../config";
 

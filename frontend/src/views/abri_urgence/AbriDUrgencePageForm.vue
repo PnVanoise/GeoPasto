@@ -25,7 +25,7 @@ import config from "@/../config";
 const route = useRoute();
 const router = useRouter();
 
-const crud = useCrudPage("abriurgence", "abriDUrgence", "id_abri_urgence");
+const crud = useCrudPage("abridurgence", "abriDUrgence", "id_abri_urgence");
 const { pageMode, handleSubmit } = crud;
 
 const itemData  = ref({});

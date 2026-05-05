@@ -367,8 +367,9 @@ function performDelete() {
 
 .data-row.row-selected td {
   background-color: #fef2f2;
-  box-shadow: inset 3px 0 0 #DC2626;
 }
+  /* box-shadow: inset 3px 0 0 #DC2626;
+} */
 
 .table-with-fixed-header td.actions-col {
   padding-right: 0;

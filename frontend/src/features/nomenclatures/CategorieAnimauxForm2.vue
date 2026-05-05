@@ -1,34 +1,38 @@
 <template>
-  <h3 class="w3-center w3-margin">{{ formTitle }}</h3>  
-  <form @submit.prevent="submitForm">
-    <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">
-        <v-text-field
-          id="description"
-          v-model="form.description"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Description"
-          dense
-          hide-details
-          clearable
-        />
+  <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
+  <form class="categorie-animaux-form" @submit.prevent="submitForm">
+    <section class="layout-card">
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
+          <v-text-field
+            id="description"
+            v-model="form.description"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            label="Description"
+            dense
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
+        <div class="w3-half form-cell">
+          <v-select
+            id="espece"
+            v-model="form.espece"
+            :items="especes"
+            item-title="description"
+            item-value="id_espece"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            label="Espèce"
+            dense
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
       </div>
-      <div class="w3-half form-cell">
-        <v-select
-          id="espece"
-          v-model="form.espece"
-          :items="especes"
-          item-title="description"
-          item-value="id_espece"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Espèce"
-          dense
-          hide-details
-          clearable
-        />
-      </div>
-    </div>
-    
+    </section>
+
     <div class="form-actions">
       <v-btn density="comfortable" color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
       <v-btn density="comfortable" v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">{{ btTitle }}</v-btn>
@@ -118,6 +122,43 @@ const closeModal = () => {
 };
 </script>
 <style scoped>
+.layout-card {
+  background: #ffffff;
+  border: 1px solid #d7dde6;
+  border-left: 3px solid #64748b;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.layout-card:hover {
+  border-color: #c8d0db;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+}
+
+.categorie-animaux-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.categorie-animaux-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+
+.categorie-animaux-form :deep(.v-input) {
+  font-size: 0.88rem;
+}
+
+.categorie-animaux-form :deep(.v-field__input),
+.categorie-animaux-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
+}
+
+.form-ligne { padding: 4px; }
+.form-cell { padding: 4px; }
+
 .form-actions {
   display: flex;
   justify-content: center;
@@ -127,7 +168,7 @@ const closeModal = () => {
 }
 
 .disable-events {
-  pointer-events: none
+  pointer-events: none;
 }
 </style>
 

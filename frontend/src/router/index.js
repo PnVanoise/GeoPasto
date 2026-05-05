@@ -378,10 +378,10 @@ const router = createRouter({
     {
       path: '/abri-urgence',
       children: [
-        { path: '',         name: 'abriurgence-list', component: () => import('@/views/abri_urgence/AbriDUrgenceList.vue') },
-        { path: 'add',      name: 'abriurgence-add',  component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
-        { path: ':id',      name: 'abriurgence-view', component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
-        { path: ':id/edit', name: 'abriurgence-edit', component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
+        { path: '',         name: 'abridurgence-list', component: () => import('@/views/abri_urgence/AbriDUrgenceList.vue') },
+        { path: 'add',      name: 'abridurgence-add',  component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
+        { path: ':id',      name: 'abridurgence-view', component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
+        { path: ':id/edit', name: 'abridurgence-edit', component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
       ],
     },
     {

@@ -167,11 +167,7 @@ const situations = ref([]);
 const eleveurs = ref([]);
 const typeCs = ref([]);
 
-const situLocked = computed(() => {
-  console.log("initialForm for situLocked:", props.initialForm);
-  const initialSitu = props.initialForm && (props.initialForm.situation_exploitation || props.initialForm.situation || props.initialForm.id_situation);
-  return !!initialSitu;
-});
+const situLocked = computed(() => !!props.initialForm?.situation_exploitation);
 
 // Helper to load eleveurs, optionally filtered by exploitant id
 const loadEleveurs = (explId) => {
@@ -269,7 +265,10 @@ onMounted(() => {
     });
 
   // Récupère les éleveurs via le helper
-  loadEleveurs();
+  const explId = props.initialForm?.exploitant
+    ?? props.initialForm?.situation_detail?.exploitant
+    ?? null;
+  loadEleveurs(explId);
   
 
   // Récupère les types de cheptel

@@ -1,7 +1,7 @@
 <template>
   <CrudListPage
     title="Abris d'urgence"
-    modelName="abriurgence"
+    modelName="abridurgence"
     apiRouteName="abriDUrgence"
     itemLabel="un abri d'urgence"
     idField="id_abri_urgence"

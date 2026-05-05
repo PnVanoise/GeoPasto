@@ -27,7 +27,14 @@ const router = useRouter();
 
 const { pageMode, handleSubmit } = useCrudPage("cheptel", "cheptel", "id_cheptel");
 
-const itemData  = ref({});
+const itemData = ref(
+  !route.params.id && route.query.situation
+    ? {
+        situation_exploitation: Number(route.query.situation),
+        ...(route.query.exploitant ? { exploitant: Number(route.query.exploitant) } : {}),
+      }
+    : {}
+);
 const isLoading = ref(!!route.params.id);
 
 onMounted(async () => {
@@ -42,11 +49,6 @@ onMounted(async () => {
     } finally {
       isLoading.value = false;
     }
-  } else if (route.query.situation) {
-    itemData.value = {
-      situation_exploitation: Number(route.query.situation),
-      ...(route.query.exploitant ? { exploitant: Number(route.query.exploitant) } : {}),
-    };
   }
 });
 

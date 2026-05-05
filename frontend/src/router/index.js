@@ -267,140 +267,185 @@ const router = createRouter({
       component: Login
     },
     {
-      path: '/ProprietaireFonciers2',
-      name: 'proprietairefonciers2',
-      component: () => import('@/features/proprietaire/ProprietaireFoncierList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/proprietaire-foncier',
+      children: [
+        { path: '',         name: 'proprietairefoncier-list', component: () => import('@/views/proprietaire/ProprietaireFoncierList.vue') },
+        { path: 'add',      name: 'proprietairefoncier-add',  component: () => import('@/views/proprietaire/ProprietaireFoncierPageForm.vue') },
+        { path: ':id',      name: 'proprietairefoncier-view', component: () => import('@/views/proprietaire/ProprietaireFoncierPageForm.vue') },
+        { path: ':id/edit', name: 'proprietairefoncier-edit', component: () => import('@/views/proprietaire/ProprietaireFoncierPageForm.vue') },
+      ],
     },
     {
-      path: '/UPProprietaires',
-      name: 'upproprietaires',
-      component: () => import('@/features/proprietaire/UPProprietaireList2.vue'),
-      meta: { requiresAuth: true },
+      path: '/up-proprietaire',
+      children: [
+        { path: '',         name: 'upproprietaire-list', component: () => import('@/views/proprietaire/UPProprietaireList.vue') },
+        { path: 'add',      name: 'upproprietaire-add',  component: () => import('@/views/proprietaire/UPProprietairePageForm.vue') },
+        { path: ':id',      name: 'upproprietaire-view', component: () => import('@/views/proprietaire/UPProprietairePageForm.vue') },
+        { path: ':id/edit', name: 'upproprietaire-edit', component: () => import('@/views/proprietaire/UPProprietairePageForm.vue') },
+      ],
     },
     {
-      path: '/TypeSuivis2',
-      name: 'typesuivis2',
-      component: () => import('@/features/nomenclatures/TypeDeSuiviList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/type-suivi',
+      children: [
+        { path: '',         name: 'typedesuivi-list', component: () => import('@/views/nomenclatures/TypeDeSuiviList.vue') },
+        { path: 'add',      name: 'typedesuivi-add',  component: () => import('@/views/nomenclatures/TypeDeSuiviPageForm.vue') },
+        { path: ':id',      name: 'typedesuivi-view', component: () => import('@/views/nomenclatures/TypeDeSuiviPageForm.vue') },
+        { path: ':id/edit', name: 'typedesuivi-edit', component: () => import('@/views/nomenclatures/TypeDeSuiviPageForm.vue') },
+      ],
     },
     {
-      path: '/PlanSuivis2',
-      name: 'plansuivis2',
-      component: () => import('@/features/plan_suivi/PlanDeSuiviList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/plan-suivi',
+      children: [
+        { path: '',         name: 'plandesuivi-list', component: () => import('@/views/plan_suivi/PlanDeSuiviList.vue') },
+        { path: 'add',      name: 'plandesuivi-add',  component: () => import('@/views/plan_suivi/PlanDeSuiviPageForm.vue') },
+        { path: ':id',      name: 'plandesuivi-view', component: () => import('@/views/plan_suivi/PlanDeSuiviPageForm.vue') },
+        { path: ':id/edit', name: 'plandesuivi-edit', component: () => import('@/views/plan_suivi/PlanDeSuiviPageForm.vue') },
+      ],
     },
     {
-      path: '/TypeMesures2',
-      name: 'typeMesures2',
-      component: () => import('@/features/nomenclatures/TypeDeMesureList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/type-mesure',
+      children: [
+        { path: '',         name: 'typedemesure-list', component: () => import('@/views/nomenclatures/TypeDeMesureList.vue') },
+        { path: 'add',      name: 'typedemesure-add',  component: () => import('@/views/nomenclatures/TypeDeMesurePageForm.vue') },
+        { path: ':id',      name: 'typedemesure-view', component: () => import('@/views/nomenclatures/TypeDeMesurePageForm.vue') },
+        { path: ':id/edit', name: 'typedemesure-edit', component: () => import('@/views/nomenclatures/TypeDeMesurePageForm.vue') },
+      ],
     },
     {
-      path: '/MesurePlans2',
-      name: 'mesurePlans2',
-      component: () => import('@/features/plan_suivi/MesureDePlanList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/mesure-plan',
+      children: [
+        { path: '',         name: 'mesuredeplan-list', component: () => import('@/views/plan_suivi/MesureDePlanList.vue') },
+        { path: 'add',      name: 'mesuredeplan-add',  component: () => import('@/views/plan_suivi/MesureDePlanPageForm.vue') },
+        { path: ':id',      name: 'mesuredeplan-view', component: () => import('@/views/plan_suivi/MesureDePlanPageForm.vue') },
+        { path: ':id/edit', name: 'mesuredeplan-edit', component: () => import('@/views/plan_suivi/MesureDePlanPageForm.vue') },
+      ],
     },
     {
-      path: '/TypeConventions2',
-      name: 'typeconventions2',
-      component: () => import('@/features/nomenclatures/TypeDeConventionList2.vue'),
+      path: '/type-convention',
+      children: [
+        { path: '',         name: 'typeconvention-list', component: () => import('@/views/nomenclatures/TypeConventionList.vue') },
+        { path: 'add',      name: 'typeconvention-add',  component: () => import('@/views/nomenclatures/TypeConventionPageForm.vue') },
+        { path: ':id',      name: 'typeconvention-view', component: () => import('@/views/nomenclatures/TypeConventionPageForm.vue') },
+        { path: ':id/edit', name: 'typeconvention-edit', component: () => import('@/views/nomenclatures/TypeConventionPageForm.vue') },
+      ],
     },
     {
-      path: '/Conventions2',
-      name: 'conventions2',
-      component: () => import('@/features/convention_exploitation/ConventionList2.vue'),
+      path: '/convention-exploitation',
+      children: [
+        { path: '',         name: 'conventiondexploitation-list', component: () => import('@/views/convention_exploitation/ConventionList.vue') },
+        { path: 'add',      name: 'conventiondexploitation-add',  component: () => import('@/views/convention_exploitation/ConventionPageForm.vue') },
+        { path: ':id',      name: 'conventiondexploitation-view', component: () => import('@/views/convention_exploitation/ConventionPageForm.vue') },
+        { path: ':id/edit', name: 'conventiondexploitation-edit', component: () => import('@/views/convention_exploitation/ConventionPageForm.vue') },
+      ],
     },
     {
-      path: '/SituationExploitations2',
-      name: 'situations2',
-      component: () => import('@/features/situation_exploitation/SituationExploitationList2.vue'),
-    },
-    {
-      path: '/Eleveurs2',
-      name: 'eleveurs2',
-      component: () => import('@/features/eleveur/EleveurList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/eleveur',
+      children: [
+        { path: '',         name: 'eleveur-list', component: () => import('@/views/eleveur/EleveurList.vue') },
+        { path: 'add',      name: 'eleveur-add',  component: () => import('@/views/eleveur/EleveurPageForm.vue') },
+        { path: ':id',      name: 'eleveur-view', component: () => import('@/views/eleveur/EleveurPageForm.vue') },
+        { path: ':id/edit', name: 'eleveur-edit', component: () => import('@/views/eleveur/EleveurPageForm.vue') },
+      ],
     },
 
     {
-      path: '/TypeExploitants2',
-      name: 'typeExploitants2',
-      component: () => import('@/features/nomenclatures/TypeDExploitantList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/type-exploitant',
+      children: [
+        { path: '',         name: 'typedexploitant-list', component: () => import('@/views/nomenclatures/TypeDExploitantList.vue') },
+        { path: 'add',      name: 'typedexploitant-add',  component: () => import('@/views/nomenclatures/TypeDExploitantPageForm.vue') },
+        { path: ':id',      name: 'typedexploitant-view', component: () => import('@/views/nomenclatures/TypeDExploitantPageForm.vue') },
+        { path: ':id/edit', name: 'typedexploitant-edit', component: () => import('@/views/nomenclatures/TypeDExploitantPageForm.vue') },
+      ],
     },
     {
-      path: '/Exploitants2',
-      name: 'exploitants2',
-      component: () => import('@/features/exploitant/ExploitantList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/exploitant',
+      children: [
+        { path: '',         name: 'exploitant-list', component: () => import('@/views/exploitant/ExploitantList.vue') },
+        { path: 'add',      name: 'exploitant-add',  component: () => import('@/views/exploitant/ExploitantPageForm.vue') },
+        { path: ':id',      name: 'exploitant-view', component: () => import('@/views/exploitant/ExploitantPageForm.vue') },
+        { path: ':id/edit', name: 'exploitant-edit', component: () => import('@/views/exploitant/ExploitantPageForm.vue') },
+      ],
     },
     {
-      path: '/Subventions2',
-      name: 'subventions2',
-      component: () => import('@/features/subvention/SubventionList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/subvention',
+      children: [
+        { path: '',         name: 'subventionpnv-list', component: () => import('@/views/subvention/SubventionList.vue') },
+        { path: 'add',      name: 'subventionpnv-add',  component: () => import('@/views/subvention/SubventionPageForm.vue') },
+        { path: ':id',      name: 'subventionpnv-view', component: () => import('@/views/subvention/SubventionPageForm.vue') },
+        { path: ':id/edit', name: 'subventionpnv-edit', component: () => import('@/views/subvention/SubventionPageForm.vue') },
+      ],
     },
     {
-      path: '/AbriUrgences2',
-      name: 'abris2',
-      component: () => import('@/features/abri_urgence/AbriDUrgenceList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/abri-urgence',
+      children: [
+        { path: '',         name: 'abriurgence-list', component: () => import('@/views/abri_urgence/AbriDUrgenceList.vue') },
+        { path: 'add',      name: 'abriurgence-add',  component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
+        { path: ':id',      name: 'abriurgence-view', component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
+        { path: ':id/edit', name: 'abriurgence-edit', component: () => import('@/views/abri_urgence/AbriDUrgencePageForm.vue') },
+      ],
     },
     {
-      path: '/Especes2',
-      name: 'especes2',
-      component: () => import('@/features/nomenclatures/EspeceList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/espece',
+      children: [
+        { path: '',         name: 'espece-list', component: () => import('@/views/nomenclatures/EspeceList.vue') },
+        { path: 'add',      name: 'espece-add',  component: () => import('@/views/nomenclatures/EspecePageForm.vue') },
+        { path: ':id',      name: 'espece-view', component: () => import('@/views/nomenclatures/EspecePageForm.vue') },
+        { path: ':id/edit', name: 'espece-edit', component: () => import('@/views/nomenclatures/EspecePageForm.vue') },
+      ],
     },
     {
-      path : "/Productions2",
-      name : "productions2",
-      component: () => import('@/features/nomenclatures/ProductionList2.vue'),
-      meta: { requiresAuth: true },
+      path: '/production',
+      children: [
+        { path: '',         name: 'production-list', component: () => import('@/views/nomenclatures/ProductionList.vue') },
+        { path: 'add',      name: 'production-add',  component: () => import('@/views/nomenclatures/ProductionPageForm.vue') },
+        { path: ':id',      name: 'production-view', component: () => import('@/views/nomenclatures/ProductionPageForm.vue') },
+        { path: ':id/edit', name: 'production-edit', component: () => import('@/views/nomenclatures/ProductionPageForm.vue') },
+      ],
     },
     {
-      path: '/CategoriesPension2',
-      name: 'categories_pension2',
-      component: () => import('@/features/nomenclatures/CategoriePensionList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/categorie-pension',
+      children: [
+        { path: '',         name: 'categoriepension-list', component: () => import('@/views/nomenclatures/CategoriePensionList.vue') },
+        { path: 'add',      name: 'categoriepension-add',  component: () => import('@/views/nomenclatures/CategoriePensionPageForm.vue') },
+        { path: ':id',      name: 'categoriepension-view', component: () => import('@/views/nomenclatures/CategoriePensionPageForm.vue') },
+        { path: ':id/edit', name: 'categoriepension-edit', component: () => import('@/views/nomenclatures/CategoriePensionPageForm.vue') },
+      ],
     },
     {
-      path: '/CategoriesAnimaux2',
-      name: 'categories_animaux2',
-      component: () => import('@/features/nomenclatures/CategorieAnimauxList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/categorie-animaux',
+      children: [
+        { path: '',         name: 'categorieanimaux-list', component: () => import('@/views/nomenclatures/CategorieAnimauxList.vue') },
+        { path: 'add',      name: 'categorieanimaux-add',  component: () => import('@/views/nomenclatures/CategorieAnimauxPageForm.vue') },
+        { path: ':id',      name: 'categorieanimaux-view', component: () => import('@/views/nomenclatures/CategorieAnimauxPageForm.vue') },
+        { path: ':id/edit', name: 'categorieanimaux-edit', component: () => import('@/views/nomenclatures/CategorieAnimauxPageForm.vue') },
+      ],
     },
     {
-      path: '/Races2',
-      name: 'races2',
-      component: () => import('@/features/nomenclatures/RaceList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/race',
+      children: [
+        { path: '',         name: 'race-list', component: () => import('@/views/nomenclatures/RaceList.vue') },
+        { path: 'add',      name: 'race-add',  component: () => import('@/views/nomenclatures/RacePageForm.vue') },
+        { path: ':id',      name: 'race-view', component: () => import('@/views/nomenclatures/RacePageForm.vue') },
+        { path: ':id/edit', name: 'race-edit', component: () => import('@/views/nomenclatures/RacePageForm.vue') },
+      ],
     },
     {
-      path: '/Bergers2',
-      name: 'bergers2',
-      component: () => import('@/features/berger/BergerList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/berger',
+      children: [
+        { path: '',        name: 'berger-list', component: () => import('@/views/berger/BergerList.vue') },
+        { path: 'add',     name: 'berger-add',  component: () => import('@/views/berger/BergerPageForm.vue') },
+        { path: ':id',     name: 'berger-view', component: () => import('@/views/berger/BergerPageForm.vue') },
+        { path: ':id/edit',name: 'berger-edit', component: () => import('@/views/berger/BergerPageForm.vue') },
+      ],
     },
     {
-      path: '/TypeCheptels2',
-      name: 'typecheptels2',
-      component: () => import('@/features/nomenclatures/TypeCheptelList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/GardeTroupeaux2',
-      name: 'gardetroupeaux2',
-      component: () => import('@/features/garde_troupeau/GardeTroupeauList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/Cheptels2',
-      name: 'cheptels2',
-      component: () => import('@/features/cheptel/CheptelList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/garde-situation',
+      children: [
+        { path: '',         name: 'gardesituation-list', component: () => import('@/views/garde_troupeau/GardeTroupeauList.vue') },
+        { path: 'add',      name: 'gardesituation-add',  component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
+        { path: ':id',      name: 'gardesituation-view', component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
+        { path: ':id/edit', name: 'gardesituation-edit', component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
+      ],
     },
     // {
     //   path: '/Elevers2',
@@ -430,50 +475,58 @@ const router = createRouter({
     //   meta: { requiresAuth: true },  // Route protégée
     // },
     {
-      path: '/Ruches',
-      name: 'ruches',
-      component: () => import('@/features/ruche/RucheList2.vue'),
-      meta: { requiresAuth: true },
+      path: '/ruche',
+      children: [
+        { path: '',         name: 'ruche-list', component: () => import('@/views/ruche/RucheList.vue') },
+        { path: 'add',      name: 'ruche-add',  component: () => import('@/views/ruche/RuchePageForm.vue') },
+        { path: ':id',      name: 'ruche-view', component: () => import('@/views/ruche/RuchePageForm.vue') },
+        { path: ':id/edit', name: 'ruche-edit', component: () => import('@/views/ruche/RuchePageForm.vue') },
+      ],
     },
     {
-      path: '/Evenements2',
-      name: 'evenements2',
-      component: () => import('@/features/evenement/EventList2.vue'),
-      meta: { requiresAuth: true },
+      path: '/type-evenement',
+      children: [
+        { path: '',         name: 'typeevenement-list', component: () => import('@/views/nomenclatures/TypeEvenementList.vue') },
+        { path: 'add',      name: 'typeevenement-add',  component: () => import('@/views/nomenclatures/TypeEvenementPageForm.vue') },
+        { path: ':id',      name: 'typeevenement-view', component: () => import('@/views/nomenclatures/TypeEvenementPageForm.vue') },
+        { path: ':id/edit', name: 'typeevenement-edit', component: () => import('@/views/nomenclatures/TypeEvenementPageForm.vue') },
+      ],
     },
     {
-      path: '/TypeEvenements2',
-      name: 'typeevenements2',
-      component: () => import('@/features/evenement/TypeEvenementList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
+      path: '/type-equipement',
+      children: [
+        { path: '',         name: 'typeequipement-list', component: () => import('@/views/nomenclatures/TypeEquipementList.vue') },
+        { path: 'add',      name: 'typeequipement-add',  component: () => import('@/views/nomenclatures/TypeEquipementPageForm.vue') },
+        { path: ':id',      name: 'typeequipement-view', component: () => import('@/views/nomenclatures/TypeEquipementPageForm.vue') },
+        { path: ':id/edit', name: 'typeequipement-edit', component: () => import('@/views/nomenclatures/TypeEquipementPageForm.vue') },
+      ],
     },
     {
-      path: '/TypeEquipements2',
-      name: 'typeequipements2',
-      component: () => import('@/features/equipement/TypeEquipementList2.vue'),
-      meta: {
-        modelName: 'typeequipement',
-        requiredPermission: 'view_typeequipement',
-        requiresAuth: true
-      },  // Route protégée
+      path: '/logement',
+      children: [
+        { path: '',         name: 'logement-list', component: () => import('@/views/logement/LogementList.vue') },
+        { path: 'add',      name: 'logement-add',  component: () => import('@/views/logement/LogementPageForm.vue') },
+        { path: ':id',      name: 'logement-view', component: () => import('@/views/logement/LogementPageForm.vue') },
+        { path: ':id/edit', name: 'logement-edit', component: () => import('@/views/logement/LogementPageForm.vue') },
+      ],
     },
     {
-      path: '/Logements',
-      name: 'logements',
-      component: () => import('@/features/logement/LogementList2.vue'),
-      meta: { requiresAuth: true },
+      path: '/commodite',
+      children: [
+        { path: '',         name: 'commodite-list', component: () => import('@/views/commodite/CommoditeList.vue') },
+        { path: 'add',      name: 'commodite-add',  component: () => import('@/views/commodite/CommoditePageForm.vue') },
+        { path: ':id',      name: 'commodite-view', component: () => import('@/views/commodite/CommoditePageForm.vue') },
+        { path: ':id/edit', name: 'commodite-edit', component: () => import('@/views/commodite/CommoditePageForm.vue') },
+      ],
     },
     {
-      path: '/Commodites2',
-      name: 'commodites2',
-      component: () => import('@/features/commodite/CommoditeList2.vue'),
-      meta: { requiresAuth: true },  // Route protégée
-    },
-    {
-      path: '/LogementCommodites',
-      name: 'logementCommodites',
-      component: () => import('@/features/commodite/LogementCommoditeList2.vue'),
-      meta: { requiresAuth: true },
+      path: '/logement-commodite',
+      children: [
+        { path: '',         name: 'logementcommodite-list', component: () => import('@/views/logement_commodite/LogementCommoditeList.vue') },
+        { path: 'add',      name: 'logementcommodite-add',  component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
+        { path: ':id',      name: 'logementcommodite-view', component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
+        { path: ':id/edit', name: 'logementcommodite-edit', component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
+      ],
     },
   ]
 });

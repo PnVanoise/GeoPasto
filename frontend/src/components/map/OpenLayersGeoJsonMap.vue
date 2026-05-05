@@ -14,7 +14,7 @@ import { normalizeGeoData } from "@/helpers/geojson.js";
 import "ol/ol.css";
 
 import GeoJSON from "ol/format/GeoJSON";
-import Map from "ol/Map";
+import OlMap from "ol/Map";
 import View from "ol/View";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
 import Control from "ol/control/Control";
@@ -53,38 +53,11 @@ let mapHoveredId = null;
 const popupContent = ref(null);
 
 let map = null;
-let vectorLayer = null;
+const dataVectorLayers = new Map(); // layerId → VectorLayer
 let popupOverlay = null;
+let legendElement = null;
 
-const fitToData = () => {
-  if (!map || !vectorLayer) return;
-  const extent = vectorLayer.getSource().getExtent();
-  if (extent && extent.every((v) => Number.isFinite(v))) {
-    map.getView().fit(extent, { duration: 300, padding: [30, 30, 30, 30], maxZoom: 16 });
-  }
-};
-
-const buildFitControl = () => {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.title = "Ajuster la vue aux données";
-  button.innerHTML = `<svg viewBox="0 0 18 18" width="12" height="12" fill="currentColor">
-    <path d="M1 1h5V3H3v3H1zM1 17h5v-2H3v-3H1zM17 1h-5v2h3v3h2zM17 17h-5v-2h3v-3h2z"/>
-  </svg>`;
-  button.addEventListener("click", fitToData);
-
-  const div = document.createElement("div");
-  div.className = "ol-fit-extent ol-unselectable ol-control";
-  div.appendChild(button);
-  return new Control({ element: div });
-};
-
-const buildXyzSource = (url) => {
-  return new XYZ({
-    url,
-    crossOrigin: "anonymous",
-  });
-};
+// ── Style ─────────────────────────────────────────────────────────────────────
 
 const buildStyle = () => {
   return (feature) => {
@@ -120,11 +93,7 @@ const buildStyle = () => {
         ? Math.min(baseFillOpacity + 0.15, 0.55)
         : baseFillOpacity;
 
-    const radius = layerStyle.pointRadius ?? (isEventMarker
-      ? 8
-      : isEvent
-        ? 6
-        : 6);
+    const radius = layerStyle.pointRadius ?? (isEventMarker ? 8 : isEvent ? 6 : 6);
     const pointShape = layerStyle.pointShape || "circle";
     const pointStrokeColor = layerStyle.pointStrokeColor || "#ffffff";
     const pointStrokeWidth = Number.isFinite(layerStyle.pointStrokeWidth)
@@ -171,77 +140,200 @@ const buildStyle = () => {
     }
 
     return new Style({
-      stroke: new Stroke({
-        color: strokeColor,
-        width: strokeWidth,
-        lineDash,
-      }),
-      fill: new Fill({
-        color: hexToRgba(strokeColor, fillOpacity),
-      }),
+      stroke: new Stroke({ color: strokeColor, width: strokeWidth, lineDash }),
+      fill: new Fill({ color: hexToRgba(strokeColor, fillOpacity) }),
       image: imageStyle,
       zIndex,
     });
   };
 };
 
+const sharedStyleFn = buildStyle();
 
-const updateVectorLayer = () => {
-  if (!map || !vectorLayer) return;
-  const source = vectorLayer.getSource();
-  source.clear();
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-  const normalizedLayers = (Array.isArray(props.layers) ? props.layers : [])
-    .filter((layer) => layer && layer.visible !== false)
-    .map((layer, idx) => ({
-      id: layer.id || `layer_${idx + 1}`,
-      data: normalizeGeoData(layer.data),
-      style: layer.style || {},
-      popup: layer.popup || {},
-    }))
-    .filter((layer) => layer.data);
+const notifyAllDataLayers = () => {
+  for (const vl of dataVectorLayers.values()) {
+    vl.getSource().changed();
+  }
+};
 
-  if (!normalizedLayers.length) {
-    map.getView().setCenter([0, 0]);
-    map.getView().setZoom(2);
-    return;
+const findFeatureById = (id) => {
+  if (id == null) return null;
+  for (const vl of dataVectorLayers.values()) {
+    const f = vl.getSource().getFeatureById(id);
+    if (f) return f;
+  }
+  return null;
+};
+
+const fitToData = () => {
+  if (!map || !dataVectorLayers.size) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const vl of dataVectorLayers.values()) {
+    const ext = vl.getSource().getExtent();
+    if (ext && ext.every((v) => Number.isFinite(v))) {
+      minX = Math.min(minX, ext[0]);
+      minY = Math.min(minY, ext[1]);
+      maxX = Math.max(maxX, ext[2]);
+      maxY = Math.max(maxY, ext[3]);
+    }
+  }
+  if ([minX, minY, maxX, maxY].every((v) => Number.isFinite(v))) {
+    map.getView().fit([minX, minY, maxX, maxY], { duration: 300, padding: [30, 30, 30, 30], maxZoom: 16 });
+  }
+};
+
+const buildFitControl = () => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.title = "Ajuster la vue aux données";
+  button.innerHTML = `<svg viewBox="0 0 18 18" width="12" height="12" fill="currentColor">
+    <path d="M1 1h5V3H3v3H1zM1 17h5v-2H3v-3H1zM17 1h-5v2h3v3h2zM17 17h-5v-2h3v-3h2z"/>
+  </svg>`;
+  button.addEventListener("click", fitToData);
+
+  const div = document.createElement("div");
+  div.className = "ol-fit-extent ol-unselectable ol-control";
+  div.appendChild(button);
+  return new Control({ element: div });
+};
+
+const buildXyzSource = (url) => new XYZ({ url, crossOrigin: "anonymous" });
+
+// ── Sync des couches de données ───────────────────────────────────────────────
+
+const syncDataLayers = () => {
+  if (!map) return;
+
+  const layerDefs = Array.isArray(props.layers) ? props.layers : [];
+  const newIds = new Set(layerDefs.map((l) => l.id));
+
+  // Supprimer les couches qui ne sont plus dans props
+  const toRemove = [];
+  for (const [id] of dataVectorLayers) {
+    if (!newIds.has(id)) toRemove.push(id);
+  }
+  for (const id of toRemove) {
+    map.removeLayer(dataVectorLayers.get(id));
+    dataVectorLayers.delete(id);
   }
 
-  const features = [];
+  let totalFeatureCount = 0;
 
-  normalizedLayers.forEach((layer) => {
-    const layerFeatures = new GeoJSON().readFeatures(layer.data, {
+  for (const layerDef of layerDefs) {
+    let vl = dataVectorLayers.get(layerDef.id);
+
+    if (!vl) {
+      vl = new VectorLayer({
+        title: layerDef.title || layerDef.id,
+        source: new VectorSource(),
+        style: sharedStyleFn,
+        visible: layerDef.visible !== false,
+      });
+      if (layerDef.showInSwitcher === false) {
+        vl.set("displayInLayerSwitcher", false);
+      }
+      dataVectorLayers.set(layerDef.id, vl);
+      map.addLayer(vl);
+      vl.on("change:visible", updateLegend);
+    } else {
+      if (layerDef.title) vl.set("title", layerDef.title);
+    }
+
+    const source = vl.getSource();
+    source.clear();
+
+    const normalizedData = normalizeGeoData(layerDef.data);
+    if (!normalizedData) continue;
+
+    const layerFeatures = new GeoJSON().readFeatures(normalizedData, {
       featureProjection: "EPSG:3857",
     });
 
     layerFeatures.forEach((f) => {
-      if (!f.get("__layer")) {
-        f.set("__layer", layer.id);
-      }
-      f.set("__layerStyle", layer.style || {});
-      f.set("__popupConfig", layer.popup || {});
+      if (!f.get("__layer")) f.set("__layer", layerDef.id);
+      f.set("__layerStyle", layerDef.style || {});
+      f.set("__popupConfig", layerDef.popup || {});
     });
 
-    features.push(...layerFeatures);
-  });
+    source.addFeatures(layerFeatures);
+    totalFeatureCount += layerFeatures.length;
+  }
 
-  if (!features.length) {
+  if (totalFeatureCount > 0) {
+    fitToData();
+  } else if (!dataVectorLayers.size) {
     map.getView().setCenter([0, 0]);
     map.getView().setZoom(2);
+  }
+
+  updateLegend();
+};
+
+// ── Légende ───────────────────────────────────────────────────────────────────
+
+const buildSwatchSvg = (style) => {
+  const color = style.strokeColor || "#666";
+  const fillOpacity = style.fillOpacity ?? 0.3;
+  const hasDash = Array.isArray(style.lineDash) && style.lineDash.length > 0;
+  const pointShape = style.pointShape;
+  const esc = (v) => String(v).replaceAll('"', "&quot;");
+
+  if (pointShape === "triangle") {
+    return `<svg width="14" height="14" viewBox="0 0 14 14"><polygon points="7,1 13,13 1,13" fill="${esc(color)}" stroke="white" stroke-width="0.8"/></svg>`;
+  }
+  if (pointShape === "square" || pointShape === "diamond") {
+    return `<svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" fill="${esc(color)}" stroke="white" stroke-width="0.8"/></svg>`;
+  }
+  if (pointShape === "circle") {
+    return `<svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="${esc(color)}" stroke="white" stroke-width="0.8"/></svg>`;
+  }
+
+  // polygone / contour
+  const cleaned = String(color).replace(/^#/, "");
+  const validHex = cleaned.length === 3 ? cleaned.split("").map((ch) => ch + ch).join("") : cleaned;
+  const num = Number.parseInt(validHex, 16);
+  const fill = fillOpacity === 0
+    ? "none"
+    : `rgba(${(num >> 16) & 255},${(num >> 8) & 255},${num & 255},${fillOpacity})`;
+  const dash = hasDash ? ` stroke-dasharray="5 3"` : "";
+  return `<svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" fill="${fill}" stroke="${esc(color)}" stroke-width="2"${dash}/></svg>`;
+};
+
+const updateLegend = () => {
+  if (!legendElement) return;
+
+  const items = (Array.isArray(props.layers) ? props.layers : [])
+    .filter((layerDef) => {
+      if (!layerDef.title) return false;
+      const count = layerDef.data?.features?.length ?? 0;
+      if (count === 0) return false;
+      const vl = dataVectorLayers.get(layerDef.id);
+      return !vl || vl.getVisible();
+    })
+    .map((layerDef) => {
+      const count = layerDef.showInSwitcher !== false
+        ? layerDef.data?.features?.length ?? 0
+        : null;
+      const label = count != null
+        ? `${layerDef.title} (${count})`
+        : layerDef.title;
+      return `<div class="ol-legend-item">
+        <span class="ol-legend-swatch">${buildSwatchSvg(layerDef.style || {})}</span>
+        <span class="ol-legend-label">${label.replaceAll("<", "&lt;")}</span>
+      </div>`;
+    });
+
+  if (!items.length) {
+    legendElement.style.display = "none";
     return;
   }
-
-  source.addFeatures(features);
-
-  const extent = source.getExtent();
-  if (extent && extent.every((v) => Number.isFinite(v))) {
-    map.getView().fit(extent, {
-      duration: 250,
-      padding: [30, 30, 30, 30],
-      maxZoom: 16,
-    });
-  }
+  legendElement.style.display = "";
+  legendElement.innerHTML = items.join("");
 };
+
+// ── Popup ─────────────────────────────────────────────────────────────────────
 
 const openPopupForFeature = (feature, coordinate) => {
   if (!popupOverlay || !popupContent.value) return;
@@ -258,7 +350,6 @@ const openPopupForFeature = (feature, coordinate) => {
   const popupRoute = popupConfig.route ?? "";
   const popupContentType = popupConfig.contentType || null;
   const label = properties[popupAttribute] || id || "Détails";
-
   const href = id && popupRoute ? `${popupRoute}/${id}` : "";
 
   if (popupContentType === "eventCompact") {
@@ -268,7 +359,6 @@ const openPopupForFeature = (feature, coordinate) => {
   }
 
   popupContent.value.innerHTML = buildGenericPopupHtml(label, href, id, objectTypeLabel, popupConfig);
-
   popupOverlay.setPosition(coordinate);
 };
 
@@ -336,7 +426,7 @@ const buildEventPopupHtml = (properties, label, href, id, objectTypeLabel) => {
   const typeEvenement = typeEvenementRaw ? escapeHtml(String(typeEvenementRaw)) : "Type inconnu";
   const description = properties.description ? escapeHtml(String(properties.description)) : "-";
 
-  const details = `
+  return `
     <div class="popup-event">
       <div class="popup-object-type"><strong>${safeType}</strong></div>
       <div>${observateur} le ${dateEvenement}</div>
@@ -344,11 +434,6 @@ const buildEventPopupHtml = (properties, label, href, id, objectTypeLabel) => {
       <div>${description}</div>
     </div>
   `;
-
-  if (!href || !id) return details;
-
-  return `${details}`;
-  // return `${details}<div class="popup-event-link"><a href="${href}" data-feature-id="${escapeHtml(String(id))}" data-feature-label="${escapeHtml(String(label || "Événement"))}">lien vers fiche</a></div>`;
 };
 
 const onPopupContentClick = (event) => {
@@ -384,11 +469,7 @@ const zoomToFeature = (feature) => {
     return;
   }
 
-  map.getView().fit(extent, {
-    duration: 250,
-    padding: [30, 30, 30, 30],
-    maxZoom: 16,
-  });
+  map.getView().fit(extent, { duration: 250, padding: [30, 30, 30, 30], maxZoom: 16 });
 };
 
 const closePopup = () => {
@@ -413,7 +494,6 @@ const pickFeatureForPopup = (event) => {
     const zIndex = Number.isFinite(layerStyle.zIndex) ? layerStyle.zIndex : 0;
     const isPoint = geometryType === "Point";
 
-    // Strongly prefer point-like interactive objects over background polygons.
     if (layerName === "evenement" && isPoint) return 1;
     if (layerName === "equipement_up" && isPoint) return 2;
     if (layerName === "equipement_situation" && isPoint) return 3;
@@ -423,13 +503,14 @@ const pickFeatureForPopup = (event) => {
     if (layerName === "quartier") return 10;
     if (layerName === "up_outline") return 20;
 
-    // Fallback: higher visual zIndex should win.
     return 100 - zIndex;
   };
 
   picked.sort((a, b) => getPriority(a) - getPriority(b));
   return picked[0] || null;
 };
+
+// ── Init ──────────────────────────────────────────────────────────────────────
 
 const initMap = () => {
   const osmLayer = new TileLayer({
@@ -475,50 +556,38 @@ const initMap = () => {
     layers: [cadastreLayer],
   });
 
-  vectorLayer = new VectorLayer({
-    source: new VectorSource(),
-    style: buildStyle(),
-  });
-  vectorLayer.set("displayInLayerSwitcher", false);
-
   popupOverlay = new Overlay({
     element: popupElement.value,
-    autoPan: {
-      animation: {
-        duration: 200,
-      },
-    },
+    autoPan: { animation: { duration: 200 } },
   });
 
-  map = new Map({
+  map = new OlMap({
     target: mapElement.value,
-    layers: [
-      baseMapsGroup,
-      overlaysGroup,
-      vectorLayer,
-    ],
+    layers: [baseMapsGroup, overlaysGroup],
     overlays: [popupOverlay],
     controls: defaultControls().extend([new ScaleLine(), buildFitControl()]),
-    view: new View({
-      center: [0, 0],
-      zoom: 2,
-    }),
+    view: new View({ center: [0, 0], zoom: 2 }),
   });
 
   const layerSwitcher = new LayerSwitcher({
     activationMode: "click",
     startActive: false,
-    tipLabel: "Fonds de carte",
+    tipLabel: "Couches",
     groupSelectStyle: "none",
   });
   map.addControl(layerSwitcher);
+
+  legendElement = document.createElement("div");
+  legendElement.className = "ol-legend ol-unselectable ol-control";
+  legendElement.style.display = "none";
+  map.addControl(new Control({ element: legendElement }));
 
   map.on("pointermove", (event) => {
     const feature = map.forEachFeatureAtPixel(event.pixel, (f) => f) ?? null;
     const id = feature ? feature.getId() : null;
     if (id !== mapHoveredId) {
       mapHoveredId = id;
-      vectorLayer.getSource().changed();
+      notifyAllDataLayers();
     }
     map.getTargetElement().style.cursor = id != null ? "pointer" : "";
   });
@@ -536,36 +605,26 @@ const initMap = () => {
     }
   });
 
-  updateVectorLayer();
+  syncDataLayers();
 };
 
-watch(
-  () => props.layers,
-  () => {
-    updateVectorLayer();
-  },
-  { deep: true }
-);
+// ── Watchers ──────────────────────────────────────────────────────────────────
 
-watch(
-  () => props.highlightedId,
-  () => { if (vectorLayer) vectorLayer.getSource().changed(); }
-);
+watch(() => props.layers, () => { syncDataLayers(); }, { deep: true });
+watch(() => props.highlightedId, () => { notifyAllDataLayers(); });
+watch(() => props.selectedId, () => { notifyAllDataLayers(); });
 
-watch(
-  () => props.selectedId,
-  () => { if (vectorLayer) vectorLayer.getSource().changed(); }
-);
+// ── Expose ────────────────────────────────────────────────────────────────────
 
 defineExpose({
   zoomToId(id) {
-    if (!map || !vectorLayer || id == null) return;
-    const feature = vectorLayer.getSource().getFeatureById(id);
+    if (!map || id == null) return;
+    const feature = findFeatureById(id);
     if (feature) zoomToFeature(feature);
   },
   showPopupForId(id) {
-    if (!map || !vectorLayer || id == null) return;
-    const feature = vectorLayer.getSource().getFeatureById(id);
+    if (!map || id == null) return;
+    const feature = findFeatureById(id);
     if (!feature) return;
     const geometry = feature.getGeometry?.();
     if (!geometry) return;
@@ -581,6 +640,8 @@ defineExpose({
   },
 });
 
+// ── Lifecycle ─────────────────────────────────────────────────────────────────
+
 onMounted(() => {
   initMap();
   popupContent.value?.addEventListener("click", onPopupContentClick);
@@ -589,22 +650,24 @@ onMounted(() => {
 onBeforeUnmount(() => {
   popupContent.value?.removeEventListener("click", onPopupContentClick);
   if (map) {
+    for (const vl of dataVectorLayers.values()) {
+      map.removeLayer(vl);
+    }
     map.setTarget(undefined);
     map = null;
   }
-  vectorLayer = null;
+  dataVectorLayers.clear();
   popupOverlay = null;
+  legendElement = null;
 });
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
 
 function hexToRgba(hex, alpha) {
   const cleaned = String(hex || "").replace(/^#/, "");
   const validHex = cleaned.length === 3
-    ? cleaned
-        .split("")
-        .map((ch) => ch + ch)
-        .join("")
+    ? cleaned.split("").map((ch) => ch + ch).join("")
     : cleaned;
-
   const numeric = Number.parseInt(validHex, 16);
   const r = (numeric >> 16) & 255;
   const g = (numeric >> 8) & 255;
@@ -650,7 +713,7 @@ function escapeHtml(value) {
 :deep(.layer-switcher .panel) {
   min-width: 170px;
   max-width: 220px;
-  max-height: 220px;
+  max-height: 320px;
   overflow: auto;
   padding: 6px 8px;
   border-radius: 8px;
@@ -675,7 +738,6 @@ function escapeHtml(value) {
 }
 
 :deep(.layer-switcher input) {
-  /* transform: scale(0.9); */
   margin-right: 4px;
 }
 
@@ -693,7 +755,6 @@ function escapeHtml(value) {
   border: 1px solid #cccccc;
   min-width: 170px;
   max-width: 260px;
-  /* transform: translate(-50%, -100%); */
 }
 
 .ol-popup-closer {
@@ -805,5 +866,34 @@ function escapeHtml(value) {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+:deep(.ol-legend) {
+  bottom: 1.8em;
+  left: 0.5em;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 5px 7px;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  pointer-events: none;
+  max-width: 180px;
+}
+
+:deep(.ol-legend-item) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0;
+}
+
+:deep(.ol-legend-swatch) {
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+:deep(.ol-legend-label) {
+  color: #334155;
+  white-space: nowrap;
 }
 </style>

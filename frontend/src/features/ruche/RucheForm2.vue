@@ -86,6 +86,7 @@ const hasGeometry = computed(() => {
 const situations = ref([]);
 
 const form = reactive({
+  id: null,
   description: "",
   situation_exploitation: null,
   geometry: null,
@@ -96,6 +97,7 @@ watch(
   (newVal) => {
     const base = newVal || {};
     const src = base.properties ? { ...base.properties } : base;
+    form.id = base.id ?? src.id ?? null;
     form.description = src.description ?? "";
     form.situation_exploitation = src.situation_exploitation ?? null;
     form.geometry = base.geometry ?? src.geometry ?? null;

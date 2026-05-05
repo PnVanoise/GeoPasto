@@ -15,23 +15,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import UnitePastoraleFormFields from "@/components/UnitePastoraleForm2.vue";
-import auth from "@/../auth";
+import UnitePastoraleFormFields from "@/features/unite_pastorale/UnitePastoraleForm2.vue";
+import auth from '@/services/axios';
 import config from "@/../config";
 
 const route  = useRoute();
 const router = useRouter();
 
 const crud = useCrudPage("unitepastorale", "unitePastorale", "id", { geojson: true });
-
-const pageMode = computed(() => {
-  if (route.name === "unitepastorale-add")  return "add";
-  if (route.name === "unitepastorale-edit") return "change";
-  return "view";
-});
+const { pageMode, handleSubmit } = crud;
 
 const itemData  = ref({});
 const isLoading = ref(!!route.params.id);
@@ -59,13 +54,6 @@ onMounted(async () => {
   }
 });
 
-async function handleSubmit(formData) {
-  if (pageMode.value === "add") {
-    await crud.createItem(formData);  // redirige vers unitepastorale-list
-  } else {
-    await crud.updateItem(formData);  // idem
-  }
-}
 </script>
 
 <style scoped>

@@ -41,8 +41,8 @@ import { ref, computed, toRaw, markRaw } from "vue";
 import { useRouter } from "vue-router";
 import { usePermissions } from "@/composables/usePermissions";
 
-import OpenLayersGeoJsonMap from "@/components/ListMap/OpenLayersGeoJsonMap.vue";
-import CrudListPage from "@/components/CrudListPage.vue";
+import OpenLayersGeoJsonMap from "../../components/map/OpenLayersGeoJsonMap.vue";
+import CrudListPage from "../../components/crud/CrudListPage.vue";
 
 const columns = [
   { field: "nom_up",        label: "UP",    sortable: true },

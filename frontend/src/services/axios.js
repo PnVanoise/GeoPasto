@@ -1,55 +1,81 @@
-// src/services/axios.js
 import axios from 'axios';
+import config from '../../config';
 
+const API_URL = `${config.API_BASE_URL}/api`;
 
-
-// Crée une instance Axios
 const axiosInstance = axios.create({
-    baseURL: 'http://151.80.250.138/api/',  // Remplace par l'URL de ton API
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
-// Intercepteur de requêtes pour ajouter le token JWT
-axiosInstance.interceptors.request.use(
-    config => {
-        // Récupère le token du localStorage
-        const userData = localStorage.getItem('user');
-        const token = userData ? JSON.parse(userData).access : null;
+function getAccessToken() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return user?.access || null;
+}
 
-        // Si un token est disponible, ajoute-le au header de la requête
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+function getRefreshToken() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return user?.refresh || null;
+}
 
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
+function setAccessToken(newAccessToken) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+        user.access = newAccessToken;
+        localStorage.setItem('user', JSON.stringify(user));
     }
+}
+
+function logout() {
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+
+async function refreshAccessToken() {
+    const refresh = getRefreshToken();
+    if (!refresh) return null;
+
+    try {
+        const response = await axios.post(`${API_URL}/token/refresh/`, { refresh });
+        const newAccess = response.data.access;
+        setAccessToken(newAccess);
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${newAccess}`;
+        return newAccess;
+    } catch (error) {
+        console.error('Erreur lors du rafraîchissement du token :', error);
+        logout();
+        return null;
+    }
+}
+
+axiosInstance.interceptors.request.use(
+    (cfg) => {
+        const token = getAccessToken();
+        if (token) {
+            cfg.headers.Authorization = `Bearer ${token}`;
+        }
+        return cfg;
+    },
+    (error) => Promise.reject(error)
 );
 
-// Intercepteur pour gérer les réponses
 axiosInstance.interceptors.response.use(
-    response => response, // Si la réponse est réussie, la retourner
-    async error => {
+    (response) => response,
+    async (error) => {
         const originalRequest = error.config;
 
-        // Si on reçoit un statut 401 et que ce n'est pas une tentative de renouvellement du token
-        if (error.response.status === 401 && !originalRequest._retry) {
+        if (
+            error.response?.status === 401 &&
+            !originalRequest._retry &&
+            getRefreshToken()
+        ) {
             originalRequest._retry = true;
-
-            // Renouveler le token d'accès
             const newAccessToken = await refreshAccessToken();
-
             if (newAccessToken) {
-                // Met à jour le header de la requête originale avec le nouveau token
                 originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                // Réessaye la requête originale
                 return axiosInstance(originalRequest);
-            } else {
-                // Si le renouvellement du token échoue, on peut rediriger vers la page de login
-                // ou déconnecter l'utilisateur
-                console.error('Le token de rafraîchissement a expiré. Redirection vers la page de login.');
-                // Optionnel : window.location.href = '/login';
             }
         }
 
@@ -57,6 +83,10 @@ axiosInstance.interceptors.response.use(
     }
 );
 
-
-export default axiosInstance;
-
+export default {
+    axiosInstance,
+    getAccessToken,
+    getRefreshToken,
+    refreshAccessToken,
+    logout,
+};

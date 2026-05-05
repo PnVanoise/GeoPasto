@@ -1,4 +1,5 @@
-import { useRouter } from "vue-router";
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "./useCrud";
 
 /**
@@ -17,9 +18,11 @@ import { useCrud } from "./useCrud";
  *  - `${modelName}-view`  (param :id)
  *
  * Usage :
- *   const crud = useCrudPage('type_cheptel', 'type_cheptel', 'id_type_cheptel')
+ *   const crud = useCrudPage('typecheptel', 'type_cheptel', 'id_type_cheptel')
+ *   const { pageMode, handleSubmit } = crud
  */
 export function useCrudPage(modelName, apiRouteName, idField = "id", options = {}) {
+  const route  = useRoute();
   const router = useRouter();
 
   // Récupère tout useCrud intact
@@ -48,16 +51,32 @@ export function useCrudPage(modelName, apiRouteName, idField = "id", options = {
 
   const createItem = async (payload, extraQueryParams = null) => {
     await crud.createItem(payload, extraQueryParams);
-    router.push({ name: `${modelName}-list` });
+    router.back();
   };
 
   const updateItem = async (payload, extraQueryParams = null) => {
     await crud.updateItem(payload, extraQueryParams);
-    router.push({ name: `${modelName}-list` });
+    router.back();
   };
 
   // deleteItem : pas de redirection, on reste sur la liste
   // On le retransmet tel quel depuis crud
+
+  // ── Mode page ─────────────────────────────────────────────────────────────
+
+  const pageMode = computed(() => {
+    if (route.name === `${modelName}-add`)  return "add";
+    if (route.name === `${modelName}-edit`) return "change";
+    return "view";
+  });
+
+  const handleSubmit = async (formData) => {
+    if (pageMode.value === "add") {
+      await createItem(formData);
+    } else {
+      await updateItem(formData);
+    }
+  };
 
   return {
     // ── Tout useCrud ──
@@ -69,5 +88,9 @@ export function useCrudPage(modelName, apiRouteName, idField = "id", options = {
     openView,
     createItem,
     updateItem,
+
+    // ── Mode page ──
+    pageMode,
+    handleSubmit,
   };
 }

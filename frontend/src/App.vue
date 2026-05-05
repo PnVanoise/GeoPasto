@@ -2,13 +2,13 @@
 import { computed, ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 
-import Notification from "./components/Notification.vue";
-import NotificationContainer from "./components/NotificationContainer.vue";
-import Login from "./components/Login.vue";
-import Logout from "./components/Logout.vue";
+import Notification from "./components/ui/Notification.vue";
+import NotificationContainer from "./components/ui/NotificationContainer.vue";
+import Login from "./components/auth/Login.vue";
+import Logout from "./components/auth/Logout.vue";
 
 import { useMainStore } from "./store";
-import auth from "../auth";
+import auth from '@/services/axios';
 
 const mainStore = useMainStore();
 const isAuthenticated = computed(() => mainStore.isAuthenticated);
@@ -221,57 +221,57 @@ watch(
           <div v-show="isAccordionOpen('ref')" class="w3-white w3-card">
             <div
               v-if="hasPermissionForModel('espece')"
-              :class="['nav-item w3-signal-grey transparent', { active: route.path === '/Especes2' }]"
+              :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/espece') }]"
             >
-              <RouterLink to="/Especes2">Especes</RouterLink>
+              <RouterLink to="/espece">Especes</RouterLink>
             </div>
             <div
               v-if="hasPermissionForModel('production')"
-              :class="['nav-item w3-signal-grey transparent', { active: route.path === '/Productions2' }]"
+              :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/production') }]"
             >
-              <RouterLink to="/Productions2">Productions</RouterLink>
+              <RouterLink to="/production">Productions</RouterLink>
             </div>
             <div
               v-if="hasPermissionForModel('categoriepension')"
-              :class="['nav-item w3-signal-grey transparent', { active: route.path === '/CategoriesPension2' }]"
+              :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/categorie-pension') }]"
             >
-              <RouterLink to="/CategoriesPension2">Categories de pension</RouterLink>
+              <RouterLink to="/categorie-pension">Categories de pension</RouterLink>
             </div>
             <div
               v-if="hasPermissionForModel('categorieanimaux')"
-              :class="['nav-item w3-signal-grey transparent', { active: route.path === '/CategoriesAnimaux2' }]"
+              :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/categorie-animaux') }]"
             >
-              <RouterLink to="/CategoriesAnimaux2">Categories d'animaux</RouterLink>
+              <RouterLink to="/categorie-animaux">Categories d'animaux</RouterLink>
             </div>
             <div
               v-if="hasPermissionForModel('race')"
-              :class="['nav-item w3-signal-grey transparent', { active: route.path === '/Races2' }]"
+              :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/race') }]"
             >
-              <RouterLink to="/Races2">Races</RouterLink>
+              <RouterLink to="/race">Races</RouterLink>
             </div>
             <div
               v-if="hasPermissionForModel('typeconvention')"
-              :class="['nav-item w3-signal-grey transparent', { active: route.path === '/TypeConventions2' }]"
+              :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/type-convention') }]"
             >
-              <RouterLink to="/TypeConventions2">Types de convention</RouterLink>
+              <RouterLink to="/type-convention">Types de convention</RouterLink>
             </div>
-            <div :class="['nav-item w3-signal-grey transparent', { active: route.path === '/TypeExploitants2' }]">
-              <RouterLink to="/TypeExploitants2">Types d'Exploitants</RouterLink>
+            <div :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/type-exploitant') }]">
+              <RouterLink to="/type-exploitant">Types d'Exploitants</RouterLink>
             </div>
-            <div :class="['nav-item w3-signal-grey transparent', { active: route.path === '/TypeEquipements2' }]">
-              <RouterLink to="/TypeEquipements2">Types d'equipement</RouterLink>
+            <div :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/type-equipement') }]">
+              <RouterLink to="/type-equipement">Types d'equipement</RouterLink>
             </div>
-            <div :class="['nav-item w3-signal-grey transparent', { active: route.path === '/TypeCheptels2' }]">
-              <RouterLink to="/TypeCheptels2">Types de cheptel</RouterLink>
+            <div :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/type-cheptel') }]">
+              <RouterLink to="/type-cheptel">Types de cheptel</RouterLink>
             </div>
-            <div :class="['nav-item w3-signal-grey transparent', { active: route.path === '/TypeMesures2' }]">
-              <RouterLink to="/TypeMesures2">Types de mesure</RouterLink>
+            <div :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/type-mesure') }]">
+              <RouterLink to="/type-mesure">Types de mesure</RouterLink>
             </div>
-            <div :class="['nav-item w3-signal-grey transparent', { active: route.path === '/TypeSuivis2' }]">
-              <RouterLink to="/TypeSuivis2">Types de suivi</RouterLink>
+            <div :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/type-suivi') }]">
+              <RouterLink to="/type-suivi">Types de suivi</RouterLink>
             </div>
-            <div :class="['nav-item w3-signal-grey transparent', { active: route.path === '/TypeEvenements2' }]">
-              <RouterLink to="/TypeEvenements2">Types d'evenements</RouterLink>
+            <div :class="['nav-item w3-signal-grey transparent', { active: route.path.startsWith('/type-evenement') }]">
+              <RouterLink to="/type-evenement">Types d'evenements</RouterLink>
             </div>
           </div>
 
@@ -282,22 +282,16 @@ watch(
           </div>
           <div v-show="isAccordionOpen('admi')" class="w3-white w3-card">
             <div
-              :class="['nav-item w3-signal-yellow transparent', { active: route.path === '/ProprietaireFonciers2' }]"
+              :class="['nav-item w3-signal-yellow transparent', { active: route.path.startsWith('/proprietaire-foncier') }]"
             >
-              <RouterLink to="/ProprietaireFonciers2">Proprietaires</RouterLink>
+              <RouterLink to="/proprietaire-foncier">Proprietaires</RouterLink>
             </div>
             <div
               v-if="hasPermissionForModel('unitepastorale')"
-              :class="['nav-item w3-signal-yellow transparent', { active: route.path === '/UnitePastorales2' }]"
+              :class="['nav-item w3-signal-yellow transparent', { active: route.path.startsWith('/unite-pastorale') }]"
             >
               <RouterLink to="/unite-pastorale">Unites pastorales</RouterLink>
             </div>
-            <!-- <div
-              v-if="hasPermissionForModel('unitepastorale')"
-              :class="['nav-item w3-signal-yellow transparent', { active: route.path === '/UnitePastorales' }]"
-            >
-              <RouterLink to="/UnitePastorales">Unites pastorales</RouterLink>
-            </div> -->
           </div>
 
           <!-- Accordeon 'Exploitation'-->
@@ -306,42 +300,38 @@ watch(
             <i class="fa fa-caret-down accordion-caret" :class="{ open: isAccordionOpen('expl') }"></i>
           </div>
           <div v-show="isAccordionOpen('expl')" class="w3-white w3-card">
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/Conventions2' }]">
-              <RouterLink to="/Conventions2">Conventions d'exploitation 2</RouterLink>
+            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/convention-exploitation') }]">
+              <RouterLink to="/convention-exploitation">Conventions d'exploitation</RouterLink>
             </div>
 
             <div
-              :class="['nav-item w3-signal-orange transparent', { active: route.path === '/SituationExploitations2' }]"
+              :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/situation-exploitation') }]"
             >
-              <RouterLink to="/SituationExploitations2">Situations d'exploitation 2</RouterLink>
+              <RouterLink to="/situation-exploitation">Situations d'exploitation</RouterLink>
             </div>
 
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/Exploitants2' }]">
-              <RouterLink to="/Exploitants2">Exploitants</RouterLink>
+            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/exploitant') }]">
+              <RouterLink to="/exploitant">Exploitants</RouterLink>
             </div>
 
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/Eleveurs2' }]">
-              <RouterLink to="/Eleveurs2">Eleveurs</RouterLink>
+            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/eleveur') }]">
+              <RouterLink to="/eleveur">Eleveurs</RouterLink>
             </div>
 
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/Subventions2' }]">
-              <RouterLink to="/Subventions2">Subventions</RouterLink>
-            </div>
-
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/PretAbris' }]">
-              <RouterLink to="/PretAbris">Prets d'abris</RouterLink>
+            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/subvention') }]">
+              <RouterLink to="/subvention">Subventions</RouterLink>
             </div>
 
             <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/cheptel') }]">
               <RouterLink to="/cheptel">Cheptels</RouterLink>
             </div>
 
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/Bergers2' }]">
-              <RouterLink to="/Bergers2">Bergers</RouterLink>
+            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/berger') }]">
+              <RouterLink to="/berger">Bergers</RouterLink>
             </div>
 
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path === '/GardeTroupeaux2' }]">
-              <RouterLink to="/GardeTroupeaux2">Gardiennage</RouterLink>
+            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/garde-situation') }]">
+              <RouterLink to="/garde-situation">Gardiennage</RouterLink>
             </div>
           </div>
 
@@ -351,19 +341,11 @@ watch(
             <i class="fa fa-caret-down accordion-caret" :class="{ open: isAccordionOpen('plan') }"></i>
           </div>
           <div v-show="isAccordionOpen('plan')" class="w3-white w3-card">
-            <div :class="['nav-item w3-signal-red transparent', { active: route.path === '/PlanSuivis2' }]">
-              <RouterLink to="/PlanSuivis2">Plans par alpage 2</RouterLink>
+            <div :class="['nav-item w3-signal-red transparent', { active: route.path.startsWith('/plan-suivi') }]">
+              <RouterLink to="/plan-suivi">Plans par alpage</RouterLink>
             </div>
-
-            <div :class="['nav-item w3-signal-red transparent', { active: route.path === '/PlanSuivis' }]">
-              <RouterLink to="/PlanSuivis">Plans par alpage</RouterLink>
-            </div>
-
-            <div :class="['nav-item w3-signal-red transparent', { active: route.path === '/MesurePlans2' }]">
-              <RouterLink to="/MesurePlans2">Mesures de suivi 2</RouterLink>
-            </div>
-            <div :class="['nav-item w3-signal-red transparent', { active: route.path === '/MesurePlans' }]">
-              <RouterLink to="/MesurePlans">Mesures de suivi</RouterLink>
+            <div :class="['nav-item w3-signal-red transparent', { active: route.path.startsWith('/mesure-plan') }]">
+              <RouterLink to="/mesure-plan">Mesures de suivi</RouterLink>
             </div>
           </div>
 
@@ -373,17 +355,9 @@ watch(
             <i class="fa fa-caret-down accordion-caret" :class="{ open: isAccordionOpen('eve') }"></i>
           </div>
           <div v-show="isAccordionOpen('eve')" class="w3-white w3-card">
-            <!-- <div :class="['nav-item w3-signal-violet transparent', { active: route.path === '/Evenements' }]">
-              <RouterLink to="/Evenements">Evenements</RouterLink>
-            </div> -->
-            <div :class="['nav-item w3-signal-violet transparent', { active: route.path === '/Evenements2' }]">
-              <RouterLink to="/Evenements2">Evenements</RouterLink>
+            <div :class="['nav-item w3-signal-violet transparent', { active: route.path.startsWith('/evenement') }]">
+              <RouterLink to="/evenement">Evenements</RouterLink>
             </div>
-            <!-- <div
-              :class="['nav-item w3-signal-violet transparent', { active: route.path === '/Evenement/create-map' }]"
-            >
-              <RouterLink to="/Evenement/create-map">Ajouter evenement (carte)</RouterLink>
-            </div> -->
           </div>
 
           <!-- Accordeon 'Equipements'-->
@@ -392,14 +366,17 @@ watch(
             <i class="fa fa-caret-down accordion-caret" :class="{ open: isAccordionOpen('equip') }"></i>
           </div>
           <div v-show="isAccordionOpen('equip')" class="w3-white w3-card">
-            <div :class="['nav-item w3-signal-blue transparent', { active: route.path === '/Logements' }]">
-              <RouterLink to="/Logements">Logements</RouterLink>
+            <div :class="['nav-item w3-signal-blue transparent', { active: route.path.startsWith('/logement') && !route.path.startsWith('/logement-commodite') }]">
+              <RouterLink to="/logement">Logements</RouterLink>
             </div>
-            <div :class="['nav-item w3-signal-blue transparent', { active: route.path === '/AbriUrgences2' }]">
-              <RouterLink to="/AbriUrgences2">Abris d'urgence</RouterLink>
+            <div :class="['nav-item w3-signal-blue transparent', { active: route.path.startsWith('/abri-urgence') }]">
+              <RouterLink to="/abri-urgence">Abris d'urgence</RouterLink>
             </div>
-            <div :class="['nav-item w3-signal-blue transparent', { active: route.path === '/Commodites2' }]">
-              <RouterLink to="/Commodites2">Commodites</RouterLink>
+            <div :class="['nav-item w3-signal-blue transparent', { active: route.path.startsWith('/commodite') && !route.path.startsWith('/logement-commodite') }]">
+              <RouterLink to="/commodite">Commodités</RouterLink>
+            </div>
+            <div :class="['nav-item w3-signal-blue transparent', { active: route.path.startsWith('/logement-commodite') }]">
+              <RouterLink to="/logement-commodite">Logements / Commodités</RouterLink>
             </div>
           </div>
         </aside>

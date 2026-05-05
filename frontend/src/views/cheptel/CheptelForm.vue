@@ -15,23 +15,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCrud } from "@/composables/useCrud";
-import CheptelForm2 from "@/components/CheptelForm2.vue";
-import auth from "@/../auth";
+import { useCrudPage } from "@/composables/useCrudPage";
+import CheptelForm2 from "../../features/cheptel/CheptelForm2.vue";
+import auth from '@/services/axios';
 import config from "@/../config";
 
 const route = useRoute();
 const router = useRouter();
 
-const crud = useCrud("cheptel", "cheptel", "id_cheptel");
-
-const pageMode = computed(() => {
-  if (route.name === "cheptel-add")  return "add";
-  if (route.name === "cheptel-edit") return "change";
-  return "view";
-});
+const { pageMode, handleSubmit } = useCrudPage("cheptel", "cheptel", "id_cheptel");
 
 const itemData  = ref({});
 const isLoading = ref(!!route.params.id);
@@ -56,14 +50,6 @@ onMounted(async () => {
   }
 });
 
-async function handleSubmit(formData) {
-  if (pageMode.value === "add") {
-    await crud.createItem(formData);
-  } else {
-    await crud.updateItem(formData);
-  }
-  router.back();
-}
 </script>
 
 <style scoped>

@@ -11,27 +11,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import TypeCheptelForm2 from "@/components/TypeCheptelForm2.vue";
+import TypeCheptelForm2 from "../../features/nomenclatures/TypeCheptelForm2.vue";
 
 const route = useRoute();
 const router = useRouter();
 
 const crud = useCrudPage("typecheptel", "type_cheptel", "id_type_cheptel");
-
-/**
- * Mode déduit depuis le nom de la route :
- *   type_cheptel-add  → "add"
- *   type_cheptel-edit → "change"
- *   type_cheptel-view → "view"
- */
-const pageMode = computed(() => {
-  if (route.name === "type_cheptel-add")  return "add";
-  if (route.name === "type_cheptel-edit") return "change";
-  return "view";
-});
+const { pageMode, handleSubmit } = crud;
 
 const itemData = ref({});
 
@@ -45,13 +34,6 @@ onMounted(async () => {
   }
 });
 
-async function handleSubmit(formData) {
-  if (pageMode.value === "add") {
-    await crud.createItem(formData);  // redirige automatiquement vers type_cheptel-list
-  } else {
-    await crud.updateItem(formData);  // idem
-  }
-}
 </script>
 
 <style scoped>

@@ -14,8 +14,8 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import CrudListPage from '@/components/CrudListPage.vue';
-import auth from '@/../auth';
+import CrudListPage from '../../components/crud/CrudListPage.vue';
+import auth from '@/services/axios';
 
 const columns = [
   { field: "eleveur_detail.nom_complet", label: "Éleveur", sortable: true },

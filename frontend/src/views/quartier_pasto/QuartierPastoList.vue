@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import CrudListPage from '@/components/CrudListPage.vue';
+import CrudListPage from '../../components/crud/CrudListPage.vue';
 
 const columns = [
   { field: "code_quartier", label: "Code", sortable: true },

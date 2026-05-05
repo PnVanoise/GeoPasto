@@ -65,7 +65,7 @@ vi.mock('../../components/Modal.vue', () => {
 })
 
 // Import the component under test (after mocks)
-import CrudList2 from '../../components/CrudList2.vue'
+import CrudList2 from '../crud/CrudList2.vue'
 
 describe('CrudList2 view-only flow', () => {
   it('opens embedded form in view mode and shows fields disabled / no save / no next id', async () => {

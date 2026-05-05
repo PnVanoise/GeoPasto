@@ -153,10 +153,17 @@ class ProprietaireFoncierSerializer(AuditReadOnlyFieldsMixin, serializers.ModelS
                   'tel_propr', 'mail_propr', 'adresse_propr', 'commentaire', 'unites_pastorales' ]
 
 class ProprietaireUnitePastoraleSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+    up_nom = serializers.CharField(source='unite_pastorale.nom_up', read_only=True)
+    proprietaire_nom = serializers.SerializerMethodField()
+
+    def get_proprietaire_nom(self, obj):
+        if obj.proprietaire:
+            return f"{obj.proprietaire.nom_propr} {obj.proprietaire.prenom_propr}".strip()
+        return ""
+
     class Meta:
         model = ProprietaireUnitePastorale
-        fields = [ 'proprietaire', 'unite_pastorale' ]
+        fields = ['id_proprietaire_up', 'proprietaire', 'unite_pastorale', 'up_nom', 'proprietaire_nom']
 
 
 class QuartierPastoSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):

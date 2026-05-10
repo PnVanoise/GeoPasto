@@ -9,6 +9,8 @@ export const useMainStore = defineStore("main", {
         successMessage: '',
         errorMessage: '',
         username: null,
+        firstName: null,
+        lastName: null,
         userPermissions: {},
     }),
 
@@ -43,6 +45,8 @@ export const useMainStore = defineStore("main", {
                 const response = await auth.axiosInstance.get("/userpermissions/");
                 // console.log("FetchPermissions : Réponse API permissions :", response.data);
                 this.username = response.data.username;
+                this.firstName = response.data.first_name;
+                this.lastName = response.data.last_name;
                 this.userPermissions = response.data.permissions_by_model;
 
                 // console.log("Stocké dans le store :", this);

@@ -66,12 +66,28 @@
 
       <section class="layout-card">
         <h4 class="map-title">Position de l'équipement</h4>
+        <div class="w3-row form-ligne">
+          <div class="w3-half form-cell">
+            <v-select
+              v-model="geometryType"
+              :items="geometryTypeOptions"
+              item-title="label"
+              item-value="value"
+              label="Type géométrie"
+              :menu-props="selectMenuProps"
+              :disabled="props.mode === 'view'"
+              density="compact"
+              variant="underlined"
+              hide-details
+            />
+          </div>
+        </div>
         <div class="geometry-status" :class="hasGeometry ? 'is-set' : 'is-missing'">
-          {{ hasGeometry ? "Position définie" : "Position non définie" }}
+          {{ hasGeometry ? "Géométrie définie" : "Géométrie à dessiner" }}
         </div>
         <QuartierGeometryEditorOl
           v-model="form.geometry"
-          geometryType="Point"
+          :geometryType="geometryType"
           :contextGeoData="upContextGeoData"
           :disabled="props.mode === 'view'"
         />
@@ -110,9 +126,15 @@ const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"
 const hasGeometry = computed(() => {
   const geom = form.geometry;
   if (!geom || !geom.type) return false;
-  if (geom.type !== "Point") return false;
-  return Array.isArray(geom.coordinates) && geom.coordinates.length >= 2;
+  return Array.isArray(geom.coordinates) && geom.coordinates.length > 0;
 });
+
+const geometryType = ref("Point");
+const geometryTypeOptions = [
+  { label: "Point", value: "Point" },
+  { label: "Polyligne", value: "LineString" },
+  { label: "Polygone", value: "Polygon" },
+];
 
 const typesEquipement = ref([]);
 const ups = ref([]);
@@ -198,8 +220,19 @@ watch(
       ["id_unite_pastorale", "id"]
     );
     form.geometry = base.geometry ?? src.geometry ?? null;
+    geometryType.value = form.geometry?.type || "Point";
   },
   { deep: true, immediate: true }
+);
+
+watch(
+  () => geometryType.value,
+  (newType) => {
+    if (!newType) return;
+    if (form.geometry?.type && form.geometry.type !== newType) {
+      form.geometry = null;
+    }
+  }
 );
 
 const submitForm = async () => {

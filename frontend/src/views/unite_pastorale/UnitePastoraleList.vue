@@ -62,7 +62,7 @@ const upFilters = ref([
     key: "version_active",
     type: "checkbox",
     label: "Act ?",
-    default: false,
+    default: true,
     apply: (rows, value) => (!value ? rows : rows.filter((r) => r.version_active === value)),
   },
 ]);

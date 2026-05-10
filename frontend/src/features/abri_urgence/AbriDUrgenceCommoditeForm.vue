@@ -35,7 +35,7 @@
       <div class="w3-half form-cell">
         <v-text-field
           type="text"
-          label="Etat"
+          label="Etat de la commodité"
           v-model="form.etat"
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
           dense

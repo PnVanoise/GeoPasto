@@ -843,12 +843,8 @@ class Evenement(AuditFieldsMixin, models.Model):
     source = models.CharField(max_length=50, null=True, blank=True)
     description = models.CharField(max_length=500, null=True, blank=True)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
-    # equipement_exploitant = models.ForeignKey('alpages.EquipementExploitant', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
-    # situation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
+    situation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
     mesure_plan = models.ForeignKey('alpages.MesureDePlan', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
-    # logement = models.ForeignKey('alpages.Logement', on_delete=models.CASCADE, related_name='evenements')
-    # equipement_alpage = models.ForeignKey('alpages.EquipementAlpage', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
-    unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
     type_evenement = models.ForeignKey('alpages.TypeEvenement', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
 
     class Meta:

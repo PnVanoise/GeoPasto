@@ -216,13 +216,13 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # 🔥 UNION EN BASE (PostGIS)
+            # UNION EN BASE (PostGIS)
             agg = quartier_qs.aggregate(
                 geom=Union(
                     MakeValid(
                         SnapToGrid(
                             Transform('geometry', 2154),
-                            0.01  # tolérance à ajuster
+                            0.01
                         )
                     )
                 )
@@ -435,9 +435,9 @@ class EvenementViewset(BaseModelViewSet):
     def get_queryset(self):
         queryset = Evenement.objects.all().order_by('id_evenement')
 
-        up_id = self.request.GET.get('unite_pastorale') or self.request.GET.get('id_up')
-        if up_id is not None:
-            queryset = queryset.filter(unite_pastorale_id=up_id)
+        situation_id = self.request.GET.get('situation') or self.request.GET.get('id_situation')
+        if situation_id is not None:
+            queryset = queryset.filter(situation_id=situation_id)
 
         return queryset
     

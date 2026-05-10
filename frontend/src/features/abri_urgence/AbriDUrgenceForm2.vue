@@ -16,7 +16,7 @@
         <div class="form-cell">
           <v-text-field
             v-model="form.etat"
-            label="État"
+            label="État de l'abri"
             :disabled="props.mode === 'view'"
             density="compact" variant="underlined" hide-details clearable
           />

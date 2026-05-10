@@ -310,12 +310,12 @@ watch(
               <RouterLink to="/situation-exploitation">Situations d'exploitation</RouterLink>
             </div>
 
-            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/exploitant') }]">
-              <RouterLink to="/exploitant">Exploitants</RouterLink>
-            </div>
-
             <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/eleveur') }]">
               <RouterLink to="/eleveur">Eleveurs</RouterLink>
+            </div>
+
+            <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/exploitant') }]">
+              <RouterLink to="/exploitant">Exploitants</RouterLink>
             </div>
 
             <div :class="['nav-item w3-signal-orange transparent', { active: route.path.startsWith('/subvention') }]">

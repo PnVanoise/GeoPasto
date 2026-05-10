@@ -8,7 +8,6 @@
       :initialForm="itemData"
       :mode="pageMode"
       itemLabel="un événement"
-      :contextType="contextType"
       :contextIds="contextIds"
       :onSubmit="handleSubmit"
       :onClose="() => router.back()"
@@ -35,10 +34,8 @@ const pageMode = computed(() => {
   return "view";
 });
 
-const contextType = computed(() => route.query.context_type || null);
 const contextIds = computed(() => ({
   idSituation: route.query.context_id_situation ? Number(route.query.context_id_situation) : null,
-  idUp:        route.query.context_id_up        ? Number(route.query.context_id_up)        : null,
 }));
 
 const itemData  = ref({});
@@ -56,8 +53,8 @@ onMounted(async () => {
     } finally {
       isLoading.value = false;
     }
-  } else if (route.query.unite_pastorale) {
-    itemData.value = { unite_pastorale: Number(route.query.unite_pastorale) };
+  } else if (route.query.situation) {
+    itemData.value = { situation: Number(route.query.situation) };
   }
 });
 

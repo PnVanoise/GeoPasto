@@ -1,13 +1,7 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <!-- <div class="style-switch">
-    <v-btn-toggle v-model="visualStyle" density="compact" mandatory variant="outlined" divided>
-      <v-btn value="premium" size="small">Premium</v-btn>
-      <v-btn value="admin" size="small">Sobre</v-btn>
-    </v-btn-toggle>
-  </div> -->
 
-  <form :class="['event-form', `theme-${visualStyle}`]" @submit.prevent="submitForm">
+  <form class="event-form" @submit.prevent="submitForm">
     <div class="event-layout">
       <section class="layout-card event-fields-card">
         <div class="w3-row form-ligne">
@@ -16,7 +10,7 @@
               v-model="form.date_evenement"
               type="date"
               label="Date de l'événement"
-              :class="{ 'disable-events': props.mode === 'view' || !canEdit }"
+              :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details
@@ -28,7 +22,7 @@
               v-model="form.date_observation"
               type="date"
               label="Date d'observation"
-              :class="{ 'disable-events': props.mode === 'view' || !canEdit }"
+              :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details
@@ -42,7 +36,7 @@
             <v-text-field
               v-model="form.observateur"
               label="Observateur"
-              :class="{ 'disable-events': props.mode === 'view' || !canEdit }"
+              :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details
@@ -53,7 +47,7 @@
             <v-text-field
               v-model="form.source"
               label="Source"
-              :class="{ 'disable-events': props.mode === 'view' || !canEdit }"
+              :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details
@@ -71,7 +65,7 @@
               item-value="id_type_evenement"
               label="Type d'événement"
               :menu-props="selectMenuProps"
-              :class="{ 'disable-events': props.mode === 'view' || !canEdit }"
+              :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details
@@ -86,7 +80,7 @@
               item-value="value"
               label="Type géométrie"
               :menu-props="selectMenuProps"
-              :class="{ 'disable-events': props.mode === 'view' || !canEdit }"
+              :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details
@@ -94,16 +88,16 @@
           </div>
         </div>
 
-        <div class="w3-row form-ligne" v-if="showUpSelect">
+        <div class="w3-row form-ligne" v-if="!contextSituationId">
           <div class="form-cell">
             <v-select
-              v-model="form.unite_pastorale"
-              :items="ups"
-              item-title="nom_up"
-              item-value="id_unite_pastorale"
-              label="Unité pastorale"
+              v-model="form.situation"
+              :items="situations"
+              :item-title="situationLabel"
+              item-value="id_situation"
+              label="Situation d'exploitation"
               :menu-props="selectMenuProps"
-              :class="{ 'disable-events': props.mode === 'view' || !canEdit }"
+              :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details
@@ -122,10 +116,7 @@
               icon="mdi-information-outline"
             >
               <div class="context-alert-content">
-                <strong>Contexte {{ contextLabel }}</strong>
-                <span v-if="contextSituationId">Situation #{{ contextSituationId }}</span>
-                <span v-if="effectiveUpId">UP #{{ effectiveUpId }} - {{ getUpName(effectiveUpId) }}</span>
-                <span>L'UP finale est calculée automatiquement par le backend selon la géométrie.</span>
+                <strong>Situation #{{ contextSituationId }}</strong>
               </div>
             </v-alert>
           </div>
@@ -136,7 +127,7 @@
             <v-textarea
               v-model="form.description"
               label="Description"
-              :class="{ 'disable-events': props.mode === 'view' || !canEdit }"
+              :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               rows="2"
@@ -161,11 +152,11 @@
             <input type="checkbox" v-model="showUpLayer" />
             UP
           </label>
-          <label class="map-layer-toggle" v-if="contextSituationId">
+          <label class="map-layer-toggle" v-if="effectiveSituationId">
             <input type="checkbox" v-model="showQuartiersLayer" />
             Quartiers
           </label>
-          <label class="map-layer-toggle" v-if="effectiveUpId">
+          <label class="map-layer-toggle" v-if="effectiveSituationId">
             <input type="checkbox" v-model="showEvenementsLayer" />
             Événements existants
           </label>
@@ -179,7 +170,7 @@
           v-model="form.geometry"
           :geometryType="geometryType"
           :contextLayers="mapContextLayers"
-          :disabled="props.mode === 'view' || !canEdit"
+          :disabled="props.mode === 'view'"
           @geometry-validity-change="onGeometryValidityChange"
         />
 
@@ -221,6 +212,7 @@ import config from "../../../config";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
 import { usePermissions } from "../../composables/usePermissions";
 import { selectMenuProps } from "../../composables/useSelectMenuProps";
+import { useMainStore } from "../../store/index";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -228,20 +220,14 @@ const props = defineProps({
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
-  contextType: { type: String, default: null },
   contextIds: {
     type: Object,
-    default: () => ({ idSituation: null, idUp: null }),
+    default: () => ({ idSituation: null }),
   },
 });
 
+const mainStore = useMainStore();
 const { can } = usePermissions("evenement");
-
-const canEdit = computed(() => {
-  if (props.mode === "add") return can("add");
-  if (props.mode === "change") return can("change");
-  return false;
-});
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -258,7 +244,7 @@ const form = reactive({
   source: "",
   description: "",
   geometry: null,
-  unite_pastorale: null,
+  situation: null,
   type_evenement: null,
 });
 
@@ -273,12 +259,11 @@ const geometryTypeLabel = computed(() => {
   return geometryTypeOptions.find((item) => item.value === geometryType.value)?.label || "Géométrie";
 });
 
-const visualStyle = ref("admin");
 const submitted = ref(false);
 const geometryValidity = ref({ isValid: false, reason: "geometry_required" });
 
 const types = ref([]);
-const ups = ref([]);
+const situations = ref([]);
 const quartiersContextGeoData = ref(null);
 const evenementsContextGeoData = ref(null);
 const upContextGeoData = ref(null);
@@ -287,9 +272,15 @@ const showUpLayer = ref(true);
 const showQuartiersLayer = ref(true);
 const showEvenementsLayer = ref(true);
 
+const situationLabel = (item) => {
+  const parts = [item.annee];
+  if (item.exploitant_nom) parts.push(item.exploitant_nom);
+  if (item.unite_pastorale_detail?.nom_up) parts.push(item.unite_pastorale_detail.nom_up);
+  return parts.join(" — ");
+};
+
 const normalizeFkId = (value, candidateKeys = []) => {
   if (value == null || value === "") return null;
-
   if (typeof value === "object") {
     for (const key of candidateKeys) {
       if (value[key] != null && value[key] !== "") {
@@ -299,7 +290,6 @@ const normalizeFkId = (value, candidateKeys = []) => {
     }
     return null;
   }
-
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric <= 0) return null;
   return numeric;
@@ -334,22 +324,6 @@ const toFeatureCollection = (payload) => {
   return null;
 };
 
-const normalizeContextType = (value) => {
-  if (!value) return null;
-  const normalized = String(value).toLowerCase();
-  if (["situation", "up", "global"].includes(normalized)) return normalized;
-  return null;
-};
-
-const rawContextType = computed(() => {
-  return (
-    normalizeContextType(props.contextType)
-    || normalizeContextType(props.initialForm?.context_type)
-    || normalizeContextType(props.initialForm?.contextType)
-    || null
-  );
-});
-
 const contextSituationId = computed(() => {
   return normalizeFkId(
     props.contextIds?.idSituation
@@ -361,36 +335,8 @@ const contextSituationId = computed(() => {
   );
 });
 
-const contextUpId = computed(() => {
-  return normalizeFkId(
-    props.contextIds?.idUp
-      ?? props.initialForm?.context_id_up
-      ?? props.initialForm?.contextIds?.idUp,
-    ["id_unite_pastorale", "id"]
-  );
-});
-
-const resolvedContextType = computed(() => {
-  if (rawContextType.value) return rawContextType.value;
-  if (contextSituationId.value) return "situation";
-  if (contextUpId.value) return "up";
-  return "global";
-});
-
-const effectiveUpId = computed(() => {
-  return normalizeFkId(form.unite_pastorale, ["id_unite_pastorale", "id"])
-    || contextUpId.value
-    || null;
-});
-
-const contextLabel = computed(() => {
-  if (resolvedContextType.value === "situation") return "situation";
-  if (resolvedContextType.value === "up") return "UP";
-  return "global";
-});
-
-const showUpSelect = computed(() => {
-  return resolvedContextType.value === "global";
+const effectiveSituationId = computed(() => {
+  return normalizeFkId(form.situation, ["id_situation", "id"]) || contextSituationId.value || null;
 });
 
 const mapContextLayers = computed(() => {
@@ -474,11 +420,6 @@ const mapUpCount = computed(() => {
   return Array.isArray(features) ? features.length : 0;
 });
 
-const getUpName = (upId) => {
-  const up = (ups.value || []).find((item) => Number(item.id_unite_pastorale) === Number(upId));
-  return up?.nom_up || "";
-};
-
 const onGeometryValidityChange = (payload) => {
   geometryValidity.value = payload || { isValid: false, reason: "geometry_required" };
 };
@@ -492,26 +433,31 @@ const fetchTypes = async () => {
   }
 };
 
-const fetchUps = async () => {
+const fetchSituations = async () => {
   try {
-    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/light/`);
-    ups.value = res.data || [];
+    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/situationExploitation/`);
+    situations.value = res.data || [];
   } catch (err) {
-    console.error("Erreur chargement UP", err);
+    console.error("Erreur chargement situations", err);
   }
 };
 
-const fetchUnitePastoraleContext = async (upId) => {
-  if (!upId) {
+const fetchContextFromSituation = async (situationId) => {
+  if (!situationId) {
     upContextGeoData.value = null;
     return;
   }
-
   try {
-    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/${upId}/`);
-    upContextGeoData.value = toFeatureCollection(res.data);
+    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/situationExploitation/${situationId}/`);
+    const upId = res.data?.unite_pastorale;
+    if (upId) {
+      const upRes = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/${upId}/`);
+      upContextGeoData.value = toFeatureCollection(upRes.data);
+    } else {
+      upContextGeoData.value = null;
+    }
   } catch (err) {
-    console.error("Erreur chargement géométrie UP", err);
+    console.error("Erreur chargement contexte situation", err);
     upContextGeoData.value = null;
   }
 };
@@ -521,7 +467,6 @@ const fetchQuartiersContext = async (situationId) => {
     quartiersContextGeoData.value = null;
     return;
   }
-
   try {
     const res = await auth.axiosInstance.get(
       `${config.API_BASE_URL}/api/quartierPasto/?id_situation=${situationId}`
@@ -533,15 +478,14 @@ const fetchQuartiersContext = async (situationId) => {
   }
 };
 
-const fetchEvenementsContext = async (upId) => {
-  if (!upId) {
+const fetchEvenementsContext = async (situationId) => {
+  if (!situationId) {
     evenementsContextGeoData.value = null;
     return;
   }
-
   try {
     const res = await auth.axiosInstance.get(
-      `${config.API_BASE_URL}/api/evenement/?unite_pastorale=${upId}`
+      `${config.API_BASE_URL}/api/evenement/?situation=${situationId}`
     );
     evenementsContextGeoData.value = toFeatureCollection(res.data);
   } catch (err) {
@@ -557,35 +501,25 @@ watch(
     const src = base?.properties ? { ...base.properties } : base;
 
     form.date_evenement = src.date_evenement ?? "";
-    form.observateur = src.observateur ?? "";
+    const fullName = [mainStore.firstName, mainStore.lastName].filter(Boolean).join(" ");
+    form.observateur = src.observateur || (props.mode === "add" ? (fullName || mainStore.username || "") : "");
     form.date_observation = src.date_observation ?? "";
     form.source = src.source ?? "";
     form.description = src.description ?? "";
     form.type_evenement = normalizeFkId(src.type_evenement, ["id_type_evenement", "id"]);
-
-    const incomingUpId = normalizeFkId(src.unite_pastorale, ["id_unite_pastorale", "id"]);
-    form.unite_pastorale = incomingUpId;
-
+    form.situation = normalizeFkId(src.situation, ["id_situation", "id"]) || contextSituationId.value || null;
     form.geometry = base.geometry ?? src.geometry ?? null;
     geometryType.value = form.geometry?.type || geometryType.value;
-
   },
   { deep: true, immediate: true }
 );
 
 watch(
-  () => effectiveUpId.value,
-  (newUpId) => {
-    fetchUnitePastoraleContext(newUpId);
-    fetchEvenementsContext(newUpId);
-  },
-  { immediate: true }
-);
-
-watch(
-  () => contextSituationId.value,
+  () => effectiveSituationId.value,
   (newSituationId) => {
+    fetchContextFromSituation(newSituationId);
     fetchQuartiersContext(newSituationId);
+    fetchEvenementsContext(newSituationId);
   },
   { immediate: true }
 );
@@ -598,16 +532,6 @@ watch(
       form.geometry = null;
     }
   }
-);
-
-watch(
-  [() => resolvedContextType.value, () => contextUpId.value],
-  () => {
-    if ((resolvedContextType.value === "up" || resolvedContextType.value === "situation") && contextUpId.value) {
-      form.unite_pastorale = contextUpId.value;
-    }
-  },
-  { immediate: true }
 );
 
 const submitForm = async () => {
@@ -624,7 +548,7 @@ const submitForm = async () => {
     source: form.source || "",
     description: form.description || "",
     geometry: form.geometry ?? null,
-    unite_pastorale: effectiveUpId.value || form.unite_pastorale || null,
+    situation: effectiveSituationId.value || null,
     type_evenement: form.type_evenement || null,
   };
 
@@ -636,27 +560,17 @@ const closeModal = () => {
 };
 
 onMounted(async () => {
-  await Promise.all([fetchTypes(), fetchUps()]);
+  await Promise.all([fetchTypes(), fetchSituations()]);
 });
 </script>
 
 <style scoped>
-.style-switch {
-  display: flex;
-  justify-content: flex-end;
-  margin: 0 0 0.45rem 0;
-}
-
 .form-ligne {
   padding: 4px;
 }
 
 .form-cell {
   padding: 4px;
-}
-
-.disable-events {
-  pointer-events: none;
 }
 
 .event-layout {
@@ -679,10 +593,18 @@ onMounted(async () => {
 }
 
 .layout-card {
-  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border: 1px solid #d7dde6;
+  border-left: 3px solid #64748b;
   border-radius: 8px;
   padding: 0.75rem;
-  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.layout-card:hover {
+  border-color: #c8d0db;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
 }
 
 .context-alert-content {
@@ -804,49 +726,5 @@ onMounted(async () => {
       "fields"
       "map";
   }
-}
-
-.event-form.theme-premium .layout-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  border: 1px solid #dbe3ee;
-  border-radius: 12px;
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.06),
-    0 8px 22px rgba(15, 23, 42, 0.06);
-  transition: box-shadow 180ms ease, transform 180ms ease, border-color 180ms ease;
-}
-
-.event-form.theme-premium .layout-card:hover {
-  border-color: #c8d7ea;
-  box-shadow:
-    0 2px 6px rgba(15, 23, 42, 0.08),
-    0 14px 30px rgba(15, 23, 42, 0.08);
-  transform: translateY(-1px);
-}
-
-.event-form.theme-premium .event-fields-card {
-  border-left: 4px solid #0ea5e9;
-}
-
-.event-form.theme-premium .event-map-card {
-  border-left: 4px solid #22c55e;
-}
-
-.event-form.theme-admin .layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
-}
-
-.event-form.theme-admin .layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-
-.event-form.theme-admin .event-fields-card,
-.event-form.theme-admin .event-map-card {
-  border-left: 3px solid #64748b;
 }
 </style>

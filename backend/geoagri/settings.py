@@ -102,7 +102,9 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://151.80.250.138:9877",
     "http://151.80.250.138",
-    "http://151.80.250.138:8000"
+    "http://151.80.250.138:8000",
+    "http://pastoralisme.vanoise-parcnational.fr",
+    "https://pastoralisme.vanoise-parcnational.fr",
 ]
 
 

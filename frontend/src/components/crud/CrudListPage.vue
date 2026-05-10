@@ -133,6 +133,7 @@ const gridRef = ref(null);
 
 defineExpose({
   scrollToId(id) { gridRef.value?.scrollToId(id); },
+  refresh() { crud.fetchAll(null, props.requestParams); },
 });
 
 // ── useCrudPage à la place de useCrud ────────────────────────────────────────

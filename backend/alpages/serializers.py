@@ -789,69 +789,65 @@ class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
         except Exception:
             return None
 
-    def validate_unite_pastorale(self, value):
-        if value is not None and not value.version_active:
-            raise serializers.ValidationError(
-                "L'unité pastorale sélectionnée n'est pas active."
-            )
-        return value
+    #         )
+    #     return value
 
-    def _find_unite_pastorale(self, geometry):
-        # Rechercher l'unité pastorale qui contient la géométrie de l'événement
+    # def _find_unite_pastorale(self, geometry):
+    #     # Rechercher l'unité pastorale qui contient la géométrie de l'événement
 
-        if not geometry:
-            return None
+    #     if not geometry:
+    #         return None
         
-        if geometry.srid != 2154:
-            geometry.transform(2154)
+    #     if geometry.srid != 2154:
+    #         geometry.transform(2154)
 
-        # 1 - contains : la géométrie de l'événement est entièrement contenue dans l'unité pastorale
-        up = UnitePastorale.objects.filter(
-                                        geometry__contains=geometry,
-                                        version_active=True,
-                                    ).first()
+    #     # 1 - contains : la géométrie de l'événement est entièrement contenue dans l'unité pastorale
+    #     up = UnitePastorale.objects.filter(
+    #                                     geometry__contains=geometry,
+    #                                     version_active=True,
+    #                                 ).first()
         
-        if up:
-            return up
+    #     if up:
+    #         return up
         
-        # 2 - intersects : la géométrie de l'événement intersecte l'unité pastorale (bordures inclues)
-        up = UnitePastorale.objects.filter(
-                                        geometry__intersects=geometry,
-                                        version_active=True,
-                                    ).first()
+    #     # 2 - intersects : la géométrie de l'événement intersecte l'unité pastorale (bordures inclues)
+    #     up = UnitePastorale.objects.filter(
+    #                                     geometry__intersects=geometry,
+    #                                     version_active=True,
+    #                                 ).first()
         
-        if up:
-            return up
+    #     if up:
+    #         return up
         
-        # 3 - nearest : l'unité pastorale la plus proche de la géométrie de l'événement
-        up = UnitePastorale.objects.filter(version_active=True).annotate(
-                                        dist=Distance('geometry', geometry)
-                                    ).order_by('dist').first()
+    #     # 3 - nearest : l'unité pastorale la plus proche de la géométrie de l'événement
+    #     up = UnitePastorale.objects.filter(version_active=True).annotate(
+    #                                     dist=Distance('geometry', geometry)
+    #                                 ).order_by('dist').first()
         
-        if up and up.dist and up.dist.m <= 50:  # Seuil de distance de 50 mètres pour associer l'événement à une unité pastorale:
-            return up
+    #     if up and up.dist and up.dist.m <= 50:  # Seuil de distance de 50 mètres pour associer l'événement à une unité pastorale:
+    #         return up
 
-        return None
+    #     return None
     #----------
     # CREATE
     #----------
-    def create(self, validated_data):
-        geometry = validated_data.get('geometry', None)
-        if geometry:
-            validated_data['unite_pastorale'] = self._find_unite_pastorale(geometry)
+    # def create(self, validated_data):
+    #     geometry = validated_data.get('geometry', None)
+    #     if geometry:
+    #         validated_data['unite_pastorale'] = self._find_unite_pastorale(geometry)
         
-        return super().create(validated_data)
+    #     return super().create(validated_data)
     
     #----------
     # UPDATE
     #----------
-    def update(self, instance, validated_data):
-        new_geometry = validated_data.get('geometry', None)
-        if new_geometry:
-            if (not instance.geometry) or (instance.geometry.wkt != new_geometry.wkt):
-                instance.unite_pastorale = self._find_unite_pastorale(new_geometry)
+    # def update(self, instance, validated_data):
+    #     new_geometry = validated_data.get('geometry', None)
+    #     if new_geometry:
+    #         if (not instance.geometry) or (instance.geometry.wkt != new_geometry.wkt):
+    #             instance.unite_pastorale = self._find_unite_pastorale(new_geometry)
         
-        return super().update(instance, validated_data)
+    #     return super().update(instance, validated_data)
 
     
     def to_representation(self, instance):

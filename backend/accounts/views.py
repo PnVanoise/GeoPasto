@@ -33,5 +33,7 @@ class UserPermissionsView(APIView):
         
         return Response({
             'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
             'permissions_by_model': grouped_permissions,
         })

@@ -494,15 +494,6 @@ const router = createRouter({
         { path: ':id/edit', name: 'commodite-edit', component: () => import('@/views/commodite/CommoditePageForm.vue') },
       ],
     },
-    {
-      path: '/logement-commodite',
-      children: [
-        { path: '',         name: 'logementcommodite-list', component: () => import('@/views/logement_commodite/LogementCommoditeList.vue') },
-        { path: 'add',      name: 'logementcommodite-add',  component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
-        { path: ':id',      name: 'logementcommodite-view', component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
-        { path: ':id/edit', name: 'logementcommodite-edit', component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
-      ],
-    },
   ]
 });
 

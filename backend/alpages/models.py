@@ -524,27 +524,6 @@ class Commodite(AuditFieldsMixin, models.Model):
         return str(self.description)
     
 
-class LogementCommodite(AuditFieldsMixin, models.Model):
-    """
-    Association Logement / Commodite
-    """
-    
-    id_logement_commodite = models.BigAutoField(primary_key=True)
-    logement = models.ForeignKey('alpages.Logement', on_delete=models.PROTECT, blank=True, null=True, related_name='commodites')
-    commodite = models.ForeignKey('alpages.Commodite', on_delete=models.PROTECT, blank=True, null=True, related_name='logements')
-    etat = models.CharField(max_length=50, null=False, blank=False)
-    commentaire = models.CharField(max_length=50, null=True, blank=True)
-    quantite = models.CharField(max_length=50, null=True, blank=True)
-    
-    
-    class Meta:
-        verbose_name = "logement / commodité"
-        verbose_name_plural = "logements / commodités"
-
-    def __str__(self):
-        return f"{self.logement} a {self.quantite} de {self.commodite}"
-
-
 class AbriDUrgence(AuditFieldsMixin, models.Model):
     """
     Abri d'urgence

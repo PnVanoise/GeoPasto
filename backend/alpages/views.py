@@ -16,7 +16,7 @@ from rest_framework.decorators import api_view, action
 from .pagination import DefaultPagination
 from .viewsets_base import BaseModelViewSet
 
-from alpages.models import Logement, Commodite, LogementCommodite
+from alpages.models import Logement, Commodite
 from alpages.models import UnitePastorale, ProprietaireFoncier, QuartierPasto, ProprietaireUnitePastorale
 from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from alpages.models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe
@@ -31,7 +31,7 @@ from alpages.serializers import RucheSerializer, BergerSerializer, GardeSituatio
 from alpages.models import TypeEvenement, Evenement
 from alpages.serializers import TypeEvenementSerializer, EvenementSerializer
 
-from alpages.serializers import LogementSerializer, CommoditeSerializer, LogementCommoditeSerializer
+from alpages.serializers import LogementSerializer, CommoditeSerializer
 from alpages.serializers import UnitePastoraleSerializer, UnitePastoraleLSerializer, ProprietaireFoncierSerializer, QuartierPastoSerializer, ProprietaireUnitePastoraleSerializer
 from alpages.serializers import TypeDeSuiviSerializer, PlanDeSuiviSerializer, TypeDeMesureSerializer, MesureDePlanSerializer
 from alpages.serializers import TypeConventionSerializer, ConventionDExploitationSerializer, EleveurSerializer, TypeDExploitantSerializer, ExploitantSerializer, EtreComposeSerializer, SubventionPNVSerializer, AbriDUrgenceSerializer, AbriDUrgenceCommoditeSerializer, BeneficierDeSerializer
@@ -468,15 +468,6 @@ class CommoditeViewset(BaseModelViewSet):
 
         return queryset
  
-class LogementCommoditeViewset(BaseModelViewSet):
-    serializer_class = LogementCommoditeSerializer
-
-    def get_queryset(self):
-        queryset = LogementCommodite.objects.all().order_by('id_logement_commodite')
-        logement_id = self.request.GET.get('logementId')
-        if logement_id is not None:
-            queryset = queryset.filter(logement=logement_id)
-        return queryset
 
 
 class AbriDUrgenceCommoditeViewset(BaseModelViewSet):

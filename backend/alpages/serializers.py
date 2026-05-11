@@ -6,7 +6,7 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometryFi
 from django.contrib.gis.geos import Polygon
 from django.contrib.gis.db.models.functions import Distance
 
-from alpages.models import Logement, Commodite, LogementCommodite
+from alpages.models import Logement, Commodite
 from alpages.models import UnitePastorale, ProprietaireFoncier, QuartierPasto, ProprietaireUnitePastorale
 from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from alpages.models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe
@@ -547,15 +547,6 @@ class CommoditeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer)
     class Meta:
         model = Commodite
         fields = [ 'id_commodite', 'description']
-
-class LogementCommoditeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    logement_code = serializers.CharField(source='logement.logement_code', read_only=True)
-    commodite_desc = serializers.CharField(source='commodite.description', read_only=True)
-    
-    class Meta:
-        model = LogementCommodite
-        fields = [ 'id_logement_commodite', 'logement', 'commodite', 'etat', 'commentaire', 'quantite', 'logement_code', 'commodite_desc' ]
-        
 
 class AbriDUrgenceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
         

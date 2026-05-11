@@ -7,7 +7,7 @@ from rest_framework import routers
 #     TokenRefreshView,
 # )
 
-from alpages.views import LogementViewset, get_choices_logement, CommoditeViewset, LogementCommoditeViewset
+from alpages.views import LogementViewset, get_choices_logement, CommoditeViewset
 from alpages.views import UnitePastoraleViewset, ProprietaireFoncierViewset, QuartierPastoViewset, ProprietaireUnitePastoraleViewset
 from alpages.views import TypeConventionViewset, ConventionDExploitationViewset, EleveurViewset, TypeDExploitantViewset, ExploitantViewset
 from alpages.views import SituationDExploitationViewset, ExploiterViewset
@@ -28,7 +28,6 @@ router = routers.SimpleRouter()
 
 router.register('logement', LogementViewset, basename='logement')
 router.register('commodite', CommoditeViewset, basename='commodite')
-router.register('logementCommodite', LogementCommoditeViewset, basename='logementcommodite')
 
 router.register('abriDUrgenceCommodite', AbriDUrgenceCommoditeViewset, basename='abridurgencecommodite')
 

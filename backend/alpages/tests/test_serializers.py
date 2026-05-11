@@ -23,7 +23,7 @@ from alpages.models import (
     AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe,
     Berger, GardeSituation,
     Production, CategoriePension, Espece, Race, CategorieAnimaux,
-    Cheptel, TypeCheptel,
+    Cheptel,
     TypeEvenement, TypeEquipement,
 )
 from alpages.serializers import (
@@ -35,7 +35,7 @@ from alpages.serializers import (
     TypeConventionSerializer, TypeDeSuiviSerializer, TypeDeMesureSerializer,
     BergerSerializer, ProductionSerializer,
     CategoriePensionSerializer, EspeceSerializer, RaceSerializer,
-    CategorieAnimauxSerializer, CheptelSerializer, TypeCheptelSerializer,
+    CategorieAnimauxSerializer, CheptelSerializer,
     TypeEvenementSerializer, TypeEquipementSerializer, AbriDUrgenceSerializer,
     CommoditeSerializer, AbriDUrgenceCommoditeSerializer,
 )
@@ -622,17 +622,6 @@ class CheptelSerializerFieldsTest(TestCase):
         data = CheptelSerializer(cheptel).data
         self.assertIn('id_cheptel', data)
         self.assertIn('description', data)
-
-
-class TypeCheptelSerializerFieldsTest(TestCase):
-    def test_fields_present(self):
-        tc = TypeCheptel.objects.create(
-            id_type_cheptel=100, description='TypeCheptelTest',
-        )
-        data = TypeCheptelSerializer(tc).data
-        self.assertIn('id_type_cheptel', data)
-        self.assertIn('description', data)
-        self.assertIn('coefficient_UGB', data)
 
 
 class TypeEvenementSerializerFieldsTest(TestCase):

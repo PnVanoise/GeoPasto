@@ -523,10 +523,10 @@ const enableDraw = () => {
   });
 
   map.addInteraction(drawInteraction);
-  snapInteraction = new Snap({ source });
+  snapInteraction = new Snap({ source, pixelTolerance: 20 });
   map.addInteraction(snapInteraction);
   if (contextSource) {
-    contextSnapInteraction = new Snap({ source: contextSource });
+    contextSnapInteraction = new Snap({ source: contextSource, pixelTolerance: 20 });
     map.addInteraction(contextSnapInteraction);
   }
 };
@@ -541,10 +541,10 @@ const enableModify = () => {
   });
 
   map.addInteraction(modifyInteraction);
-  snapInteraction = new Snap({ source });
+  snapInteraction = new Snap({ source, pixelTolerance: 20 });
   map.addInteraction(snapInteraction);
   if (contextSource) {
-    contextSnapInteraction = new Snap({ source: contextSource });
+    contextSnapInteraction = new Snap({ source: contextSource, pixelTolerance: 20 });
     map.addInteraction(contextSnapInteraction);
   }
 

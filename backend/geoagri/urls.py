@@ -19,9 +19,8 @@ from alpages.views import TypeEvenementViewset, EvenementViewset
 from alpages.views import TypeEquipementViewset, EquipementExploitantViewset, EquipementAlpageViewset
 
 ##########
-# Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel
 # dlg le 10/2/26
-from alpages.views import CheptelViewset, TypeCheptelViewset, ProductionViewset, CategoriePensionViewset, EspeceViewset, RaceViewset, CategorieAnimauxViewset
+from alpages.views import CheptelViewset, ProductionViewset, CategoriePensionViewset, EspeceViewset, RaceViewset, CategorieAnimauxViewset
 ##########
 
 router = routers.SimpleRouter()
@@ -74,10 +73,8 @@ router.register('equipementAlpage', EquipementAlpageViewset, basename='equipemen
 router.register('equipementExploitant', EquipementExploitantViewset, basename='equipementexploitant')
 
 ###########
-# Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel
 # dlg le 10/2/26
 router.register('cheptel', CheptelViewset, basename='cheptel')
-router.register('type_cheptel', TypeCheptelViewset, basename='type_cheptel')
 router.register('production', ProductionViewset, basename='production')
 router.register('categorie_pension', CategoriePensionViewset, basename='categorie_pension')
 router.register('espece', EspeceViewset, basename='espece')

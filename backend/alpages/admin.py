@@ -9,7 +9,7 @@ from .models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from .models import Ruche, Berger, GardeSituation
 from .models import TypeEquipement, EquipementAlpage, EquipementExploitant
 from .models import TypeEvenement, Evenement
-from .models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
+from .models import Cheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
 
 # admin.site.register(Logement, LeafletGeoAdmin)
 # admin.site.register(Commodite, LeafletGeoAdmin)
@@ -58,7 +58,6 @@ from .models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, 
 # # le 9/2/26
 
 # admin.site.register(Cheptel, LeafletGeoAdmin)
-# admin.site.register(TypeCheptel, LeafletGeoAdmin)
 # admin.site.register(Production, LeafletGeoAdmin)
 # admin.site.register(CategoriePension, LeafletGeoAdmin)
 # admin.site.register(Espece, LeafletGeoAdmin)

@@ -5,7 +5,7 @@ from datetime import date
 from django.db import transaction
 from django.db.models import Q
 
-from django.contrib.gis.geos import MultiPolygon
+from django.contrib.gis.geos import MultiPolygon, Polygon as GEOSPolygon
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.db.models.functions import Transform, MakeValid, SnapToGrid
 
@@ -22,8 +22,8 @@ from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
 from alpages.models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe
 from alpages.models import SituationDExploitation, Exploiter
 
-from alpages.models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
-from alpages.serializers import CheptelSerializer, TypeCheptelSerializer, ProductionSerializer, CategoriePensionSerializer, EspeceSerializer, RaceSerializer, CategorieAnimauxSerializer
+from alpages.models import Cheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
+from alpages.serializers import CheptelSerializer, ProductionSerializer, CategoriePensionSerializer, EspeceSerializer, RaceSerializer, CategorieAnimauxSerializer
 
 from alpages.models import Ruche, Berger, GardeSituation
 from alpages.serializers import RucheSerializer, BergerSerializer, GardeSituationSerializer
@@ -40,12 +40,6 @@ from alpages.serializers import SituationDExploitationSerializer, ExploiterSeria
 from alpages.models import TypeEquipement, EquipementExploitant, EquipementAlpage
 from alpages.serializers import TypeEquipementSerializer, EquipementExploitantSerializer, EquipementAlpageSerializer
 
-##########
-# Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel
-# dlg le 10/2/26
-from alpages.models import Cheptel, TypeCheptel, Production, CategoriePension, Espece, Race, CategorieAnimaux
-from alpages.serializers import CheptelSerializer, TypeCheptelSerializer, ProductionSerializer, CategoriePensionSerializer, EspeceSerializer, RaceSerializer, CategorieAnimauxSerializer
-##########
 
 from .choices_logement import LST_STATUT, LST_ACCES_FINAL, LST_PROPRIETE, LST_TYPE_LOGEMENT, LST_MULTIUSAGE, LST_ACCUEIL_PUBLIC,\
                               LST_ACTIVITE_LAITIERE, LST_ETAT_BATIMENT, LST_SURFACE_LOGEMENT, LST_WC, LST_ALIM_ELECTRIQUE, LST_ALIM_EAU,\
@@ -163,6 +157,25 @@ class SituationDExploitationViewset(BaseModelViewSet):
             queryset = queryset.filter(unite_pastorale_id=id_up_filter)
         return queryset
 
+    @staticmethod
+    def _remove_small_holes(geom, area_threshold=1.0):
+        """Supprime les trous (anneaux intérieurs) dont la surface est < area_threshold m²."""
+        def clean_polygon(poly):
+            if poly.num_interior_rings == 0:
+                return poly
+            kept = [
+                poly[i + 1]
+                for i in range(poly.num_interior_rings)
+                if GEOSPolygon(poly[i + 1]).area >= area_threshold
+            ]
+            return GEOSPolygon(poly[0], *kept)
+
+        if geom.geom_type == 'Polygon':
+            return clean_polygon(geom)
+        if geom.geom_type == 'MultiPolygon':
+            return MultiPolygon(*[clean_polygon(p) for p in geom], srid=geom.srid)
+        return geom
+
     def _ensure_multipolygon(self, geometry):
         """Force une géométrie en MultiPolygon (SRID 2154)."""
         if geometry is None or geometry.empty:
@@ -233,6 +246,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
 
             if union_geometry:
                 union_geometry = union_geometry.buffer(0)
+                union_geometry = self._remove_small_holes(union_geometry, area_threshold=1.0)
 
             if union_geometry is None or union_geometry.empty:
                 return Response(
@@ -342,8 +356,12 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     description=old_cheptel.description,
                     eleveur=old_cheptel.eleveur,
                     situation_exploitation=new_situation,
-                    type_cheptel=old_cheptel.type_cheptel,
                     nombre_animaux=old_cheptel.nombre_animaux,
+                    coefficient_UGB=old_cheptel.coefficient_UGB,
+                    production=old_cheptel.production,
+                    pension=old_cheptel.pension,
+                    race=old_cheptel.race,
+                    categorie_animaux=old_cheptel.categorie_animaux,
                     date_debut=date(target_year, 1, 1),
                     date_fin=date(target_year, 12, 31),
                 )
@@ -384,17 +402,6 @@ class SituationDExploitationViewset(BaseModelViewSet):
             serializer = self.get_serializer(new_situation)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-
-class TypeCheptelViewset(BaseModelViewSet):
-    serializer_class = TypeCheptelSerializer
-
-    def get_queryset(self):
-        queryset = TypeCheptel.objects.all().order_by('id_type_cheptel')
-        id_type_cheptel = self.request.GET.get('id_type_cheptel')
-        if id_type_cheptel is not None:
-            queryset = queryset.filter(id_type_cheptel=id_type_cheptel)
-
-        return queryset
 
 class RaceViewset(BaseModelViewSet):
     serializer_class = RaceSerializer
@@ -539,7 +546,6 @@ class EquipementExploitantViewset(BaseModelViewSet):
 
 
 ###########
-# Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel
 # dlg le 10/2/26
 class CheptelViewset(BaseModelViewSet):
     serializer_class = CheptelSerializer
@@ -588,7 +594,6 @@ class CategorieAnimauxViewset(BaseModelViewSet):
         queryset = CategorieAnimaux.objects.all().order_by('id_categorie_animaux')
         return queryset
     
-# Refactoring Elever et TypeCheptel pour les fusionner en Cheptel et Type_cheptel
 # dlg le 10/2/26
 ###########
 

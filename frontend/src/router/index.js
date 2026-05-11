@@ -231,31 +231,6 @@ const router = createRouter({
       ],
     },
     {
-      path: '/type-cheptel',
-      children: [
-        {
-          path: '',
-          name: 'typecheptel-list',
-          component: () => import('@/views/type_cheptel/TypeCheptelList.vue'),
-        },
-        {
-          path: 'add',
-          name: 'typecheptel-add',
-          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
-        },
-        {
-          path: ':id',
-          name: 'typecheptel-view',
-          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
-        },
-        {
-          path: ':id/edit',
-          name: 'typecheptel-edit',
-          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
-        },
-      ],
-    },
-    {
       path: '/',
       name: 'home',
       component: () => import('@/views/unite_pastorale/UnitePastoraleList.vue'),

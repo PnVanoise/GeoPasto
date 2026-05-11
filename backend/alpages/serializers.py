@@ -14,7 +14,7 @@ from alpages.models import SituationDExploitation, Exploiter
 from alpages.models import Ruche, Berger, GardeSituation
 from alpages.models import TypeEvenement, Evenement
 from alpages.models import TypeEquipement, EquipementAlpage, EquipementExploitant
-from alpages.models import Production, CategoriePension, Race, CategorieAnimaux, Espece, Cheptel, TypeCheptel
+from alpages.models import Production, CategoriePension, Race, CategorieAnimaux, Espece, Cheptel
 
 
 AUDIT_FIELD_NAMES = (
@@ -613,7 +613,7 @@ class BeneficierDeSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
         
         return super().to_representation(instance)
 
-# Ruche / Berger / type_cheptel
+# Ruche / Berger / Cheptel
 class RucheSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     
     class Meta:
@@ -698,15 +698,6 @@ class CategorieAnimauxSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeri
         model = CategorieAnimaux
         fields = [ 'id_categorie_animaux', 'description', 'espece' ]
 
-class TypeCheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    """
-    Type de cheptel
-    """
-
-    class Meta:
-        model = TypeCheptel
-        fields = [ 'id_type_cheptel', 'description', 'coefficient_UGB', 'production', 'pension', 'race', 'categorie_animaux' ]
-        
 class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Cheptel
@@ -724,15 +715,6 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
         read_only=True,
     )
     
-    # Type de cheptel
-    type_cheptel = serializers.PrimaryKeyRelatedField(
-        queryset = TypeCheptel.objects.all(),
-        allow_null = True,
-    )
-    type_cheptel_detail = TypeCheptelSerializer(
-        source='type_cheptel',
-        read_only=True,
-    )
     # Situation d'exploitation
     situation_exploitation = serializers.PrimaryKeyRelatedField(
         queryset = SituationDExploitation.objects.all(),
@@ -741,12 +723,45 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     situation_detail = SituationDExploitationSerializer(
         source='situation_exploitation',
         read_only=True
-    )    
+    )
+
+    # Production
+    production = serializers.PrimaryKeyRelatedField(
+        queryset = Production.objects.all(),
+        allow_null = True,
+    )
+    production_detail = ProductionSerializer(source='production', read_only=True)
+
+    # Catégorie de pension
+    pension = serializers.PrimaryKeyRelatedField(
+        queryset = CategoriePension.objects.all(),
+        allow_null = True,
+    )
+    pension_detail = CategoriePensionSerializer(source='pension', read_only=True)
+
+    # Race
+    race = serializers.PrimaryKeyRelatedField(
+        queryset = Race.objects.all(),
+        allow_null = True,
+    )
+    race_detail = RaceSerializer(source='race', read_only=True)
+
+    # Catégorie d'animaux
+    categorie_animaux = serializers.PrimaryKeyRelatedField(
+        queryset = CategorieAnimaux.objects.all(),
+        allow_null = True,
+    )
+    categorie_animaux_detail = CategorieAnimauxSerializer(source='categorie_animaux', read_only=True)
 
     class Meta:
         model = Cheptel
-        fields = [ 'id_cheptel', 'date_debut', 'annee', 'date_fin', 'nombre_animaux', 'type_cheptel', 'type_cheptel_detail', 'eleveur', 'eleveur_detail', 
-                  'situation_exploitation', 'situation_detail', 'description' ]
+        fields = [ 'id_cheptel', 'date_debut', 'annee', 'date_fin', 'nombre_animaux', 'eleveur', 'eleveur_detail',
+                  'situation_exploitation', 'situation_detail', 'description',
+                  'coefficient_UGB',
+                  'production', 'production_detail',
+                  'pension', 'pension_detail',
+                  'race', 'race_detail',
+                  'categorie_animaux', 'categorie_animaux_detail' ]
 
     def get_annee(self, obj):
         if obj.date_debut:

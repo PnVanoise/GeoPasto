@@ -856,11 +856,18 @@ class EquipementExploitant(AuditFieldsMixin, models.Model):
     """
 
     id_equipement_exploitant = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
     type_equipement = models.ForeignKey('alpages.TypeEquipement', on_delete=models.PROTECT, blank=True, null=True, related_name='eqptsExploitant')
     situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='eqptsExploitant')
+    beneficier_de = models.ForeignKey(
+        'alpages.BeneficierDe',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='equipement',
+    )
 
     class Meta:
         verbose_name = "équipement d'exploitant"

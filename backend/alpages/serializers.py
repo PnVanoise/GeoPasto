@@ -923,6 +923,12 @@ class EquipementExploitantSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSe
         allow_null = True,
     )
     situation_exploitation_detail = serializers.SerializerMethodField()
+    beneficier_de = serializers.PrimaryKeyRelatedField(
+        queryset = BeneficierDe.objects.all(),
+        allow_null = True,
+        required = False,
+    )
+    beneficier_de_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = EquipementExploitant
@@ -937,11 +943,20 @@ class EquipementExploitantSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSe
             'id_situation': obj.situation_exploitation.id_situation,
             'nom_situation': obj.situation_exploitation.nom_situation,
         }
-    
+
+    def get_beneficier_de_detail(self, obj):
+        bd = obj.beneficier_de
+        if not bd:
+            return None
+        return {
+            'abri_urgence': bd.abri_urgence_id,
+            'date_debut': bd.date_debut,
+            'date_fin': bd.date_fin,
+        }
+
     def to_representation(self, instance):
-        if (instance.geometry != None):
+        if instance.geometry is not None:
             instance.geometry.transform(4326)
-        
         return super().to_representation(instance)
 
 

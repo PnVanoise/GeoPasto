@@ -4,6 +4,7 @@ from datetime import date
 
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 
 from django.contrib.gis.geos import MultiPolygon, Polygon as GEOSPolygon
 from django.contrib.gis.db.models import Union
@@ -534,6 +535,79 @@ class EquipementExploitantViewset(BaseModelViewSet):
             queryset = queryset.filter(situation_exploitation_id=id_situation)
 
         return queryset
+
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        bd = instance.beneficier_de
+        instance.beneficier_de = None
+        instance.save(update_fields=['beneficier_de'])
+        instance.delete()
+        if bd:
+            bd.delete()
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        save_kwargs = self._audit_save_kwargs(serializer, is_create=True)
+        equipement = serializer.save(**save_kwargs)
+        self._sync_beneficier_de(equipement)
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        save_kwargs = self._audit_save_kwargs(serializer, is_create=False)
+        equipement = serializer.save(**save_kwargs)
+        self._sync_beneficier_de(equipement)
+
+    def _sync_beneficier_de(self, equipement):
+        is_abri = (
+            equipement.type_equipement is not None
+            and equipement.type_equipement.description.lower() == "abri héliportable"
+        )
+
+        if not is_abri:
+            if equipement.beneficier_de_id:
+                old_bd = equipement.beneficier_de
+                equipement.beneficier_de = None
+                equipement.save(update_fields=['beneficier_de'])
+                old_bd.delete()
+            return
+
+        props = self.request.data.get('properties', {})
+        abri_urgence_id = props.get('abri_urgence')
+        date_debut = props.get('date_debut')
+        date_fin = props.get('date_fin') or None
+
+        if not abri_urgence_id or not date_debut:
+            return
+
+        try:
+            abri_urgence = AbriDUrgence.objects.get(pk=abri_urgence_id)
+        except AbriDUrgence.DoesNotExist:
+            return
+
+        actor = self._get_actor_name()
+        exploitant = equipement.situation_exploitation.exploitant if equipement.situation_exploitation else None
+
+        if equipement.beneficier_de_id:
+            bd = equipement.beneficier_de
+            bd.exploitant = exploitant
+            bd.abri_urgence = abri_urgence
+            bd.date_debut = date_debut
+            bd.date_fin = date_fin
+            bd.geometry = equipement.geometry
+            bd.modified_by = actor
+            bd.modified_on = timezone.now()
+            bd.save()
+        else:
+            bd = BeneficierDe.objects.create(
+                exploitant=exploitant,
+                abri_urgence=abri_urgence,
+                date_debut=date_debut,
+                date_fin=date_fin,
+                geometry=equipement.geometry,
+                created_by=actor,
+            )
+            equipement.beneficier_de = bd
+            equipement.save(update_fields=['beneficier_de'])
 
 
 ###########

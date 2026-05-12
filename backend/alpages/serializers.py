@@ -898,9 +898,13 @@ class CategorieAnimauxSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeri
     Catégorie d'animaux
     """
 
+    espece_description = serializers.CharField(
+        source="espece.description", read_only=True
+    )
+
     class Meta:
         model = CategorieAnimaux
-        fields = ["id_categorie_animaux", "description", "espece"]
+        fields = ["id_categorie_animaux", "description", "espece", "espece_description"]
 
 
 class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):

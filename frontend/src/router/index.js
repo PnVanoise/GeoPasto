@@ -416,10 +416,10 @@ const router = createRouter({
     {
       path: '/garde-situation',
       children: [
-        { path: '',         name: 'gardesituation-list', component: () => import('@/views/garde_troupeau/GardeTroupeauList.vue') },
-        { path: 'add',      name: 'gardesituation-add',  component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
-        { path: ':id',      name: 'gardesituation-view', component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
-        { path: ':id/edit', name: 'gardesituation-edit', component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
+        { path: '',         name: 'gardesituation-list', component: () => import('@/views/garde_situation/GardeSituationList.vue') },
+        { path: 'add',      name: 'gardesituation-add',  component: () => import('@/views/garde_situation/GardeSituationPageForm.vue') },
+        { path: ':id',      name: 'gardesituation-view', component: () => import('@/views/garde_situation/GardeSituationPageForm.vue') },
+        { path: ':id/edit', name: 'gardesituation-edit', component: () => import('@/views/garde_situation/GardeSituationPageForm.vue') },
       ],
     },
     // {

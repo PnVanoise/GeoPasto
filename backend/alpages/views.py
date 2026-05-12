@@ -427,6 +427,9 @@ class GardeSituationViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = GardeSituation.objects.all().order_by('id_garde_situation')
+        id_situation = self.request.GET.get('id_situation')
+        if id_situation is not None:
+            queryset = queryset.filter(situation_exploitation_id=id_situation)
         return queryset
  
 # Evenements

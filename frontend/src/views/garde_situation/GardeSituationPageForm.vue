@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <GardeTroupeauForm2
+    <GardeSituationForm2
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import GardeTroupeauForm2 from "../../features/garde_troupeau/GardeTroupeauForm2.vue";
+import GardeSituationForm2 from "../../features/garde_situation/GardeSituationForm2.vue";
 import auth from '@/services/axios';
 import config from "@/../config";
 
@@ -43,6 +43,8 @@ onMounted(async () => {
     } finally {
       isLoading.value = false;
     }
+  } else if (route.query.situation) {
+    itemData.value = { situation_exploitation: Number(route.query.situation) };
   }
 });
 </script>

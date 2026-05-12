@@ -20,7 +20,7 @@
         <!-- Rendu automatique des filtres -->
         <template v-if="props.showFilters" v-for="filter in props.filters" :key="filter.key">
           <!-- Checkbox -->
-          <div v-if="filter.type === 'checkbox'" style="margin: 0 10px;">
+          <div v-if="filter.type === 'checkbox'" style="margin: 0 10px">
             <v-switch
               v-model="activeFilters[filter.key]"
               :label="filter.label"
@@ -33,7 +33,7 @@
           </div>
 
           <!-- Select -->
-          <div v-if="filter.type === 'select'" style="margin: 0 10px; min-width:200px;">
+          <div v-if="filter.type === 'select'" style="margin: 0 10px; min-width: 200px">
             <v-select
               :items="[{ value: '', label: '-- Tous --' }].concat(unref(filter.options) || [])"
               item-title="label"
@@ -50,7 +50,6 @@
       </div>
 
       <div class="header-right">
-
         <v-btn
           v-if="props.showAddButton && !props.viewOnly && (crud.can('add') || props.forceAdd)"
           color="info"
@@ -125,14 +124,14 @@ const props = defineProps({
   formComponent: Object,
   bgColor: { type: String, default: "#808080" },
   geojsonMode: { type: Boolean, default: false },
-  showYearFilter : { type : Boolean, default: false },
+  showYearFilter: { type: Boolean, default: false },
   searchFields: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   filters: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   // UI control when embedded
   showTitle: { type: Boolean, default: true },
@@ -146,12 +145,14 @@ const props = defineProps({
   viewOnly: { type: Boolean, default: false },
   requestParams: { type: Object, default: null },
 });
-const crud = useCrud(props.modelName, props.apiRouteName, props.idField, { geojson: props.geojsonMode });
+const crud = useCrud(props.modelName, props.apiRouteName, props.idField, {
+  geojson: props.geojsonMode,
+});
 const searchQuery = ref("");
 const activeFilters = ref({});
 
 // Initialise les filtres avec leurs valeurs par défaut
-props.filters.forEach(f => {
+props.filters.forEach((f) => {
   activeFilters.value[f.key] = f.default ?? "";
 });
 
@@ -159,14 +160,14 @@ props.filters.forEach(f => {
 function onSelectChange(event, key) {
   activeFilters.value = {
     ...activeFilters.value,
-    [key]: event.target.value
+    [key]: event.target.value,
   };
 }
 
 function onCheckboxChange(event, key) {
   activeFilters.value = {
     ...activeFilters.value,
-    [key]: event.target.checked
+    [key]: event.target.checked,
   };
 }
 
@@ -175,13 +176,13 @@ const filteredEntries = computed(() => {
   let items = crud.items.value;
 
   // Recherche
-  if(searchQuery.value && searchQuery.value.trim() !== "") {
+  if (searchQuery.value && searchQuery.value.trim() !== "") {
     const q = searchQuery.value.toLowerCase();
-    items = items.filter(item => {
+    items = items.filter((item) => {
       if (props.searchFields.length === 0) {
         return JSON.stringify(item).toLowerCase().includes(q);
       }
-      return props.searchFields.some(field => {
+      return props.searchFields.some((field) => {
         const value = getNestedValue(item, field);
         return value?.toString().toLowerCase().includes(q);
       });
@@ -189,7 +190,7 @@ const filteredEntries = computed(() => {
   }
 
   // Application des filtres
-  props.filters.forEach(f => {
+  props.filters.forEach((f) => {
     const value = activeFilters.value[f.key];
     items = f.apply(items, value);
   });
@@ -267,11 +268,14 @@ onBeforeUnmount(() => {
 });
 
 // If initialNewItem is provided, prefill selectedItem when entering add mode
-watch(() => crud.mode.value, (m) => {
-  if (m === 'add' && props.initialNewItem) {
-    crud.selectedItem.value = { ...props.initialNewItem };
+watch(
+  () => crud.mode.value,
+  (m) => {
+    if (m === "add" && props.initialNewItem) {
+      crud.selectedItem.value = { ...props.initialNewItem };
+    }
   }
-});
+);
 
 watch(
   () => props.requestParams,
@@ -292,7 +296,9 @@ const handleSubmit = async (formData) => {
   crud.closeModal();
   // notify other parts of the app that data changed (modelName provided)
   try {
-    window.dispatchEvent(new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } }));
+    window.dispatchEvent(
+      new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } })
+    );
   } catch (e) {
     console.warn("Could not dispatch geo-data-changed event", e);
   }
@@ -394,7 +400,9 @@ function handleDelete(item) {
     try {
       await crud.deleteItem(item, props.requestParams);
       try {
-        window.dispatchEvent(new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } }));
+        window.dispatchEvent(
+          new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } })
+        );
       } catch (e) {
         console.warn("Could not dispatch geo-data-changed event after delete", e);
       }
@@ -405,9 +413,7 @@ function handleDelete(item) {
 }
 </script>
 
-
 <style scoped>
-
 .form-actions {
   display: flex;
   justify-content: center;

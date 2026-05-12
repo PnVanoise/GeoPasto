@@ -12,8 +12,8 @@
 </template>
 
 <script setup>
-import CrudListPage from '../../components/crud/CrudListPage.vue';
+import CrudListPage from "../../components/crud/CrudListPage.vue";
 
-const columns    = [{ field: "description", label: "Description", sortable: true }];
-const searchFields = ['description'];
+const columns = [{ field: "description", label: "Description", sortable: true }];
+const searchFields = ["description"];
 </script>

@@ -19,16 +19,16 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
 import UnitePastoraleFormFields from "@/features/unite_pastorale/UnitePastoraleForm2.vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "@/../config";
 
-const route  = useRoute();
+const route = useRoute();
 const router = useRouter();
 
 const crud = useCrudPage("unitepastorale", "unitePastorale", "id", { geojson: true });
 const { pageMode, handleSubmit } = crud;
 
-const itemData  = ref({});
+const itemData = ref({});
 const isLoading = ref(!!route.params.id);
 
 onMounted(async () => {
@@ -40,8 +40,8 @@ onMounted(async () => {
       const found = response.data;
       if (found) {
         itemData.value = {
-          id:         found.id ?? found.properties?.id_unite_pastorale,
-          geometry:   found.geometry ?? null,
+          id: found.id ?? found.properties?.id_unite_pastorale,
+          geometry: found.geometry ?? null,
           properties: { ...(found.properties ?? found) },
         };
         delete itemData.value.properties.geometry;
@@ -53,7 +53,6 @@ onMounted(async () => {
     }
   }
 });
-
 </script>
 
 <style scoped>

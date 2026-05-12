@@ -9,180 +9,194 @@
 
   <form class="cheptel-form" @submit.prevent="submitForm">
     <section class="layout-card">
-    <!-- Ligne 1 : Situation | Eleveur -->
-    <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">
-        <v-select
-          id="situation"
-          v-model="form.situation_exploitation"
-          :items="situations"
-          item-title="nom_situation"
-          item-value="id_situation"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') || situLocked }"         label="Situation d'exploitation"
-          dense
-          variant="underlined"
-          hide-details
-          clearable
-        />
+      <!-- Ligne 1 : Situation | Eleveur -->
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
+          <v-select
+            id="situation"
+            v-model="form.situation_exploitation"
+            :items="situations"
+            item-title="nom_situation"
+            item-value="id_situation"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') || situLocked }"
+            label="Situation d'exploitation"
+            dense
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
+        <div class="w3-half form-cell">
+          <v-select
+            id="eleveur"
+            v-model="form.eleveur"
+            :items="eleveurs"
+            item-title="nom_complet"
+            item-value="id_eleveur"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            label="Eleveur"
+            dense
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
       </div>
-      <div class="w3-half form-cell">
-        <v-select
-          id="eleveur"
-          v-model="form.eleveur"
-          :items="eleveurs"
-          item-title="nom_complet"
-          item-value="id_eleveur"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Eleveur"
-          dense
-          variant="underlined"
-          hide-details
-          clearable
-        />
+      <!-- Ligne : Nombre d'animaux -->
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
+          <v-text-field
+            id="nombre"
+            v-model="form.nombre_animaux"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            label="Nombre d'animaux"
+            type="number"
+            min="1"
+            dense
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
       </div>
-    </div>
-    <!-- Ligne : Nombre d'animaux -->
-    <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">
-        <v-text-field
-          id="nombre"
-          v-model="form.nombre_animaux"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Nombre d'animaux"
-          type="number"
-          min="1"
-          dense
-          variant="underlined"
-          hide-details
-          clearable
-        />
+
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
+          <v-text-field
+            type="date"
+            label="Date de début"
+            v-model="form.date_debut"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            dense
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
+        <div class="w3-half form-cell">
+          <v-text-field
+            type="date"
+            label="Date de fin"
+            v-model="form.date_fin"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            dense
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
       </div>
-    </div>
-    
-    <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">        
-        <v-text-field
-          type="date" 
-          label="Date de début"
-          v-model="form.date_debut"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          dense
-          variant="underlined"
-          hide-details
-          clearable
-        />
+      <div class="w3-row form-ligne">
+        <div class="form-cell">
+          <v-text-field
+            id="description"
+            v-model="form.description"
+            label="Description"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            dense
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
       </div>
-      <div class="w3-half form-cell">
-        <v-text-field
-          type="date"
-          label="Date de fin"
-          v-model="form.date_fin"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          dense
-          variant="underlined"
-          hide-details
-          clearable
-        />
+      <!-- Ligne : Race | Catégorie animaux -->
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
+          <v-select
+            v-model="form.race"
+            :items="races"
+            item-title="description"
+            item-value="id_race"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            label="Race"
+            density="compact"
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
+        <div class="w3-half form-cell">
+          <v-select
+            v-model="form.categorie_animaux"
+            :items="categoriesAnimaux"
+            item-title="description"
+            item-value="id_categorie_animaux"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            label="Catégorie d'animaux"
+            density="compact"
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
       </div>
-    </div>
-    <div class="w3-row form-ligne">
-      <div class="form-cell">
-        <v-text-field
-          id="description"
-          v-model="form.description"
-          label="Description"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          dense
-          variant="underlined"
-          hide-details
-          clearable
-        />
+      <!-- Ligne : Production | Pension -->
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
+          <v-select
+            v-model="form.production"
+            :items="productions"
+            item-title="description"
+            item-value="id_production"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            label="Production"
+            density="compact"
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
+        <div class="w3-half form-cell">
+          <v-select
+            v-model="form.pension"
+            :items="pensions"
+            item-title="description"
+            item-value="id_categorie_pension"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            label="Catégorie de pension"
+            density="compact"
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
       </div>
-    </div>
-    <!-- Ligne : Race | Catégorie animaux -->
-    <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">
-        <v-select
-          v-model="form.race"
-          :items="races"
-          item-title="description"
-          item-value="id_race"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Race"
-          density="compact"
-          variant="underlined"
-          hide-details
-          clearable
-        />
+      <!-- Ligne : Coefficient UGB -->
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
+          <v-text-field
+            v-model="form.coefficient_UGB"
+            label="Coefficient UGB"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            density="compact"
+            variant="underlined"
+            hide-details
+          />
+        </div>
       </div>
-      <div class="w3-half form-cell">
-        <v-select
-          v-model="form.categorie_animaux"
-          :items="categoriesAnimaux"
-          item-title="description"
-          item-value="id_categorie_animaux"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Catégorie d'animaux"
-          density="compact"
-          variant="underlined"
-          hide-details
-          clearable
-        />
-      </div>
-    </div>
-    <!-- Ligne : Production | Pension -->
-    <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">
-        <v-select
-          v-model="form.production"
-          :items="productions"
-          item-title="description"
-          item-value="id_production"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Production"
-          density="compact"
-          variant="underlined"
-          hide-details
-          clearable
-        />
-      </div>
-      <div class="w3-half form-cell">
-        <v-select
-          v-model="form.pension"
-          :items="pensions"
-          item-title="description"
-          item-value="id_categorie_pension"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Catégorie de pension"
-          density="compact"
-          variant="underlined"
-          hide-details
-          clearable
-        />
-      </div>
-    </div>
-    <!-- Ligne : Coefficient UGB -->
-    <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">
-        <v-text-field
-          v-model="form.coefficient_UGB"
-          label="Coefficient UGB"
-          type="number"
-          min="0"
-          max="1"
-          step="0.01"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          density="compact"
-          variant="underlined"
-          hide-details
-        />
-      </div>
-    </div>
     </section>
 
     <div class="form-actions">
-      <v-btn density="comfortable" color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn density="comfortable" v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">{{ btTitle }}</v-btn>
+      <v-btn
+        density="comfortable"
+        color="info"
+        @click="closeModal"
+        prepend-icon="mdi-arrow-left-circle"
+        >Retour</v-btn
+      >
+      <v-btn
+        density="comfortable"
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+        >{{ btTitle }}</v-btn
+      >
     </div>
   </form>
 </template>
@@ -190,7 +204,7 @@
 <script setup>
 import { reactive, watch, ref, computed, onMounted } from "vue";
 import config from "../../../config";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 
 const props = defineProps({
@@ -248,9 +262,9 @@ const loadEleveurs = (explId) => {
       .get(`${config.API_BASE_URL}/api/eleveur/by-exploitant/${useExpl}/`)
       .then((response) => {
         const data = response.data || [];
-        eleveurs.value = data.map(e => ({
+        eleveurs.value = data.map((e) => ({
           ...e,
-          nom_complet: e.nom_complet ?? `${e.nom_eleveur || ''} ${e.prenom_eleveur || ''}`.trim()
+          nom_complet: e.nom_complet ?? `${e.nom_eleveur || ""} ${e.prenom_eleveur || ""}`.trim(),
         }));
         console.log("eleveur (filtered):", eleveurs.value);
       })
@@ -262,9 +276,9 @@ const loadEleveurs = (explId) => {
       .get(`${config.API_BASE_URL}/api/eleveur/`)
       .then((response) => {
         const data = response.data || [];
-        eleveurs.value = data.map(e => ({
+        eleveurs.value = data.map((e) => ({
           ...e,
-          nom_complet: e.nom_complet ?? `${e.nom_eleveur || ''} ${e.prenom_eleveur || ''}`.trim()
+          nom_complet: e.nom_complet ?? `${e.nom_eleveur || ""} ${e.prenom_eleveur || ""}`.trim(),
         }));
         console.log("eleveur:", eleveurs.value);
       })
@@ -282,8 +296,7 @@ watch(
       // If initialForm contains an exploitant, reload eleveurs filtered by that exploitant
       if (newVal.exploitant) {
         loadEleveurs(newVal.exploitant);
-      }
-      else if (newVal.situation_detail && newVal.situation_detail.exploitant) {
+      } else if (newVal.situation_detail && newVal.situation_detail.exploitant) {
         loadEleveurs(newVal.situation_detail.exploitant);
       }
       // If initialForm contains a situation, reload situations filtered accordingly
@@ -293,14 +306,24 @@ watch(
           .get(`${config.API_BASE_URL}/api/situationExploitation/`)
           .then((response) => {
             const data = response.data || [];
-            const found = data.find(s => s.id_situation === initialSitu || s.id === initialSitu || (s.properties && (s.properties.id_situation === initialSitu)));
-            situations.value = found ? [found] : data.filter(s => s.id_situation === initialSitu || s.id === initialSitu);
+            const found = data.find(
+              (s) =>
+                s.id_situation === initialSitu ||
+                s.id === initialSitu ||
+                (s.properties && s.properties.id_situation === initialSitu)
+            );
+            situations.value = found
+              ? [found]
+              : data.filter((s) => s.id_situation === initialSitu || s.id === initialSitu);
             if (situLocked.value) {
               form.situation_exploitation = initialSitu;
             }
           })
           .catch((error) => {
-            console.error("Erreur lors de la récupération de la liste des situations d'exploitation.", error);
+            console.error(
+              "Erreur lors de la récupération de la liste des situations d'exploitation.",
+              error
+            );
           });
       }
     }
@@ -314,18 +337,32 @@ onMounted(() => {
     .get(`${config.API_BASE_URL}/api/situationExploitation/`)
     .then((response) => {
       const data = response.data || [];
-      const initialSitu = props.initialForm && (props.initialForm.situation_exploitation || props.initialForm.situation || props.initialForm.id_situation);
+      const initialSitu =
+        props.initialForm &&
+        (props.initialForm.situation_exploitation ||
+          props.initialForm.situation ||
+          props.initialForm.id_situation);
       if (initialSitu) {
         // try to find the matching situation in the returned list
-        const found = data.find(s => s.id_situation === initialSitu || s.id === initialSitu || (s.properties && (s.properties.id_situation === initialSitu)));
-        situations.value = found ? [found] : data.filter(s => s.id_situation === initialSitu || s.id === initialSitu);
+        const found = data.find(
+          (s) =>
+            s.id_situation === initialSitu ||
+            s.id === initialSitu ||
+            (s.properties && s.properties.id_situation === initialSitu)
+        );
+        situations.value = found
+          ? [found]
+          : data.filter((s) => s.id_situation === initialSitu || s.id === initialSitu);
       } else {
         situations.value = data;
       }
       console.log("situations:", situations.value);
       // If initialForm provided a situation id, ensure the model uses it after items loaded
       if (situLocked.value) {
-        form.situation_exploitation = props.initialForm.situation_exploitation || props.initialForm.situation || props.initialForm.id_situation;
+        form.situation_exploitation =
+          props.initialForm.situation_exploitation ||
+          props.initialForm.situation ||
+          props.initialForm.id_situation;
       }
     })
     .catch((error) => {
@@ -336,45 +373,52 @@ onMounted(() => {
     });
 
   // Récupère les éleveurs via le helper
-  const explId = props.initialForm?.exploitant
-    ?? props.initialForm?.situation_detail?.exploitant
-    ?? null;
+  const explId =
+    props.initialForm?.exploitant ?? props.initialForm?.situation_detail?.exploitant ?? null;
   loadEleveurs(explId);
-  
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/production/`)
-    .then((response) => { productions.value = response.data; })
+    .then((response) => {
+      productions.value = response.data;
+    })
     .catch(() => console.error("Erreur lors de la récupération des productions."));
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/categorie_pension/`)
-    .then((response) => { pensions.value = response.data; })
+    .then((response) => {
+      pensions.value = response.data;
+    })
     .catch(() => console.error("Erreur lors de la récupération des catégories de pension."));
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/race/`)
-    .then((response) => { races.value = response.data; })
+    .then((response) => {
+      races.value = response.data;
+    })
     .catch(() => console.error("Erreur lors de la récupération des races."));
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/categorie_animaux/`)
-    .then((response) => { categoriesAnimaux.value = response.data; })
+    .then((response) => {
+      categoriesAnimaux.value = response.data;
+    })
     .catch(() => console.error("Erreur lors de la récupération des catégories d'animaux."));
 });
-
 
 // Submits
 const submitForm = () => {
   if (props.onSubmit) {
     // Ensure required fields exist for backend
     if (!form.description) {
-      const ev = eleveurs.value.find(e => e.id_eleveur === form.eleveur) || {};
-      form.description = `${ev.nom_complet || (ev.nom_eleveur ? `${ev.nom_eleveur} ${ev.prenom_eleveur}` : '')}`.trim();
+      const ev = eleveurs.value.find((e) => e.id_eleveur === form.eleveur) || {};
+      form.description =
+        `${ev.nom_complet || (ev.nom_eleveur ? `${ev.nom_eleveur} ${ev.prenom_eleveur}` : "")}`.trim();
     }
-    props.onSubmit(form)
+    props
+      .onSubmit(form)
       .then(() => console.log("Form submitted OK"))
-      .catch(err => console.error(err));
+      .catch((err) => console.error(err));
   }
 };
 
@@ -391,7 +435,9 @@ const closeModal = () => {
   border-radius: 8px;
   padding: 0.75rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .layout-card:hover {
@@ -418,8 +464,12 @@ const closeModal = () => {
   font-size: 0.88rem;
 }
 
-.form-ligne { padding: 4px; }
-.form-cell { padding: 4px; }
+.form-ligne {
+  padding: 4px;
+}
+.form-cell {
+  padding: 4px;
+}
 
 .form-actions {
   display: flex;

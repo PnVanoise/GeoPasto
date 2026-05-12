@@ -3,7 +3,7 @@
   <form @submit.prevent="submitForm">
     <div class="w3-row form-ligne">
       <div class="form-cell">
-        <v-text-field 
+        <v-text-field
           id="description"
           v-model="form.description"
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
@@ -15,11 +15,27 @@
       </div>
     </div>
     <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">        
-        <v-text-field type="date" label="Date de début" v-model="form.date_debut" :class="{ 'disable-events': props.mode === 'view' || !can('change') }" dense hide-details clearable />
+      <div class="w3-half form-cell">
+        <v-text-field
+          type="date"
+          label="Date de début"
+          v-model="form.date_debut"
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          dense
+          hide-details
+          clearable
+        />
       </div>
       <div class="w3-half form-cell">
-        <v-text-field type="date" label="Date de fin" v-model="form.date_fin" :class="{ 'disable-events': props.mode === 'view' || !can('change') }" dense hide-details clearable />
+        <v-text-field
+          type="date"
+          label="Date de fin"
+          v-model="form.date_fin"
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          dense
+          hide-details
+          clearable
+        />
       </div>
     </div>
     <div class="w3-row form-ligne">
@@ -52,10 +68,23 @@
         />
       </div>
     </div>
-    
+
     <div class="form-actions">
-      <v-btn density="comfortable" color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn density="comfortable" v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">{{ btTitle }}</v-btn>
+      <v-btn
+        density="comfortable"
+        color="info"
+        @click="closeModal"
+        prepend-icon="mdi-arrow-left-circle"
+        >Retour</v-btn
+      >
+      <v-btn
+        density="comfortable"
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+        >{{ btTitle }}</v-btn
+      >
     </div>
   </form>
 </template>
@@ -63,7 +92,7 @@
 <script setup>
 import { reactive, watch, ref, computed, onMounted } from "vue";
 import config from "../../../config";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 
 const props = defineProps({
@@ -118,10 +147,7 @@ onMounted(() => {
       typesuivis.value = response.data;
     })
     .catch((error) => {
-      console.error(
-        "Erreur lors de la récupération de la liste des types de suivi",
-        error
-      );
+      console.error("Erreur lors de la récupération de la liste des types de suivi", error);
     });
 
   // Récupère les unités pastorales
@@ -132,20 +158,17 @@ onMounted(() => {
       console.log("ups:", ups.value);
     })
     .catch((error) => {
-      console.error(
-        "Erreur lors de la récupération de la liste des unités pastorales",
-        error
-      );
+      console.error("Erreur lors de la récupération de la liste des unités pastorales", error);
     });
 });
-
 
 // Submits
 const submitForm = () => {
   if (props.onSubmit) {
-    props.onSubmit(form)
+    props
+      .onSubmit(form)
       .then(() => console.log("Form submitted OK"))
-      .catch(err => console.error(err));
+      .catch((err) => console.error(err));
   }
 };
 
@@ -154,7 +177,6 @@ const closeModal = () => {
   props.onClose?.();
 };
 </script>
-
 
 <style scoped>
 .form-actions {
@@ -166,6 +188,6 @@ const closeModal = () => {
 }
 
 .disable-events {
-  pointer-events: none
+  pointer-events: none;
 }
 </style>

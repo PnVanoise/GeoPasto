@@ -36,7 +36,12 @@
 
     <div class="form-actions">
       <v-btn color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">
+      <v-btn
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+      >
         {{ btTitle }}
       </v-btn>
     </div>
@@ -83,7 +88,8 @@ watch(
 );
 
 const submitForm = () => {
-  props.onSubmit?.({ ...form })
+  props
+    .onSubmit?.({ ...form })
     .catch((err) => console.error("Erreur soumission UP/Propriétaire", err));
 };
 
@@ -96,7 +102,7 @@ onMounted(async () => {
       auth.axiosInstance.get(`${config.API_BASE_URL}/api/proprietaireFoncier/`),
     ]);
     ups.value = resUP.data ?? [];
-    proprietaires.value = (resPropr.data ?? []).map(p => ({
+    proprietaires.value = (resPropr.data ?? []).map((p) => ({
       ...p,
       nom_complet: `${p.nom_propr} ${p.prenom_propr || ""}`.trim(),
     }));
@@ -107,8 +113,12 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.form-ligne { padding: 4px; }
-.form-cell  { padding: 4px; }
+.form-ligne {
+  padding: 4px;
+}
+.form-cell {
+  padding: 4px;
+}
 
 .form-actions {
   display: flex;

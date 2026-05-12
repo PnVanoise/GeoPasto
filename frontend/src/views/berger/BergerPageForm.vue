@@ -19,7 +19,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
 import BergerForm2 from "../../features/berger/BergerForm2.vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "@/../config";
 
 const route = useRoute();
@@ -28,7 +28,7 @@ const router = useRouter();
 const crud = useCrudPage("berger", "berger", "id_berger");
 const { pageMode, handleSubmit } = crud;
 
-const itemData  = ref({});
+const itemData = ref({});
 const isLoading = ref(!!route.params.id);
 
 onMounted(async () => {

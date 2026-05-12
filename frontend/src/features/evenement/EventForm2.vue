@@ -139,8 +139,15 @@
 
         <div class="w3-row form-ligne" v-if="submitted && !geometryValidity.isValid">
           <div class="form-cell">
-            <v-alert type="warning" variant="tonal" density="compact" border="start" icon="mdi-alert-circle-outline">
-              Dessinez une géométrie valide ({{ geometryTypeLabel.toLowerCase() }}) avant d'enregistrer.
+            <v-alert
+              type="warning"
+              variant="tonal"
+              density="compact"
+              border="start"
+              icon="mdi-alert-circle-outline"
+            >
+              Dessinez une géométrie valide ({{ geometryTypeLabel.toLowerCase() }}) avant
+              d'enregistrer.
             </v-alert>
           </div>
         </div>
@@ -163,7 +170,7 @@
         </div>
 
         <div class="geometry-status" :class="geometryValidity.isValid ? 'is-set' : 'is-missing'">
-          {{ geometryValidity.isValid ? 'Géométrie valide' : 'Géométrie à dessiner' }}
+          {{ geometryValidity.isValid ? "Géométrie valide" : "Géométrie à dessiner" }}
         </div>
 
         <QuartierGeometryEditorOl
@@ -207,7 +214,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "../../../config";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
 import { usePermissions } from "../../composables/usePermissions";
@@ -256,7 +263,9 @@ const geometryTypeOptions = [
 ];
 
 const geometryTypeLabel = computed(() => {
-  return geometryTypeOptions.find((item) => item.value === geometryType.value)?.label || "Géométrie";
+  return (
+    geometryTypeOptions.find((item) => item.value === geometryType.value)?.label || "Géométrie"
+  );
 });
 
 const submitted = ref(false);
@@ -318,7 +327,9 @@ const toFeatureCollection = (payload) => {
   if (payload.geometry) {
     return {
       type: "FeatureCollection",
-      features: [{ type: "Feature", geometry: payload.geometry, properties: payload.properties || payload }],
+      features: [
+        { type: "Feature", geometry: payload.geometry, properties: payload.properties || payload },
+      ],
     };
   }
   return null;
@@ -326,11 +337,11 @@ const toFeatureCollection = (payload) => {
 
 const contextSituationId = computed(() => {
   return normalizeFkId(
-    props.contextIds?.idSituation
-      ?? props.initialForm?.context_id_situation
-      ?? props.initialForm?.id_situation
-      ?? props.initialForm?.situation_exploitation
-      ?? props.initialForm?.contextIds?.idSituation,
+    props.contextIds?.idSituation ??
+      props.initialForm?.context_id_situation ??
+      props.initialForm?.id_situation ??
+      props.initialForm?.situation_exploitation ??
+      props.initialForm?.contextIds?.idSituation,
     ["id_situation", "id"]
   );
 });
@@ -448,10 +459,14 @@ const fetchContextFromSituation = async (situationId) => {
     return;
   }
   try {
-    const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/situationExploitation/${situationId}/`);
+    const res = await auth.axiosInstance.get(
+      `${config.API_BASE_URL}/api/situationExploitation/${situationId}/`
+    );
     const upId = res.data?.unite_pastorale;
     if (upId) {
-      const upRes = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/${upId}/`);
+      const upRes = await auth.axiosInstance.get(
+        `${config.API_BASE_URL}/api/unitePastorale/${upId}/`
+      );
       upContextGeoData.value = toFeatureCollection(upRes.data);
     } else {
       upContextGeoData.value = null;
@@ -502,12 +517,14 @@ watch(
 
     form.date_evenement = src.date_evenement ?? "";
     const fullName = [mainStore.firstName, mainStore.lastName].filter(Boolean).join(" ");
-    form.observateur = src.observateur || (props.mode === "add" ? (fullName || mainStore.username || "") : "");
+    form.observateur =
+      src.observateur || (props.mode === "add" ? fullName || mainStore.username || "" : "");
     form.date_observation = src.date_observation ?? "";
     form.source = src.source ?? "";
     form.description = src.description ?? "";
     form.type_evenement = normalizeFkId(src.type_evenement, ["id_type_evenement", "id"]);
-    form.situation = normalizeFkId(src.situation, ["id_situation", "id"]) || contextSituationId.value || null;
+    form.situation =
+      normalizeFkId(src.situation, ["id_situation", "id"]) || contextSituationId.value || null;
     form.geometry = base.geometry ?? src.geometry ?? null;
     geometryType.value = form.geometry?.type || geometryType.value;
   },
@@ -599,7 +616,9 @@ onMounted(async () => {
   border-radius: 8px;
   padding: 0.75rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .layout-card:hover {

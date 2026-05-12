@@ -13,13 +13,13 @@
 </template>
 
 <script setup>
-import CrudListPage from '../../components/crud/CrudListPage.vue';
+import CrudListPage from "../../components/crud/CrudListPage.vue";
 
 const columns = [
-  { field: "date_evenement", label: "Date",        sortable: true },
-  { field: "description",    label: "Description", sortable: false },
-  { field: "observateur",    label: "Observateur", sortable: true },
+  { field: "date_evenement", label: "Date", sortable: true },
+  { field: "description", label: "Description", sortable: false },
+  { field: "observateur", label: "Observateur", sortable: true },
 ];
 
-const searchFields = ['date_evenement', 'description', 'observateur'];
+const searchFields = ["date_evenement", "description", "observateur"];
 </script>

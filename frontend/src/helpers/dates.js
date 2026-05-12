@@ -17,7 +17,8 @@ export function toFrDate(value) {
   if (isoDateMatch) return `${isoDateMatch[3]}/${isoDateMatch[2]}/${isoDateMatch[1]}`;
 
   const isoDateTimeMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})T/);
-  if (isoDateTimeMatch) return `${isoDateTimeMatch[3]}/${isoDateTimeMatch[2]}/${isoDateTimeMatch[1]}`;
+  if (isoDateTimeMatch)
+    return `${isoDateTimeMatch[3]}/${isoDateTimeMatch[2]}/${isoDateTimeMatch[1]}`;
 
   return raw;
 }

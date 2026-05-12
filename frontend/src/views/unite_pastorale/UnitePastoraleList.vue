@@ -45,7 +45,7 @@ import OpenLayersGeoJsonMap from "../../components/map/OpenLayersGeoJsonMap.vue"
 import CrudListPage from "../../components/crud/CrudListPage.vue";
 
 const columns = [
-  { field: "nom_up",        label: "UP",    sortable: true },
+  { field: "nom_up", label: "UP", sortable: true },
   { field: "annee_version", label: "Année", sortable: true },
 ];
 
@@ -79,8 +79,8 @@ const selectedId = ref(null);
 
 const mapFeatureCollection = computed(() => {
   const features = mapItems.value
-    .filter(item => item.geometry)
-    .map(item => {
+    .filter((item) => item.geometry)
+    .map((item) => {
       const { geometry, id, ...properties } = toRaw(item);
       return { type: "Feature", id, geometry: toRaw(geometry), properties };
     });
@@ -109,12 +109,16 @@ const openLayersLayers = computed(() => [
   },
 ]);
 
-const onFilteredItems = (items) => { mapItems.value = items; };
+const onFilteredItems = (items) => {
+  mapItems.value = items;
+};
 const onMapFeatureClick = ({ id }) => {
   selectedId.value = selectedId.value === id ? null : id;
   if (selectedId.value != null) listRef.value?.scrollToId(id);
 };
-const onRowHover = (item) => { hoveredId.value = item?.id ?? null; };
+const onRowHover = (item) => {
+  hoveredId.value = item?.id ?? null;
+};
 const onRowClick = (item) => {
   const id = item?.id ?? null;
   selectedId.value = selectedId.value === id ? null : id;
@@ -126,7 +130,7 @@ const onRowClick = (item) => {
 
 // ── Popup carte → navigation ──────────────────────────────────────────────────
 const onMapPopupItem = (payload) => {
-  const id     = payload?.id;
+  const id = payload?.id;
   const action = payload?.action || "view";
   if (!id) return;
 

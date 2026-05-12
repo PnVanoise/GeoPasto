@@ -1,9 +1,9 @@
 import { ref } from "vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "../../config";
 import { useMainStore } from "../store";
 import { usePermissions } from "./usePermissions";
-import { useNotification } from "./useNotification"
+import { useNotification } from "./useNotification";
 
 const { notify } = useNotification();
 
@@ -30,23 +30,39 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
         ...(page ? { page } : {}),
       };
       const params = Object.keys(mergedParams).length > 0 ? { params: mergedParams } : {};
-      const response = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/${apiRouteName}/`, params);
+      const response = await auth.axiosInstance.get(
+        `${config.API_BASE_URL}/api/${apiRouteName}/`,
+        params
+      );
       const data = response.data;
       // Support DRF paginated responses: { count, next, previous, results }
       let payload = data;
       if (data && Array.isArray(data.results)) {
-        pagination.value = { count: data.count ?? null, next: data.next ?? null, previous: data.previous ?? null, page_size: data.page_size ?? null };
+        pagination.value = {
+          count: data.count ?? null,
+          next: data.next ?? null,
+          previous: data.previous ?? null,
+          page_size: data.page_size ?? null,
+        };
         payload = data.results;
       } else {
         pagination.value = { count: null, next: null, previous: null, page_size: null };
       }
 
       // Si l'API renvoie un FeatureCollection (GeoJSON), le convertir en tableau d'items
-      if (payload && payload.type === 'FeatureCollection' && Array.isArray(payload.features)) {
-        items.value = payload.features.map((f) => ({ ...(f.properties || {}), id: f.id || f.properties?.id, geometry: f.geometry }));
+      if (payload && payload.type === "FeatureCollection" && Array.isArray(payload.features)) {
+        items.value = payload.features.map((f) => ({
+          ...(f.properties || {}),
+          id: f.id || f.properties?.id,
+          geometry: f.geometry,
+        }));
       } else if (geojsonMode && Array.isArray(payload)) {
         // Certains endpoints peuvent renvoyer un tableau de Feature
-        items.value = payload.map((f) => (f && f.type === 'Feature') ? ({ ...(f.properties || {}), id: f.id || f.properties?.id, geometry: f.geometry }) : f);
+        items.value = payload.map((f) =>
+          f && f.type === "Feature"
+            ? { ...(f.properties || {}), id: f.id || f.properties?.id, geometry: f.geometry }
+            : f
+        );
       } else if (Array.isArray(payload)) {
         items.value = payload;
       } else {
@@ -64,17 +80,19 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
   const resolveItemId = (payload) => {
     if (!payload) return null;
     return (
-      payload[idField]
-      ?? payload.id
-      ?? payload.properties?.[idField]
-      ?? payload.properties?.id
-      ?? null
+      payload[idField] ??
+      payload.id ??
+      payload.properties?.[idField] ??
+      payload.properties?.id ??
+      null
     );
   };
 
   const getNextId = async () => {
     try {
-      const response = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/${apiRouteName}/getNextId/`);
+      const response = await auth.axiosInstance.get(
+        `${config.API_BASE_URL}/api/${apiRouteName}/getNextId/`
+      );
       return response.data.next_id;
     } catch (err) {
       console.error("Erreur next ID", err);
@@ -112,8 +130,8 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     await auth.axiosInstance.post(`${config.API_BASE_URL}/api/${apiRouteName}/`, sendBody);
     notify({
       message: "Créé avec succès !",
-      type: "success"
-    })
+      type: "success",
+    });
     await fetchAll(null, extraQueryParams);
   };
 
@@ -146,31 +164,31 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
   };
 
   const deleteItem = async (payload, extraQueryParams = null) => {
-  const id = resolveItemId(payload);
-  if (!hasValidId(id)) throw new Error(`ID introuvable pour ${idField}`);
-  try {
-    await auth.axiosInstance.delete(`${config.API_BASE_URL}/api/${apiRouteName}/${id}/`);
-    mainStore.setSuccessMessage("Supprimé !");
-    await fetchAll(null, extraQueryParams);
-  } catch (err) {
-    // Extraire message back-end si possible
-    console.log('err :', err);
-    const backendMessage =
-      err?.response?.data?.detail ||
-      err?.response?.data?.message ||
-      (typeof err?.response?.data === "string" ? err.response.data : null) ||
-      err?.message ||
-      "Erreur lors de la suppression.";
-    notify({
-      message: backendMessage,
-      type: "error"
-    });
-    // mainStore.setErrorMessage(backendMessage);
-    // console.error("Erreur suppression:", err);
-    // alert(backendMessage); // Optionnel : afficher une alerte immédiate
-    throw err; // optionnel : laisser remonter si l'appelant veut réagir
-  }
-};
+    const id = resolveItemId(payload);
+    if (!hasValidId(id)) throw new Error(`ID introuvable pour ${idField}`);
+    try {
+      await auth.axiosInstance.delete(`${config.API_BASE_URL}/api/${apiRouteName}/${id}/`);
+      mainStore.setSuccessMessage("Supprimé !");
+      await fetchAll(null, extraQueryParams);
+    } catch (err) {
+      // Extraire message back-end si possible
+      console.log("err :", err);
+      const backendMessage =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        (typeof err?.response?.data === "string" ? err.response.data : null) ||
+        err?.message ||
+        "Erreur lors de la suppression.";
+      notify({
+        message: backendMessage,
+        type: "error",
+      });
+      // mainStore.setErrorMessage(backendMessage);
+      // console.error("Erreur suppression:", err);
+      // alert(backendMessage); // Optionnel : afficher une alerte immédiate
+      throw err; // optionnel : laisser remonter si l'appelant veut réagir
+    }
+  };
 
   // Open add modal, optionally with an initial item to prefill the form
   const openAdd = async (initialItem = null) => {

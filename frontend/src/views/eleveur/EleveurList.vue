@@ -12,12 +12,12 @@
 </template>
 
 <script setup>
-import CrudListPage from '../../components/crud/CrudListPage.vue';
+import CrudListPage from "../../components/crud/CrudListPage.vue";
 
 const columns = [
-  { field: "nom_eleveur",    label: "Nom",    sortable: true },
+  { field: "nom_eleveur", label: "Nom", sortable: true },
   { field: "prenom_eleveur", label: "Prénom", sortable: true },
 ];
 
-const searchFields = ['nom_eleveur', 'prenom_eleveur'];
+const searchFields = ["nom_eleveur", "prenom_eleveur"];
 </script>

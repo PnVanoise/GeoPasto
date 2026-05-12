@@ -19,7 +19,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
 import CheptelForm2 from "../../features/cheptel/CheptelForm2.vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "@/../config";
 
 const route = useRoute();
@@ -51,7 +51,6 @@ onMounted(async () => {
     }
   }
 });
-
 </script>
 
 <style scoped>

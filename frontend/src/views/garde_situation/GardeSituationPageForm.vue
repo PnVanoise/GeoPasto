@@ -19,7 +19,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
 import GardeSituationForm2 from "../../features/garde_situation/GardeSituationForm2.vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "@/../config";
 
 const route = useRoute();
@@ -28,7 +28,7 @@ const router = useRouter();
 const crud = useCrudPage("gardesituation", "gardeSituation", "id_garde_situation");
 const { pageMode, handleSubmit } = crud;
 
-const itemData  = ref({});
+const itemData = ref({});
 const isLoading = ref(!!route.params.id);
 
 onMounted(async () => {
@@ -50,6 +50,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.form-page { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
-.loading-state { display: flex; justify-content: center; padding: 4rem 0; }
+.form-page {
+  max-width: 860px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0;
+}
 </style>

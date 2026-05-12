@@ -19,21 +19,23 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
 import EquipementAlpageForm2 from "../../features/equipement/EquipementAlpageForm2.vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "@/../config";
 
 const route = useRoute();
 const router = useRouter();
 
-const crud = useCrud("equipementalpage", "equipementAlpage", "id_equipement_alpage", { geojson: true });
+const crud = useCrud("equipementalpage", "equipementAlpage", "id_equipement_alpage", {
+  geojson: true,
+});
 
 const pageMode = computed(() => {
-  if (route.name === "equipementalpage-add")  return "add";
+  if (route.name === "equipementalpage-add") return "add";
   if (route.name === "equipementalpage-edit") return "change";
   return "view";
 });
 
-const itemData  = ref({});
+const itemData = ref({});
 const isLoading = ref(!!route.params.id);
 
 onMounted(async () => {

@@ -77,9 +77,10 @@ const displayedData = computed(() => {
 });
 
 function nestedValue(obj, path) {
-  return String(path || "").split('.').reduce((o, key) => (o ? o[key] : null), obj);
+  return String(path || "")
+    .split(".")
+    .reduce((o, key) => (o ? o[key] : null), obj);
 }
-
 
 function isBooleanCell(entry, col) {
   return typeof nestedValue(entry, col.field) === "boolean";
@@ -187,16 +188,18 @@ function performDelete() {
   <div v-if="props.showActions" class="grid-actions">
     <v-btn
       class="ma-2 compact"
-        color="success"
-        icon="mdi-file"
-        @click="exportAll"
-        v-tooltip="'Export csv de toutes les données'"></v-btn>
+      color="success"
+      icon="mdi-file"
+      @click="exportAll"
+      v-tooltip="'Export csv de toutes les données'"
+    ></v-btn>
     <v-btn
       class="ma-2 compact"
-        color="success"
-        icon="mdi-file-outline"
-        @click="exportVisible"
-        v-tooltip="'Export csv des données visibles'"></v-btn>
+      color="success"
+      icon="mdi-file-outline"
+      @click="exportVisible"
+      v-tooltip="'Export csv des données visibles'"
+    ></v-btn>
     <!-- <button type="button" class="export-btn" @click="exportAll">Exporter — Toutes les données</button>
     <button type="button" class="export-btn" @click="exportVisible">Exporter — Données visibles</button> -->
   </div>
@@ -217,24 +220,36 @@ function performDelete() {
             @keydown.space.prevent="toggleSort(col)"
             role="button"
             tabindex="0"
-            :aria-sort="sortField === col.field ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+            :aria-sort="
+              sortField === col.field
+                ? sortDirection === 'asc'
+                  ? 'ascending'
+                  : 'descending'
+                : 'none'
+            "
             :class="{ sortable: col.sortable, active: sortField === col.field }"
             :style="{ backgroundColor: bgColor }"
           >
             {{ col.label }}
-            <span class="arrow" :class="sortField === col.field ? (sortDirection === 'asc' ? 'asc' : 'dsc') : ''"></span>
+            <span
+              class="arrow"
+              :class="sortField === col.field ? (sortDirection === 'asc' ? 'asc' : 'dsc') : ''"
+            ></span>
           </th>
           <th class="actions-col" :style="{ backgroundColor: bgColor }">Actions</th>
         </tr>
       </thead>
       <tbody ref="tbodyEl">
-        <tr v-for="entry in displayedData" :key="getItemId(entry)"
-            class="data-row"
-            :data-row-id="getItemId(entry)"
-            :class="{ 'row-selected': selectedId != null && getItemId(entry) == selectedId }"
-            @mouseenter="$emit('row-hover', entry)"
-            @mouseleave="$emit('row-hover', null)"
-            @click="$emit('row-click', entry)">
+        <tr
+          v-for="entry in displayedData"
+          :key="getItemId(entry)"
+          class="data-row"
+          :data-row-id="getItemId(entry)"
+          :class="{ 'row-selected': selectedId != null && getItemId(entry) == selectedId }"
+          @mouseenter="$emit('row-hover', entry)"
+          @mouseleave="$emit('row-hover', null)"
+          @click="$emit('row-click', entry)"
+        >
           <td v-for="col in columns" :key="col.field">
             <template v-if="isBooleanCell(entry, col)">
               <input type="checkbox" :checked="nestedValue(entry, col.field)" disabled />
@@ -368,7 +383,7 @@ function performDelete() {
 .data-row.row-selected td {
   background-color: #fef2f2;
 }
-  /* box-shadow: inset 3px 0 0 #DC2626;
+/* box-shadow: inset 3px 0 0 #DC2626;
 } */
 
 .table-with-fixed-header td.actions-col {
@@ -391,12 +406,12 @@ function performDelete() {
 
 th.active {
   color: #fff;
-  background-color: rgba(0,0,0,0.08);
+  background-color: rgba(0, 0, 0, 0.08);
   font-weight: 700;
 }
 
 .table-with-fixed-header th:focus {
-  outline: 2px solid rgba(66,185,131,0.6);
+  outline: 2px solid rgba(66, 185, 131, 0.6);
   outline-offset: 2px;
 }
 
@@ -421,8 +436,11 @@ th.active {
 
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0,0,0,0.5);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -67,26 +67,23 @@ const buildStyle = () => {
     const isEvent = layerName === "evenement" || layerName === "evenement_marker";
     const isEventMarker = layerName === "evenement_marker";
     const isSelected = props.selectedId != null && feature.getId() == props.selectedId;
-    const isHovered  = !isSelected && (
-      (props.highlightedId != null && feature.getId() == props.highlightedId) ||
-      (mapHoveredId        != null && feature.getId() == mapHoveredId)
-    );
+    const isHovered =
+      !isSelected &&
+      ((props.highlightedId != null && feature.getId() == props.highlightedId) ||
+        (mapHoveredId != null && feature.getId() == mapHoveredId));
 
-    const baseStrokeColor = layerStyle.strokeColor || (isUpOutline
-      ? "#dc2626"
-      : isEvent
-        ? "#dc2626"
-        : "#008000");
+    const baseStrokeColor =
+      layerStyle.strokeColor || (isUpOutline ? "#dc2626" : isEvent ? "#dc2626" : "#008000");
     const strokeColor = isSelected ? "#DC2626" : isHovered ? "#F97316" : baseStrokeColor;
 
     const baseStrokeWidth = layerStyle.strokeWidth ?? 2;
-    const strokeWidth = isSelected ? baseStrokeWidth + 4 : isHovered ? baseStrokeWidth + 2 : baseStrokeWidth;
+    const strokeWidth = isSelected
+      ? baseStrokeWidth + 4
+      : isHovered
+        ? baseStrokeWidth + 2
+        : baseStrokeWidth;
 
-    const baseFillOpacity = layerStyle.fillOpacity ?? (isUpOutline
-      ? 0
-      : isEvent
-        ? 0.15
-        : 0.3);
+    const baseFillOpacity = layerStyle.fillOpacity ?? (isUpOutline ? 0 : isEvent ? 0.15 : 0.3);
     const fillOpacity = isSelected
       ? Math.min(baseFillOpacity + 0.3, 0.75)
       : isHovered
@@ -102,7 +99,9 @@ const buildStyle = () => {
 
     const lineDash = Array.isArray(layerStyle.lineDash)
       ? layerStyle.lineDash
-      : (isUpOutline ? [8, 6] : undefined);
+      : isUpOutline
+        ? [8, 6]
+        : undefined;
 
     const zIndex = layerStyle.zIndex ?? (isUpOutline ? 12 : isEventMarker ? 20 : isEvent ? 15 : 10);
 
@@ -169,7 +168,10 @@ const findFeatureById = (id) => {
 
 const fitToData = () => {
   if (!map || !dataVectorLayers.size) return;
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
   for (const vl of dataVectorLayers.values()) {
     const ext = vl.getSource().getExtent();
     if (ext && ext.every((v) => Number.isFinite(v))) {
@@ -180,7 +182,9 @@ const fitToData = () => {
     }
   }
   if ([minX, minY, maxX, maxY].every((v) => Number.isFinite(v))) {
-    map.getView().fit([minX, minY, maxX, maxY], { duration: 300, padding: [30, 30, 30, 30], maxZoom: 16 });
+    map
+      .getView()
+      .fit([minX, minY, maxX, maxY], { duration: 300, padding: [30, 30, 30, 30], maxZoom: 16 });
   }
 };
 
@@ -292,11 +296,18 @@ const buildSwatchSvg = (style) => {
 
   // polygone / contour
   const cleaned = String(color).replace(/^#/, "");
-  const validHex = cleaned.length === 3 ? cleaned.split("").map((ch) => ch + ch).join("") : cleaned;
+  const validHex =
+    cleaned.length === 3
+      ? cleaned
+          .split("")
+          .map((ch) => ch + ch)
+          .join("")
+      : cleaned;
   const num = Number.parseInt(validHex, 16);
-  const fill = fillOpacity === 0
-    ? "none"
-    : `rgba(${(num >> 16) & 255},${(num >> 8) & 255},${num & 255},${fillOpacity})`;
+  const fill =
+    fillOpacity === 0
+      ? "none"
+      : `rgba(${(num >> 16) & 255},${(num >> 8) & 255},${num & 255},${fillOpacity})`;
   const dash = hasDash ? ` stroke-dasharray="5 3"` : "";
   return `<svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" fill="${fill}" stroke="${esc(color)}" stroke-width="2"${dash}/></svg>`;
 };
@@ -313,12 +324,9 @@ const updateLegend = () => {
       return !vl || vl.getVisible();
     })
     .map((layerDef) => {
-      const count = layerDef.showInSwitcher !== false
-        ? layerDef.data?.features?.length ?? 0
-        : null;
-      const label = count != null
-        ? `${layerDef.title} (${count})`
-        : layerDef.title;
+      const count =
+        layerDef.showInSwitcher !== false ? (layerDef.data?.features?.length ?? 0) : null;
+      const label = count != null ? `${layerDef.title} (${count})` : layerDef.title;
       return `<div class="ol-legend-item">
         <span class="ol-legend-swatch">${buildSwatchSvg(layerDef.style || {})}</span>
         <span class="ol-legend-label">${label.replaceAll("<", "&lt;")}</span>
@@ -353,12 +361,24 @@ const openPopupForFeature = (feature, coordinate) => {
   const href = id && popupRoute ? `${popupRoute}/${id}` : "";
 
   if (popupContentType === "eventCompact") {
-    popupContent.value.innerHTML = buildEventPopupHtml(properties, label, href, id, objectTypeLabel);
+    popupContent.value.innerHTML = buildEventPopupHtml(
+      properties,
+      label,
+      href,
+      id,
+      objectTypeLabel
+    );
     popupOverlay.setPosition(coordinate);
     return;
   }
 
-  popupContent.value.innerHTML = buildGenericPopupHtml(label, href, id, objectTypeLabel, popupConfig);
+  popupContent.value.innerHTML = buildGenericPopupHtml(
+    label,
+    href,
+    id,
+    objectTypeLabel,
+    popupConfig
+  );
   popupOverlay.setPosition(coordinate);
 };
 
@@ -382,9 +402,7 @@ const buildGenericPopupHtml = (label, href, id, objectTypeLabel, popupConfig = {
   }
 
   const popupEditHref = href;
-  const popupViewHref = popupConfig.viewRoute
-    ? `${popupConfig.viewRoute}/${id}`
-    : popupEditHref;
+  const popupViewHref = popupConfig.viewRoute ? `${popupConfig.viewRoute}/${id}` : popupEditHref;
   const canEdit = popupConfig.canEdit !== false;
 
   return `
@@ -400,7 +418,9 @@ const buildGenericPopupHtml = (label, href, id, objectTypeLabel, popupConfig = {
         title="Voir"
         aria-label="Voir"
       >voir</a>
-      ${canEdit ? `
+      ${
+        canEdit
+          ? `
       <a
         href="${popupEditHref}"
         class="popup-action-link popup-action-link--edit"
@@ -410,19 +430,25 @@ const buildGenericPopupHtml = (label, href, id, objectTypeLabel, popupConfig = {
         title="Éditer"
         aria-label="Éditer"
       >éditer</a>
-      ` : ""}
+      `
+          : ""
+      }
     </div>
   `;
 };
 
 const buildEventPopupHtml = (properties, label, href, id, objectTypeLabel) => {
   const safeType = escapeHtml(String(objectTypeLabel || "Événement"));
-  const dateEvenement = properties.date_evenement ? escapeHtml(String(properties.date_evenement)) : "date inconnue";
-  const observateur = properties.observateur ? escapeHtml(String(properties.observateur)) : "Observateur inconnu";
+  const dateEvenement = properties.date_evenement
+    ? escapeHtml(String(properties.date_evenement))
+    : "date inconnue";
+  const observateur = properties.observateur
+    ? escapeHtml(String(properties.observateur))
+    : "Observateur inconnu";
   const typeEvenementRaw =
-    properties.type_evenement_label
-    || properties.type_evenement_detail?.description
-    || (properties.type_evenement != null ? `Type ${properties.type_evenement}` : null);
+    properties.type_evenement_label ||
+    properties.type_evenement_detail?.description ||
+    (properties.type_evenement != null ? `Type ${properties.type_evenement}` : null);
   const typeEvenement = typeEvenementRaw ? escapeHtml(String(typeEvenementRaw)) : "Type inconnu";
   const description = properties.description ? escapeHtml(String(properties.description)) : "-";
 
@@ -598,7 +624,10 @@ const initMap = () => {
     if (pickedFeature) {
       zoomToFeature(pickedFeature);
       openPopupForFeature(pickedFeature, event.coordinate);
-      emit("feature-click", { id: pickedFeature.getId(), layer: pickedFeature.get("__layer") ?? null });
+      emit("feature-click", {
+        id: pickedFeature.getId(),
+        layer: pickedFeature.get("__layer") ?? null,
+      });
     } else {
       closePopup();
       emit("feature-click", { id: null, layer: null });
@@ -610,9 +639,25 @@ const initMap = () => {
 
 // ── Watchers ──────────────────────────────────────────────────────────────────
 
-watch(() => props.layers, () => { syncDataLayers(); }, { deep: true });
-watch(() => props.highlightedId, () => { notifyAllDataLayers(); });
-watch(() => props.selectedId, () => { notifyAllDataLayers(); });
+watch(
+  () => props.layers,
+  () => {
+    syncDataLayers();
+  },
+  { deep: true }
+);
+watch(
+  () => props.highlightedId,
+  () => {
+    notifyAllDataLayers();
+  }
+);
+watch(
+  () => props.selectedId,
+  () => {
+    notifyAllDataLayers();
+  }
+);
 
 // ── Expose ────────────────────────────────────────────────────────────────────
 
@@ -665,9 +710,13 @@ onBeforeUnmount(() => {
 
 function hexToRgba(hex, alpha) {
   const cleaned = String(hex || "").replace(/^#/, "");
-  const validHex = cleaned.length === 3
-    ? cleaned.split("").map((ch) => ch + ch).join("")
-    : cleaned;
+  const validHex =
+    cleaned.length === 3
+      ? cleaned
+          .split("")
+          .map((ch) => ch + ch)
+          .join("")
+      : cleaned;
   const numeric = Number.parseInt(validHex, 16);
   const r = (numeric >> 16) & 255;
   const g = (numeric >> 8) & 255;

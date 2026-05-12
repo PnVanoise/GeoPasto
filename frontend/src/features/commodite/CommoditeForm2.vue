@@ -3,7 +3,7 @@
   <form @submit.prevent="submitForm">
     <div class="w3-row form-ligne">
       <div class="form-cell">
-        <v-text-field 
+        <v-text-field
           id="description"
           v-model="form.description"
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
@@ -14,10 +14,23 @@
         />
       </div>
     </div>
-    
+
     <div class="form-actions">
-      <v-btn density="comfortable" color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn density="comfortable" v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">{{ btTitle }}</v-btn>
+      <v-btn
+        density="comfortable"
+        color="info"
+        @click="closeModal"
+        prepend-icon="mdi-arrow-left-circle"
+        >Retour</v-btn
+      >
+      <v-btn
+        density="comfortable"
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+        >{{ btTitle }}</v-btn
+      >
     </div>
   </form>
 </template>
@@ -25,7 +38,7 @@
 <script setup>
 import { reactive, watch, computed } from "vue";
 import config from "../../../config";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 
 const props = defineProps({
@@ -60,7 +73,7 @@ watch(
   () => props.initialForm,
   (newVal) => {
     if (newVal) {
-      Object.assign(form, newVal); 
+      Object.assign(form, newVal);
     }
   },
   { immediate: true }
@@ -69,9 +82,10 @@ watch(
 // Submit
 const submitForm = () => {
   if (props.onSubmit) {
-    props.onSubmit(form)
+    props
+      .onSubmit(form)
       .then(() => console.log("Form submitted OK"))
-      .catch(err => console.error(err));
+      .catch((err) => console.error(err));
   }
 };
 
@@ -80,7 +94,6 @@ const closeModal = () => {
   props.onClose?.();
 };
 </script>
-
 
 <style scoped>
 .form-actions {
@@ -92,6 +105,6 @@ const closeModal = () => {
 }
 
 .disable-events {
-  pointer-events: none
+  pointer-events: none;
 }
 </style>

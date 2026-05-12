@@ -22,7 +22,7 @@ import { useCrud } from "./useCrud";
  *   const { pageMode, handleSubmit } = crud
  */
 export function useCrudPage(modelName, apiRouteName, idField = "id", options = {}) {
-  const route  = useRoute();
+  const route = useRoute();
   const router = useRouter();
 
   // Récupère tout useCrud intact
@@ -65,7 +65,7 @@ export function useCrudPage(modelName, apiRouteName, idField = "id", options = {
   // ── Mode page ─────────────────────────────────────────────────────────────
 
   const pageMode = computed(() => {
-    if (route.name === `${modelName}-add`)  return "add";
+    if (route.name === `${modelName}-add`) return "add";
     if (route.name === `${modelName}-edit`) return "change";
     return "view";
   });

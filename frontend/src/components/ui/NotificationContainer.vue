@@ -1,12 +1,7 @@
 <template>
   <teleport to="#toast-root">
     <div class="notification-container">
-      <div
-        v-for="n in notifications"
-        :key="n.id"
-        class="notification"
-        :class="n.type"
-      >
+      <div v-for="n in notifications" :key="n.id" class="notification" :class="n.type">
         <span>{{ n.message }}</span>
         <button @click="remove(n.id)">×</button>
       </div>
@@ -17,7 +12,7 @@
 <script setup>
 import { useNotification } from "../../composables/useNotification";
 
-const { notifications, remove } = useNotification()
+const { notifications, remove } = useNotification();
 
 console.log("NotificationContainer mounted, notifications:", notifications);
 </script>
@@ -40,7 +35,7 @@ console.log("NotificationContainer mounted, notifications:", notifications);
   border-radius: 6px;
   color: white;
   font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 
   display: flex;
   justify-content: space-between;

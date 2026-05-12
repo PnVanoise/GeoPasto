@@ -10,11 +10,11 @@
 </template>
 
 <script setup>
-import { computed, unref } from 'vue'
+import { computed, unref } from "vue";
 
 const props = defineProps({
   show: [Boolean, Object],
-  closeOnOverlay: { type: Boolean, default: false }
+  closeOnOverlay: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:show", "close"]);
 
@@ -36,8 +36,11 @@ const handleOverlayClick = () => {
 <style scoped>
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;

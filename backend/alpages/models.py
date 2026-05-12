@@ -174,7 +174,6 @@ class MesureDePlan(AuditFieldsMixin, models.Model):
     commentaire = models.CharField(max_length=50, null=True, blank=True)
     debut_periode = models.DateField(null=True, blank=True)
     fin_periode = models.DateField(null=True, blank=True)
-    # geometry = models.TextField(null=True, blank=True)
     type_mesure = models.ForeignKey('alpages.TypeDeMesure', on_delete=models.PROTECT, blank=True, null=True, related_name='mesures_de_plan')
     plan_suivi = models.ForeignKey('alpages.PlanDeSuivi', on_delete=models.PROTECT, blank=True, null=True, related_name='mesures_de_plan')
 
@@ -383,7 +382,7 @@ class Eleveur(AuditFieldsMixin, models.Model):
     Eleveur
     """
     
-    id_eleveur = models.AutoField(primary_key=True)  # Migration vers AutoField pour id_eleveur, dlg 10/2/26
+    id_eleveur = models.AutoField(primary_key=True)
     nom_eleveur = models.CharField(max_length=50, null=False, blank=False)
     prenom_eleveur = models.CharField(max_length=50, null=True, blank=True)
     tel_eleveur = models.CharField(max_length=50, null=True, blank=True)
@@ -419,8 +418,7 @@ class Exploitant(AuditFieldsMixin, models.Model):
     Exploitant
     """
     
-    # id_exploitant = models.BigIntegerField(primary_key=True)
-    id_exploitant = models.AutoField(primary_key=True)  # Migration vers AutoField pour id_exploitant, dlg 10/2/26
+    id_exploitant = models.AutoField(primary_key=True)
     nom_exploitant = models.CharField(max_length=50, null=False, blank=False)
     type_exploitant = models.ForeignKey('alpages.TypeDExploitant', on_delete=models.PROTECT, blank=True, null=True, related_name='exploitants')
     president = models.ForeignKey('alpages.Eleveur', on_delete=models.PROTECT, blank=True, null=True, related_name='exploitants')

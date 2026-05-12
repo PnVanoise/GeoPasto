@@ -15,11 +15,11 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.test import TestCase
 
 from alpages.models import (
-    UnitePastorale, ProprietaireFoncier, QuartierPasto,
+    UnitePastorale, QuartierPasto,
     TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan,
     TypeConvention, SituationDExploitation, Exploiter,
-    Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV,
-    Logement, Commodite,
+    Eleveur, Exploitant, EtreCompose, SubventionPNV,
+    Commodite,
     AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe,
     Berger, GardeSituation,
     Production, CategoriePension, Espece, Race, CategorieAnimaux,

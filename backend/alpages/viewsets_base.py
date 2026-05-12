@@ -3,8 +3,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from django.utils import timezone
-from django.db.models.deletion import ProtectedError
-from django.db.utils import IntegrityError
 
 import logging
 

@@ -8,8 +8,6 @@ from django.contrib.auth import get_user_model
 
 from alpages.models import (
     SituationDExploitation,
-    Commodite,
-    AbriDUrgence,
     UnitePastorale,
     QuartierPasto,
     Cheptel,

@@ -613,8 +613,6 @@ class EquipementExploitantViewset(BaseModelViewSet):
             equipement.save(update_fields=['beneficier_de'])
 
 
-###########
-# dlg le 10/2/26
 class CheptelViewset(BaseModelViewSet):
     serializer_class = CheptelSerializer
 
@@ -661,9 +659,6 @@ class CategorieAnimauxViewset(BaseModelViewSet):
     def get_queryset(self):
         queryset = CategorieAnimaux.objects.all().order_by('id_categorie_animaux')
         return queryset
-    
-# dlg le 10/2/26
-###########
 
 
 class ProprietaireUnitePastoraleViewset(BaseModelViewSet):
@@ -685,15 +680,7 @@ class QuartierPastoViewset(BaseModelViewSet):
             queryset = queryset.filter(situation_exploitation_id=id_situation)
 
         return queryset
-        
-    # def get_queryset(self):
-    #     queryset = QuartierPasto.objects.all().order_by('unite_pastorale', 'code_quartier')
 
-    #     up_id = self.request.GET.get('up_id')
-    #     if up_id is not None:
-    #         queryset = queryset.filter(unite_pastorale=up_id)
-
-    #     return queryset
 
 class PlanDeSuiviViewset(BaseModelViewSet):
     serializer_class = PlanDeSuiviSerializer

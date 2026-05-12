@@ -159,12 +159,12 @@ if DATABASE_URL:
 if not DATABASES:
     DATABASES = {
         'default': {
-            'ENGINE': get_env('DATABASE_ENGINE', 'django.contrib.gis.db.backends.postgis'),
-            'NAME': get_env('DATABASE_NAME', 'geoagri'),
-            'HOST': get_env('DATABASE_HOST', '151.80.250.138'),
-            'PORT': str(get_env('DATABASE_PORT', '5432')),
-            'USER': get_env('DATABASE_USER', 'geoagri_dba'),
-            'PASSWORD': get_env('DATABASE_PASSWORD', 'Geoagri1234!'),
+            'ENGINE': get_env('DATABASE_ENGINE'),
+            'NAME': get_env('DATABASE_NAME'),
+            'HOST': get_env('DATABASE_HOST'),
+            'PORT': str(get_env('DATABASE_PORT')),
+            'USER': get_env('DATABASE_USER'),
+            'PASSWORD': get_env('DATABASE_PASSWORD'),
         }
     }
 

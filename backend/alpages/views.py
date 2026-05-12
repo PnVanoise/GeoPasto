@@ -304,7 +304,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
     def duplicate(self, request, pk=None):
         with transaction.atomic():
             source = (
-                SituationDExploitation.objects.select_for_update()
+                SituationDExploitation.objects.select_for_update(of=('self',))
                 .select_related('unite_pastorale', 'exploitant')
                 .filter(pk=pk)
                 .first()

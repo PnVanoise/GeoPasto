@@ -3,10 +3,27 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import F, Q, Sum
 
-from .choices_logement import LST_STATUT, LST_ACCES_FINAL, LST_PROPRIETE, LST_TYPE_LOGEMENT, LST_MULTIUSAGE, \
-                              LST_ACTIVITE_LAITIERE, LST_ETAT_BATIMENT, LST_ACCUEIL_PUBLIC, LST_SURFACE_LOGEMENT, \
-                              LST_WC, LST_ALIM_ELECTRIQUE, LST_ALIM_EAU, LST_ORIGINE_EAU, LST_QUALITE_EAU, \
-                              LST_DISPO_EAU, LST_ASSAINISSEMENT, LST_CHAUFFE_EAU, LST_OUI_NON, LST_OUI_NON_INC
+from .choices_logement import (
+    LST_STATUT,
+    LST_ACCES_FINAL,
+    LST_PROPRIETE,
+    LST_TYPE_LOGEMENT,
+    LST_MULTIUSAGE,
+    LST_ACTIVITE_LAITIERE,
+    LST_ETAT_BATIMENT,
+    LST_ACCUEIL_PUBLIC,
+    LST_SURFACE_LOGEMENT,
+    LST_WC,
+    LST_ALIM_ELECTRIQUE,
+    LST_ALIM_EAU,
+    LST_ORIGINE_EAU,
+    LST_QUALITE_EAU,
+    LST_DISPO_EAU,
+    LST_ASSAINISSEMENT,
+    LST_CHAUFFE_EAU,
+    LST_OUI_NON,
+    LST_OUI_NON_INC,
+)
 
 
 class AuditFieldsMixin(models.Model):
@@ -22,6 +39,7 @@ class AuditFieldsMixin(models.Model):
     class Meta:
         abstract = True
 
+
 # Bloc administratif (orange)
 class UnitePastorale(AuditFieldsMixin, models.Model):
     """
@@ -31,7 +49,7 @@ class UnitePastorale(AuditFieldsMixin, models.Model):
     id_unite_pastorale = models.BigAutoField(primary_key=True)
     code_up = models.CharField(max_length=50, null=False, blank=False)
     nom_up = models.CharField(max_length=50, null=False, blank=False)
-    annee_version = models. BigIntegerField(null=False, blank=False)
+    annee_version = models.BigIntegerField(null=False, blank=False)
     geometry = models.MultiPolygonField(srid=2154, null=False, blank=False)
     version_active = models.BooleanField(null=False, blank=False)
     secteur = models.CharField(max_length=50, null=True, blank=True)
@@ -42,7 +60,8 @@ class UnitePastorale(AuditFieldsMixin, models.Model):
 
     def __str__(self):
         return str(self.nom_up)
-    
+
+
 class ProprietaireFoncier(AuditFieldsMixin, models.Model):
     """
     Proprétaire foncier
@@ -51,26 +70,39 @@ class ProprietaireFoncier(AuditFieldsMixin, models.Model):
     id_proprietaire = models.BigAutoField(primary_key=True)
     nom_propr = models.CharField(max_length=50, null=False, blank=False)
     prenom_propr = models.CharField(max_length=50, null=True, blank=True)
-    tel_propr = models. CharField(max_length=30, null=True, blank=True)
+    tel_propr = models.CharField(max_length=30, null=True, blank=True)
     mail_propr = models.CharField(max_length=50, null=True, blank=True)
     adresse_propr = models.CharField(max_length=100, null=True, blank=True)
     commentaire = models.CharField(max_length=50, null=True, blank=True)
-    
+
     class Meta:
         verbose_name = "propriétaire foncier"
         verbose_name_plural = "propriétaires fonciers"
 
     def __str__(self):
         return str(self.nom_propr)
-    
+
+
 class ProprietaireUnitePastorale(AuditFieldsMixin, models.Model):
     """
     Association Propriétaire foncier / Unité pastorale
     """
 
-    id_proprietaire_up = models.BigAutoField(primary_key=True, db_column='id')
-    proprietaire = models.ForeignKey('alpages.ProprietaireFoncier', on_delete=models.PROTECT, blank=True, null=True, related_name='unites_pastorales_proprietaire')
-    unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.PROTECT, blank=True, null=True, related_name='proprietaires_unite_pastorale')
+    id_proprietaire_up = models.BigAutoField(primary_key=True, db_column="id")
+    proprietaire = models.ForeignKey(
+        "alpages.ProprietaireFoncier",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="unites_pastorales_proprietaire",
+    )
+    unite_pastorale = models.ForeignKey(
+        "alpages.UnitePastorale",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="proprietaires_unite_pastorale",
+    )
 
     class Meta:
         verbose_name = "propriétaire / unité pastorale"
@@ -78,7 +110,8 @@ class ProprietaireUnitePastorale(AuditFieldsMixin, models.Model):
 
     def __str__(self):
         return f"{self.proprietaire} est propriétaire de {self.unite_pastorale}"
-    
+
+
 class QuartierPasto(AuditFieldsMixin, models.Model):
     """
     Quartier d'alpage
@@ -90,11 +123,11 @@ class QuartierPasto(AuditFieldsMixin, models.Model):
     geometry = models.PolygonField(srid=2154, null=True, blank=True)
 
     situation_exploitation = models.ForeignKey(
-        'alpages.SituationDExploitation',
+        "alpages.SituationDExploitation",
         on_delete=models.PROTECT,
         blank=True,
         null=True,
-        related_name='quartiers'
+        related_name="quartiers",
     )
 
     class Meta:
@@ -102,14 +135,14 @@ class QuartierPasto(AuditFieldsMixin, models.Model):
         verbose_name_plural = "quartiers d'alpage"
         constraints = [
             models.UniqueConstraint(
-                fields=['situation_exploitation', 'code_quartier'],
-                name='uniq_code_quartier_par_situation',
+                fields=["situation_exploitation", "code_quartier"],
+                name="uniq_code_quartier_par_situation",
             ),
         ]
-    
+
     def __str__(self):
         return str(self.nom_quartier)
-    
+
 
 # Bloc plans de suivi (bleu)
 class TypeDeSuivi(AuditFieldsMixin, models.Model):
@@ -119,13 +152,14 @@ class TypeDeSuivi(AuditFieldsMixin, models.Model):
 
     id_type_suivi = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    
+
     class Meta:
         verbose_name = "type de suivi"
         verbose_name_plural = "types de suivi"
 
     def __str__(self):
         return str(self.description)
+
 
 class PlanDeSuivi(AuditFieldsMixin, models.Model):
     """
@@ -136,16 +170,29 @@ class PlanDeSuivi(AuditFieldsMixin, models.Model):
     description = models.CharField(max_length=50, null=False, blank=False)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
-    type_suivi = models.ForeignKey('alpages.TypeDeSuivi', on_delete=models.PROTECT, blank=True, null=True, related_name='plans_de_suivi')
-    unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.PROTECT, blank=True, null=True, related_name='plans_de_suivi')
-    
+    type_suivi = models.ForeignKey(
+        "alpages.TypeDeSuivi",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="plans_de_suivi",
+    )
+    unite_pastorale = models.ForeignKey(
+        "alpages.UnitePastorale",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="plans_de_suivi",
+    )
+
     class Meta:
         verbose_name = "plan de suivi"
         verbose_name_plural = "plans de suivi"
 
     def __str__(self):
         return str(self.description)
-    
+
+
 # Type_de_mesure
 class TypeDeMesure(AuditFieldsMixin, models.Model):
     """
@@ -174,8 +221,20 @@ class MesureDePlan(AuditFieldsMixin, models.Model):
     commentaire = models.CharField(max_length=50, null=True, blank=True)
     debut_periode = models.DateField(null=True, blank=True)
     fin_periode = models.DateField(null=True, blank=True)
-    type_mesure = models.ForeignKey('alpages.TypeDeMesure', on_delete=models.PROTECT, blank=True, null=True, related_name='mesures_de_plan')
-    plan_suivi = models.ForeignKey('alpages.PlanDeSuivi', on_delete=models.PROTECT, blank=True, null=True, related_name='mesures_de_plan')
+    type_mesure = models.ForeignKey(
+        "alpages.TypeDeMesure",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="mesures_de_plan",
+    )
+    plan_suivi = models.ForeignKey(
+        "alpages.PlanDeSuivi",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="mesures_de_plan",
+    )
 
     class Meta:
         verbose_name = "mesure de plan"
@@ -190,14 +249,14 @@ class TypeConvention(AuditFieldsMixin, models.Model):
     """
     Type de convention
     """
-    
+
     id_type_convention = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    
+
     class Meta:
         verbose_name = "type de convention"
         verbose_name_plural = "types de convention"
-    
+
     def __str__(self):
         return str(self.description)
 
@@ -206,10 +265,14 @@ class ConventionDExploitation(AuditFieldsMixin, models.Model):
     """
     Convention d'exploitation
     """
-    
+
     id_convention = models.BigAutoField(primary_key=True)
-    surface_location = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    surface_exploitable = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    surface_location = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True
+    )
+    surface_exploitable = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True
+    )
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
     effectif_bovin = models.IntegerField(null=True, blank=True)
@@ -219,29 +282,47 @@ class ConventionDExploitation(AuditFieldsMixin, models.Model):
     debut_periode_expl = models.DateField(null=True, blank=True)
     fin_periode_expl = models.DateField(null=True, blank=True)
     geometry = models.PolygonField(srid=2154, null=True, blank=True)
-    unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.PROTECT, blank=True, null=True, related_name='conventions')
-    exploitant = models.ForeignKey('alpages.Exploitant', on_delete=models.PROTECT, blank=True, null=True, related_name='conventions')
-    type_convention = models.ForeignKey('alpages.TypeConvention', on_delete=models.PROTECT, blank=True, null=True, related_name='conventions')
-    
+    unite_pastorale = models.ForeignKey(
+        "alpages.UnitePastorale",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="conventions",
+    )
+    exploitant = models.ForeignKey(
+        "alpages.Exploitant",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="conventions",
+    )
+    type_convention = models.ForeignKey(
+        "alpages.TypeConvention",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="conventions",
+    )
+
     class Meta:
         verbose_name = "convention d'exploitation"
         verbose_name_plural = "conventions d'exploitation"
         constraints = [
             models.CheckConstraint(
                 check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
-                name='chk_convention_dates_coherentes',
+                name="chk_convention_dates_coherentes",
             ),
         ]
 
     def __str__(self):
         return str(self.id_convention)
-    
+
 
 class SituationDExploitation(AuditFieldsMixin, models.Model):
     """
     Situation d'exploitation
     """
-    
+
     id_situation = models.BigAutoField(primary_key=True)
     annee = models.PositiveSmallIntegerField()
     nom_situation = models.CharField(max_length=150, null=False, blank=False)
@@ -250,59 +331,60 @@ class SituationDExploitation(AuditFieldsMixin, models.Model):
     date_fin = models.DateField(null=True, blank=True)
 
     unite_pastorale = models.ForeignKey(
-        'alpages.UnitePastorale',
+        "alpages.UnitePastorale",
         on_delete=models.PROTECT,
         blank=True,
         null=True,
-        related_name='situations'
+        related_name="situations",
     )
     exploitant = models.ForeignKey(
-        'alpages.Exploitant',
+        "alpages.Exploitant",
         on_delete=models.PROTECT,
         blank=True,
         null=True,
-        related_name='situations'
+        related_name="situations",
     )
-    
+
     class Meta:
         verbose_name = "situation d'exploitation"
         verbose_name_plural = "situations d'exploitation"
         constraints = [
             models.UniqueConstraint(
-                fields=['unite_pastorale', 'annee'],
-                name='uniq_situation_up_annee'
+                fields=["unite_pastorale", "annee"], name="uniq_situation_up_annee"
             ),
             models.CheckConstraint(
                 check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
-                name='chk_situation_dates_coherentes',
+                name="chk_situation_dates_coherentes",
             ),
         ]
 
     def __str__(self):
         return str(self.nom_situation)
 
+
 # Exploiter = (#id_quartier, #id_situation, date_debut DATE, date_fin DATE, commmentaire VARCHAR(500));
 class Exploiter(AuditFieldsMixin, models.Model):
     """
     Exploiter
     """
-    
+
     id_exploiter = models.BigAutoField(primary_key=True)
 
     cheptel = models.ForeignKey(
-        'alpages.Cheptel',
+        "alpages.Cheptel",
         on_delete=models.PROTECT,
         blank=True,
         null=True,
-        related_name='parcours'
+        related_name="parcours",
     )
     quartier = models.ForeignKey(
-        'alpages.QuartierPasto',
+        "alpages.QuartierPasto",
         on_delete=models.PROTECT,
         blank=True,
         null=True,
-        related_name='parcours')
-    
+        related_name="parcours",
+    )
+
     date_debut = models.DateField()
     date_fin = models.DateField()
     nombre_animaux = models.IntegerField(
@@ -319,12 +401,12 @@ class Exploiter(AuditFieldsMixin, models.Model):
         constraints = [
             models.CheckConstraint(
                 check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
-                name='chk_parcours_dates_coherentes',
+                name="chk_parcours_dates_coherentes",
             ),
             models.UniqueConstraint(
-                fields=['cheptel', 'quartier', 'date_debut'],
-                name='uniq_parcours_cheptel_quartier_debut',
-            )
+                fields=["cheptel", "quartier", "date_debut"],
+                name="uniq_parcours_cheptel_quartier_debut",
+            ),
         ]
 
     def clean(self):
@@ -343,36 +425,40 @@ class Exploiter(AuditFieldsMixin, models.Model):
             return
 
         if self.cheptel_id:
-            max_animaux = getattr(self.cheptel, 'nombre_animaux', 0) or 0
+            max_animaux = getattr(self.cheptel, "nombre_animaux", 0) or 0
         else:
             situation_id = None
-            if self.quartier_id and getattr(self.quartier, 'situation_exploitation_id', None):
+            if self.quartier_id and getattr(
+                self.quartier, "situation_exploitation_id", None
+            ):
                 situation_id = self.quartier.situation_exploitation_id
 
             if not situation_id:
-                raise ValidationError({
-                    'nombre_animaux': (
-                        "Impossible de valider nombre_animaux sans cheptel: "
-                        "le quartier doit être renseigné et lié à une situation."
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "nombre_animaux": (
+                            "Impossible de valider nombre_animaux sans cheptel: "
+                            "le quartier doit être renseigné et lié à une situation."
+                        )
+                    }
+                )
 
             max_animaux = (
-                Cheptel.objects
-                .filter(situation_exploitation_id=situation_id)
-                .aggregate(total=Sum('nombre_animaux'))
-                .get('total')
+                Cheptel.objects.filter(situation_exploitation_id=situation_id)
+                .aggregate(total=Sum("nombre_animaux"))
+                .get("total")
                 or 0
             )
 
         if self.nombre_animaux > max_animaux:
-            raise ValidationError({
-                'nombre_animaux': (
-                    f"nombre_animaux ({self.nombre_animaux}) dépasse le maximum autorisé ({max_animaux})."
-                )
-            })
+            raise ValidationError(
+                {
+                    "nombre_animaux": (
+                        f"nombre_animaux ({self.nombre_animaux}) dépasse le maximum autorisé ({max_animaux})."
+                    )
+                }
+            )
 
-    
     def __str__(self):
         return f"{self.cheptel} exploite {self.quartier}"
 
@@ -381,7 +467,7 @@ class Eleveur(AuditFieldsMixin, models.Model):
     """
     Eleveur
     """
-    
+
     id_eleveur = models.AutoField(primary_key=True)
     nom_eleveur = models.CharField(max_length=50, null=False, blank=False)
     prenom_eleveur = models.CharField(max_length=50, null=True, blank=True)
@@ -389,13 +475,14 @@ class Eleveur(AuditFieldsMixin, models.Model):
     mail_eleveur = models.CharField(max_length=50, null=True, blank=True)
     adresse_eleveur = models.CharField(max_length=50, null=True, blank=True)
     commentaire = models.CharField(max_length=500, null=True, blank=True)
-    
+
     class Meta:
         verbose_name = "éleveur"
         verbose_name_plural = "éleveurs"
 
     def __str__(self):
         return str(self.nom_eleveur)
+
 
 class TypeDExploitant(AuditFieldsMixin, models.Model):
     """
@@ -404,67 +491,100 @@ class TypeDExploitant(AuditFieldsMixin, models.Model):
 
     id_type_exploitant = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    
+
     class Meta:
         verbose_name = "type d'exploitant"
         verbose_name_plural = "types d'exploitant"
-        
+
     def __str__(self):
-        return str(self.description) 
+        return str(self.description)
 
 
 class Exploitant(AuditFieldsMixin, models.Model):
     """
     Exploitant
     """
-    
+
     id_exploitant = models.AutoField(primary_key=True)
     nom_exploitant = models.CharField(max_length=50, null=False, blank=False)
-    type_exploitant = models.ForeignKey('alpages.TypeDExploitant', on_delete=models.PROTECT, blank=True, null=True, related_name='exploitants')
-    president = models.ForeignKey('alpages.Eleveur', on_delete=models.PROTECT, blank=True, null=True, related_name='exploitants')
-    
+    type_exploitant = models.ForeignKey(
+        "alpages.TypeDExploitant",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="exploitants",
+    )
+    president = models.ForeignKey(
+        "alpages.Eleveur",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="exploitants",
+    )
+
     class Meta:
         verbose_name = "exploitant"
         verbose_name_plural = "exploitants"
-    
+
     def __str__(self):
         return str(self.nom_exploitant)
+
 
 class EtreCompose(AuditFieldsMixin, models.Model):
     """
     EtreCompose (association exploitant / éleveurs)
     """
 
-    id_etre_compose = models.BigAutoField(primary_key=True, db_column='id')
-    exploitant = models.ForeignKey(Exploitant, on_delete=models.PROTECT, blank=True, null=True, )
-    eleveur = models.ForeignKey(Eleveur, on_delete=models.PROTECT, blank=True, null=True, )
+    id_etre_compose = models.BigAutoField(primary_key=True, db_column="id")
+    exploitant = models.ForeignKey(
+        Exploitant,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+    )
+    eleveur = models.ForeignKey(
+        Eleveur,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
-        unique_together = ('exploitant', 'eleveur')
+        unique_together = ("exploitant", "eleveur")
         verbose_name = "composition d'exploitant"
         verbose_name_plural = "compositions d'exploitant"
 
     def __str__(self):
         return f"{self.eleveur} est membre de {self.exploitant}"
-    
+
+
 class SubventionPNV(AuditFieldsMixin, models.Model):
     """
     Subvention PNV
     """
-    
+
     id_subvention = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    montant = models.DecimalField(max_digits=15, decimal_places=2, null=False, blank=False)
+    montant = models.DecimalField(
+        max_digits=15, decimal_places=2, null=False, blank=False
+    )
     engage = models.BooleanField(null=False, blank=False, default=False)
     paye = models.BooleanField(null=False, blank=False, default=False)
-    exploitant = models.ForeignKey('alpages.Exploitant', on_delete=models.PROTECT, blank=True, null=True, related_name='subventions')
-    
+    exploitant = models.ForeignKey(
+        "alpages.Exploitant",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="subventions",
+    )
+
     class Meta:
         verbose_name = "subvention PNV"
         verbose_name_plural = "subventions PNV"
-    
+
     def __str__(self):
         return str(self.description)
+
 
 class Logement(AuditFieldsMixin, models.Model):
     """
@@ -472,69 +592,114 @@ class Logement(AuditFieldsMixin, models.Model):
     Champs et valeurs issues des échanges avec la SEA73
     """
 
-    id_logement = models.BigAutoField(primary_key=True, db_column='id')
+    id_logement = models.BigAutoField(primary_key=True, db_column="id")
     logement_code = models.CharField(max_length=10)
     # Ajouté le 28/10/2025
     nom_logement = models.CharField(max_length=50, null=True, blank=True)
-    unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.PROTECT, blank=True, null=True, related_name='logements')
+    unite_pastorale = models.ForeignKey(
+        "alpages.UnitePastorale",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="logements",
+    )
     # Fin 28/10/2025
     statut = models.CharField(max_length=50, choices=LST_STATUT, null=True, blank=True)
-    acces_final = models.CharField(max_length=50, choices=LST_ACCES_FINAL, null=True, blank=True)
-    propriete = models.CharField(max_length=50, choices=LST_PROPRIETE, null=True, blank=True)
-    type_logement = models.CharField(max_length=50, choices=LST_TYPE_LOGEMENT, null=True, blank=True)
-    multiusage = models.CharField(max_length=50, choices=LST_MULTIUSAGE, null=True, blank=True)
-    activite_laitiere = models.CharField(max_length=50, choices=LST_ACTIVITE_LAITIERE, null=True, blank=True)
-    etat_batiment = models.CharField(max_length=50, choices=LST_ETAT_BATIMENT, null=True, blank=True)
-    accueil_public = models.CharField(max_length=50, choices=LST_ACCUEIL_PUBLIC, null=True, blank=True)
-    mixite_possible = models.CharField(max_length=50, choices=LST_OUI_NON_INC, null=True, blank=True)
-    surface_logement = models.CharField(max_length=50, choices=LST_SURFACE_LOGEMENT, null=True, blank=True)
-    presence_douche = models.CharField(max_length=50, choices=LST_OUI_NON_INC, null=True, blank=True)
+    acces_final = models.CharField(
+        max_length=50, choices=LST_ACCES_FINAL, null=True, blank=True
+    )
+    propriete = models.CharField(
+        max_length=50, choices=LST_PROPRIETE, null=True, blank=True
+    )
+    type_logement = models.CharField(
+        max_length=50, choices=LST_TYPE_LOGEMENT, null=True, blank=True
+    )
+    multiusage = models.CharField(
+        max_length=50, choices=LST_MULTIUSAGE, null=True, blank=True
+    )
+    activite_laitiere = models.CharField(
+        max_length=50, choices=LST_ACTIVITE_LAITIERE, null=True, blank=True
+    )
+    etat_batiment = models.CharField(
+        max_length=50, choices=LST_ETAT_BATIMENT, null=True, blank=True
+    )
+    accueil_public = models.CharField(
+        max_length=50, choices=LST_ACCUEIL_PUBLIC, null=True, blank=True
+    )
+    mixite_possible = models.CharField(
+        max_length=50, choices=LST_OUI_NON_INC, null=True, blank=True
+    )
+    surface_logement = models.CharField(
+        max_length=50, choices=LST_SURFACE_LOGEMENT, null=True, blank=True
+    )
+    presence_douche = models.CharField(
+        max_length=50, choices=LST_OUI_NON_INC, null=True, blank=True
+    )
     type_wc = models.CharField(max_length=50, choices=LST_WC, null=True, blank=True)
-    alim_elec = models.CharField(max_length=50, choices=LST_ALIM_ELECTRIQUE, null=True, blank=True)
-    alim_eau = models.CharField(max_length=50, choices=LST_ALIM_EAU, null=True, blank=True)
-    origine_eau = models.CharField(max_length=50, choices=LST_ORIGINE_EAU, null=True, blank=True)
-    qualite_eau = models.CharField(max_length=50, choices=LST_QUALITE_EAU, null=True, blank=True)
-    dispo_eau = models.CharField(max_length=50, choices=LST_DISPO_EAU, null=True, blank=True)
-    assainissement = models.CharField(max_length=50, choices=LST_ASSAINISSEMENT, null=True, blank=True)
-    chauffe_eau = models.CharField(max_length=50, choices=LST_CHAUFFE_EAU, null=True, blank=True)
-    chauffage = models.CharField(max_length=50, choices=LST_OUI_NON, null=True, blank=True)
-    stockage_indep = models.CharField(max_length=50, choices=LST_OUI_NON, null=True, blank=True)
-    
+    alim_elec = models.CharField(
+        max_length=50, choices=LST_ALIM_ELECTRIQUE, null=True, blank=True
+    )
+    alim_eau = models.CharField(
+        max_length=50, choices=LST_ALIM_EAU, null=True, blank=True
+    )
+    origine_eau = models.CharField(
+        max_length=50, choices=LST_ORIGINE_EAU, null=True, blank=True
+    )
+    qualite_eau = models.CharField(
+        max_length=50, choices=LST_QUALITE_EAU, null=True, blank=True
+    )
+    dispo_eau = models.CharField(
+        max_length=50, choices=LST_DISPO_EAU, null=True, blank=True
+    )
+    assainissement = models.CharField(
+        max_length=50, choices=LST_ASSAINISSEMENT, null=True, blank=True
+    )
+    chauffe_eau = models.CharField(
+        max_length=50, choices=LST_CHAUFFE_EAU, null=True, blank=True
+    )
+    chauffage = models.CharField(
+        max_length=50, choices=LST_OUI_NON, null=True, blank=True
+    )
+    stockage_indep = models.CharField(
+        max_length=50, choices=LST_OUI_NON, null=True, blank=True
+    )
+
     geom = models.PointField(srid=2154, null=True)
 
     class Meta:
         verbose_name = "logement"
         verbose_name_plural = "logements"
 
+
 class Commodite(AuditFieldsMixin, models.Model):
     """
     Commodite
     """
-    
+
     id_commodite = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=100, null=False, blank=False)
-    
+
     class Meta:
         verbose_name = "commodité"
         verbose_name_plural = "commodités"
 
     def __str__(self):
         return str(self.description)
-    
+
 
 class AbriDUrgence(AuditFieldsMixin, models.Model):
     """
     Abri d'urgence
     """
-    
+
     id_abri_urgence = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
 
     class Meta:
         verbose_name = "abri d'urgence"
-        verbose_name_plural = "abris d'urgence"   
-    
+        verbose_name_plural = "abris d'urgence"
+
     def __str__(self):
         return str(self.description)
 
@@ -543,33 +708,54 @@ class AbriDUrgenceCommodite(AuditFieldsMixin, models.Model):
     """
     Association Abri d'urgence / Commodite
     """
-    
+
     id_abri_urgence_commodite = models.BigAutoField(primary_key=True)
-    abri_urgence = models.ForeignKey('alpages.AbriDUrgence', on_delete=models.PROTECT, blank=True, null=True, related_name='commodites')
-    commodite = models.ForeignKey('alpages.Commodite', on_delete=models.PROTECT, blank=True, null=True, related_name='abris_urgence')
+    abri_urgence = models.ForeignKey(
+        "alpages.AbriDUrgence",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="commodites",
+    )
+    commodite = models.ForeignKey(
+        "alpages.Commodite",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="abris_urgence",
+    )
     etat = models.CharField(max_length=50, null=False, blank=False)
     commentaire = models.CharField(max_length=50, null=True, blank=True)
     quantite = models.CharField(max_length=50, null=True, blank=True)
-    
-    
+
     class Meta:
         verbose_name = "abri d'urgence / commodité"
         verbose_name_plural = "abris d'urgence / commodités"
 
-
     def __str__(self):
         return f"{self.abri_urgence} a {self.quantite} de {self.commodite}"
-
 
 
 class BeneficierDe(AuditFieldsMixin, models.Model):
     """
     Association Exploitant / Abri d'urgence
     """
-    
+
     id_beneficier_de = models.BigAutoField(primary_key=True)
-    exploitant = models.ForeignKey('alpages.Exploitant', on_delete=models.PROTECT, blank=True, null=True, related_name='beneficiaires')
-    abri_urgence = models.ForeignKey('alpages.AbriDUrgence', on_delete=models.PROTECT, blank=True, null=True, related_name='beneficiaires')
+    exploitant = models.ForeignKey(
+        "alpages.Exploitant",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="beneficiaires",
+    )
+    abri_urgence = models.ForeignKey(
+        "alpages.AbriDUrgence",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="beneficiaires",
+    )
     date_debut = models.DateField(null=False, blank=False)
     date_fin = models.DateField(null=True, blank=True)
     geometry = models.PointField(srid=2154, null=True, blank=True)
@@ -580,24 +766,31 @@ class BeneficierDe(AuditFieldsMixin, models.Model):
         constraints = [
             models.CheckConstraint(
                 check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
-                name='chk_beneficier_de_dates_coherentes',
+                name="chk_beneficier_de_dates_coherentes",
             ),
         ]
 
     def __str__(self):
         return f"{self.exploitant} bénéficie de {self.abri_urgence}"
-    
+
+
 # Ruche / Berger / Type Cheptel
 class Ruche(AuditFieldsMixin, models.Model):
     """
     Ruche
     """
-    
+
     id_ruche = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.PointField(srid=2154, null=False, blank=False)
-    situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='ruches')
-    
+    situation_exploitation = models.ForeignKey(
+        "alpages.SituationDExploitation",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="ruches",
+    )
+
     class Meta:
         verbose_name = "ruche"
         verbose_name_plural = "ruches"
@@ -605,18 +798,19 @@ class Ruche(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
+
 class Berger(AuditFieldsMixin, models.Model):
     """
     Berger
     """
-    
+
     id_berger = models.BigAutoField(primary_key=True)
     nom_berger = models.CharField(max_length=50, null=False, blank=False)
     prenom_berger = models.CharField(max_length=50, null=False, blank=False)
     tel_berger = models.CharField(max_length=50, null=True, blank=True)
     adresse_berger = models.CharField(max_length=50, null=True, blank=True)
     commentaire = models.CharField(max_length=500, null=True, blank=True)
-    
+
     class Meta:
         verbose_name = "berger"
         verbose_name_plural = "bergers"
@@ -624,17 +818,30 @@ class Berger(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.nom_berger)
 
+
 class GardeSituation(AuditFieldsMixin, models.Model):
     """
     Garde situation
     """
-    
+
     id_garde_situation = models.BigAutoField(primary_key=True)
     date_debut = models.DateField(null=False, blank=False)
     date_fin = models.DateField(null=True, blank=True)
     commentaire = models.CharField(max_length=500, null=True, blank=True)
-    situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='gardes_situation')
-    berger = models.ForeignKey('alpages.Berger', on_delete=models.PROTECT, blank=True, null=True, related_name='gardes_situation')
+    situation_exploitation = models.ForeignKey(
+        "alpages.SituationDExploitation",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="gardes_situation",
+    )
+    berger = models.ForeignKey(
+        "alpages.Berger",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="gardes_situation",
+    )
 
     class Meta:
         verbose_name = "garde de situation"
@@ -642,12 +849,13 @@ class GardeSituation(AuditFieldsMixin, models.Model):
         constraints = [
             models.CheckConstraint(
                 check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
-                name='chk_garde_situation_dates_coherentes',
+                name="chk_garde_situation_dates_coherentes",
             ),
         ]
 
     def __str__(self):
         return str(self.id_garde_situation)
+
 
 ##################
 # Mise à jour Cheptels / types de cheptel
@@ -656,10 +864,10 @@ class Production(AuditFieldsMixin, models.Model):
     """
     Production
     """
-    
+
     id_production = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    
+
     class Meta:
         verbose_name = "production"
         verbose_name_plural = "productions"
@@ -667,28 +875,30 @@ class Production(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
+
 class CategoriePension(AuditFieldsMixin, models.Model):
     """
     Catégorie de pension
     """
-    
+
     id_categorie_pension = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    
+
     class Meta:
-        db_table = 'alpages_categorie_pension'
+        db_table = "alpages_categorie_pension"
         verbose_name = "catégorie de pension"
         verbose_name_plural = "catégories de pension"
 
     def __str__(self):
         return str(self.description)
 
+
 class Espece(AuditFieldsMixin, models.Model):
     """
     Espèce
     """
-    
-    id_espece  = models.AutoField(primary_key=True)
+
+    id_espece = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
 
     class Meta:
@@ -698,6 +908,7 @@ class Espece(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
+
 class Race(AuditFieldsMixin, models.Model):
     """
     Race
@@ -705,7 +916,13 @@ class Race(AuditFieldsMixin, models.Model):
 
     id_race = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    espece = models.ForeignKey('alpages.Espece', on_delete=models.PROTECT, blank=True, null=True, related_name='races')
+    espece = models.ForeignKey(
+        "alpages.Espece",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="races",
+    )
 
     class Meta:
         verbose_name = "race"
@@ -714,33 +931,53 @@ class Race(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
+
 class CategorieAnimaux(AuditFieldsMixin, models.Model):
     """
     Catégorie d'animaux
     """
-    
+
     id_categorie_animaux = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    espece = models.ForeignKey('alpages.Espece', on_delete=models.PROTECT, blank=True, null=True, related_name='categories_animaux')
-    
+    espece = models.ForeignKey(
+        "alpages.Espece",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="categories_animaux",
+    )
+
     class Meta:
-        db_table = 'alpages_categorie_animaux'
+        db_table = "alpages_categorie_animaux"
         verbose_name = "catégorie d'animaux"
         verbose_name_plural = "catégories d'animaux"
-    
+
     def __str__(self):
         return str(self.description)
+
 
 class Cheptel(AuditFieldsMixin, models.Model):
     """
     Cheptel
     """
-    
+
     id_cheptel = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
 
-    eleveur = models.ForeignKey('alpages.Eleveur', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
-    situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
+    eleveur = models.ForeignKey(
+        "alpages.Eleveur",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="cheptels",
+    )
+    situation_exploitation = models.ForeignKey(
+        "alpages.SituationDExploitation",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="cheptels",
+    )
     nombre_animaux = models.IntegerField(null=False, blank=False)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
@@ -753,10 +990,34 @@ class Cheptel(AuditFieldsMixin, models.Model):
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(1)],
     )
-    production = models.ForeignKey('alpages.Production', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
-    pension = models.ForeignKey('alpages.CategoriePension', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
-    race = models.ForeignKey('alpages.Race', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
-    categorie_animaux = models.ForeignKey('alpages.CategorieAnimaux', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
+    production = models.ForeignKey(
+        "alpages.Production",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="cheptels",
+    )
+    pension = models.ForeignKey(
+        "alpages.CategoriePension",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="cheptels",
+    )
+    race = models.ForeignKey(
+        "alpages.Race",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="cheptels",
+    )
+    categorie_animaux = models.ForeignKey(
+        "alpages.CategorieAnimaux",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="cheptels",
+    )
 
     class Meta:
         verbose_name = "troupeau"
@@ -764,7 +1025,7 @@ class Cheptel(AuditFieldsMixin, models.Model):
         constraints = [
             models.CheckConstraint(
                 check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
-                name='chk_cheptel_dates_coherentes',
+                name="chk_cheptel_dates_coherentes",
             ),
         ]
 
@@ -775,15 +1036,16 @@ class Cheptel(AuditFieldsMixin, models.Model):
 # FIN Cheptel
 ##################
 
+
 # Evénements
 class TypeEvenement(AuditFieldsMixin, models.Model):
     """
     Type d'événement
     """
-    
+
     id_type_evenement = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
-    
+
     class Meta:
         verbose_name = "type d'événement"
         verbose_name_plural = "types d'événement"
@@ -791,11 +1053,12 @@ class TypeEvenement(AuditFieldsMixin, models.Model):
     def __str__(self):
         return str(self.description)
 
+
 class Evenement(AuditFieldsMixin, models.Model):
     """
     Evenement
     """
-    
+
     id_evenement = models.BigAutoField(primary_key=True)
     date_evenement = models.DateField(null=False, blank=False)
     observateur = models.CharField(max_length=50, null=False, blank=False)
@@ -803,9 +1066,27 @@ class Evenement(AuditFieldsMixin, models.Model):
     source = models.CharField(max_length=50, null=True, blank=True)
     description = models.CharField(max_length=500, null=True, blank=True)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
-    situation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
-    mesure_plan = models.ForeignKey('alpages.MesureDePlan', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
-    type_evenement = models.ForeignKey('alpages.TypeEvenement', on_delete=models.PROTECT, blank=True, null=True, related_name='evenements')
+    situation = models.ForeignKey(
+        "alpages.SituationDExploitation",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="evenements",
+    )
+    mesure_plan = models.ForeignKey(
+        "alpages.MesureDePlan",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="evenements",
+    )
+    type_evenement = models.ForeignKey(
+        "alpages.TypeEvenement",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="evenements",
+    )
 
     class Meta:
         verbose_name = "événement"
@@ -820,7 +1101,7 @@ class TypeEquipement(AuditFieldsMixin, models.Model):
     """
     Type d'équipement
     """
-    
+
     id_type_equipement = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
     categorie = models.CharField(max_length=50, null=False, blank=False)
@@ -828,9 +1109,10 @@ class TypeEquipement(AuditFieldsMixin, models.Model):
     class Meta:
         verbose_name = "type d'équipement"
         verbose_name_plural = "types d'équipement"
-        
+
     def __str__(self):
         return str(self.description)
+
 
 class EquipementAlpage(AuditFieldsMixin, models.Model):
     """
@@ -841,12 +1123,25 @@ class EquipementAlpage(AuditFieldsMixin, models.Model):
     description = models.CharField(max_length=50, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
-    type_equipement = models.ForeignKey('alpages.TypeEquipement', on_delete=models.PROTECT, blank=True, null=True, related_name='eqptsAlpage')
-    unite_pastorale = models.ForeignKey('alpages.UnitePastorale', on_delete=models.PROTECT, blank=True, null=True, related_name='eqptsAlpage')
+    type_equipement = models.ForeignKey(
+        "alpages.TypeEquipement",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="eqptsAlpage",
+    )
+    unite_pastorale = models.ForeignKey(
+        "alpages.UnitePastorale",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="eqptsAlpage",
+    )
 
     class Meta:
         verbose_name = "équipement d'alpage"
         verbose_name_plural = "équipements d'alpage"
+
 
 class EquipementExploitant(AuditFieldsMixin, models.Model):
     """
@@ -857,17 +1152,28 @@ class EquipementExploitant(AuditFieldsMixin, models.Model):
     description = models.CharField(max_length=150, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
-    type_equipement = models.ForeignKey('alpages.TypeEquipement', on_delete=models.PROTECT, blank=True, null=True, related_name='eqptsExploitant')
-    situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='eqptsExploitant')
+    type_equipement = models.ForeignKey(
+        "alpages.TypeEquipement",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="eqptsExploitant",
+    )
+    situation_exploitation = models.ForeignKey(
+        "alpages.SituationDExploitation",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="eqptsExploitant",
+    )
     beneficier_de = models.ForeignKey(
-        'alpages.BeneficierDe',
+        "alpages.BeneficierDe",
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name='equipement',
+        related_name="equipement",
     )
 
     class Meta:
         verbose_name = "équipement d'exploitant"
         verbose_name_plural = "équipements d'exploitant"
-

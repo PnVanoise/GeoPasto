@@ -12,11 +12,11 @@ class BaseModelViewSetTests(TestCase):
     def test_get_pk_field_name_unitepastorale(self):
         viewset = UnitePastoraleViewset()
         viewset.queryset = UnitePastorale.objects.all()
-        self.assertEqual(viewset.get_pk_field_name(), 'id_unite_pastorale')
+        self.assertEqual(viewset.get_pk_field_name(), "id_unite_pastorale")
 
     def test_get_next_id_empty_queryset(self):
         viewset = UnitePastoraleViewset()
         viewset.queryset = UnitePastorale.objects.none()
-        request = self.factory.get('/api/unitePastorale/getNextId')
+        request = self.factory.get("/api/unitePastorale/getNextId")
         response = viewset.get_next_id(request)
-        self.assertEqual(response.data.get('next_id'), 1)
+        self.assertEqual(response.data.get("next_id"), 1)

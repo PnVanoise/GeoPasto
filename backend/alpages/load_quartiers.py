@@ -16,4 +16,3 @@ quartiers_shp = Path(__file__).resolve().parent / "data" / "quartiers_loza.shp"
 def run(verbose=True):
     lm = LayerMapping(QuartierPasto, quartiers_shp, quartiers_mapping, transform=True)
     lm.save(strict=True, verbose=verbose)
-

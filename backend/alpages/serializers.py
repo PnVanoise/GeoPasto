@@ -5,21 +5,44 @@ from rest_framework import serializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from alpages.models import Logement, Commodite
-from alpages.models import UnitePastorale, ProprietaireFoncier, QuartierPasto, ProprietaireUnitePastorale
+from alpages.models import (
+    UnitePastorale,
+    ProprietaireFoncier,
+    QuartierPasto,
+    ProprietaireUnitePastorale,
+)
 from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
-from alpages.models import TypeConvention, ConventionDExploitation, Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV, AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe
+from alpages.models import (
+    TypeConvention,
+    ConventionDExploitation,
+    Eleveur,
+    TypeDExploitant,
+    Exploitant,
+    EtreCompose,
+    SubventionPNV,
+    AbriDUrgence,
+    AbriDUrgenceCommodite,
+    BeneficierDe,
+)
 from alpages.models import SituationDExploitation, Exploiter
 from alpages.models import Ruche, Berger, GardeSituation
 from alpages.models import TypeEvenement, Evenement
 from alpages.models import TypeEquipement, EquipementAlpage, EquipementExploitant
-from alpages.models import Production, CategoriePension, Race, CategorieAnimaux, Espece, Cheptel
+from alpages.models import (
+    Production,
+    CategoriePension,
+    Race,
+    CategorieAnimaux,
+    Espece,
+    Cheptel,
+)
 
 
 AUDIT_FIELD_NAMES = (
-    'created_by',
-    'created_on',
-    'modified_by',
-    'modified_on',
+    "created_by",
+    "created_on",
+    "modified_by",
+    "modified_on",
 )
 
 
@@ -28,7 +51,7 @@ class AuditReadOnlyFieldsMixin:
 
     def get_fields(self):
         fields = super().get_fields()
-        model = getattr(getattr(self, 'Meta', None), 'model', None)
+        model = getattr(getattr(self, "Meta", None), "model", None)
         if model is None:
             return fields
 
@@ -44,23 +67,30 @@ class AuditReadOnlyFieldsMixin:
         return fields
 
 
-
 # Bloc administratif (orange)
 class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
-    proprios = serializers.ListField(
-        child=serializers.IntegerField(), write_only=True
-    )
+    proprios = serializers.ListField(child=serializers.IntegerField(), write_only=True)
     proprios_ids = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UnitePastorale
-        geo_field = 'geometry'
+        geo_field = "geometry"
         auto_bbox = True
         # fields = '__all__'
-        fields = [ 'id_unite_pastorale', 'code_up', 'nom_up', 'annee_version', 'geometry', 'version_active', 'secteur', 'proprios', 'proprios_ids' ]
-    
+        fields = [
+            "id_unite_pastorale",
+            "code_up",
+            "nom_up",
+            "annee_version",
+            "geometry",
+            "version_active",
+            "secteur",
+            "proprios",
+            "proprios_ids",
+        ]
+
     def to_representation(self, instance):
-        geom = getattr(instance, 'geometry', None)
+        geom = getattr(instance, "geometry", None)
         if geom is not None:
             try:
                 geom.transform(4326)
@@ -70,44 +100,46 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
 
         return super().to_representation(instance)
 
-
     def to_internal_value(self, data):
         # on mappe les clés id et id_unite_pastorale à la clé properties.id_unite_pastorale
         # assure la compatibilité avec le format GeoJson
         data = dict(data)
-        props = dict(data.get('properties') or {})
+        props = dict(data.get("properties") or {})
 
         # Map top-level "id" -> properties.id_unite_pastorale if missing
-        if 'id' in data and 'id_unite_pastorale' not in props:
-            props['id_unite_pastorale'] = data['id']
+        if "id" in data and "id_unite_pastorale" not in props:
+            props["id_unite_pastorale"] = data["id"]
 
         # Map top-level "id_unite_pastorale" -> properties.id_unite_pastorale if missing
-        if 'id_unite_pastorale' in data and 'id_unite_pastorale' not in props:
-            props['id_unite_pastorale'] = data['id_unite_pastorale']
+        if "id_unite_pastorale" in data and "id_unite_pastorale" not in props:
+            props["id_unite_pastorale"] = data["id_unite_pastorale"]
 
-        data['properties'] = props
+        data["properties"] = props
         return super().to_internal_value(data)
 
-        
     def get_proprios_ids(self, obj):
         # Récupérer uniquement les IDs des propriétaires associés via ProprietaireUnitePastorale
-        proprios = ProprietaireUnitePastorale.objects.filter(unite_pastorale=obj).values_list('proprietaire_id', flat=True)
+        proprios = ProprietaireUnitePastorale.objects.filter(
+            unite_pastorale=obj
+        ).values_list("proprietaire_id", flat=True)
         return list(proprios)
 
     def create(self, validated_data):
-        proprios_data = validated_data.pop('proprios', [])
+        proprios_data = validated_data.pop("proprios", [])
         up = UnitePastorale.objects.create(**validated_data)
-        
+
         # Ajout des propriétaires dans la table EtreCompose
         for proprio_id in proprios_data:
             proprio = ProprietaireFoncier.objects.get(id_proprietaire=proprio_id)
-            ProprietaireUnitePastorale.objects.create(unite_pastorale=up, proprietaire=proprio)
-            
+            ProprietaireUnitePastorale.objects.create(
+                unite_pastorale=up, proprietaire=proprio
+            )
+
         return up
 
     def update(self, instance, validated_data):
-        proprios_data = validated_data.pop('proprios', [])
-        
+        proprios_data = validated_data.pop("proprios", [])
+
         with transaction.atomic():
             # Apply incoming validated fields to the instance before saving
             for attr, value in validated_data.items():
@@ -116,70 +148,107 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
             instance.save()
 
             # Récupérer les IDs actuels des propriétaires de l'unité pastorale
-            proprios_actuels = set(ProprietaireUnitePastorale.objects.filter(unite_pastorale=instance).values_list('proprietaire_id', flat=True))
+            proprios_actuels = set(
+                ProprietaireUnitePastorale.objects.filter(
+                    unite_pastorale=instance
+                ).values_list("proprietaire_id", flat=True)
+            )
             nouveaux_proprios = set(proprios_data)
 
             # Supprimer les proprios qui ne sont plus associés
             proprios_a_supprimer = proprios_actuels - nouveaux_proprios
             if proprios_a_supprimer:
-                ProprietaireUnitePastorale.objects.filter(unite_pastorale=instance, proprietaire_id__in=proprios_a_supprimer).delete()
+                ProprietaireUnitePastorale.objects.filter(
+                    unite_pastorale=instance, proprietaire_id__in=proprios_a_supprimer
+                ).delete()
 
             # Ajouter les nouveaux proprios
             proprios_a_ajouter = nouveaux_proprios - proprios_actuels
             for proprio_id in proprios_a_ajouter:
                 propr = ProprietaireFoncier.objects.get(id_proprietaire=proprio_id)
-                ProprietaireUnitePastorale.objects.create(unite_pastorale=instance, proprietaire=propr)
+                ProprietaireUnitePastorale.objects.create(
+                    unite_pastorale=instance, proprietaire=propr
+                )
 
         return instance
 
 
-
 # light serializer, pour les listes
 class UnitePastoraleLSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+
     class Meta:
         model = UnitePastorale
-        fields = [ 'id_unite_pastorale', 'nom_up', 'secteur' ]
+        fields = ["id_unite_pastorale", "nom_up", "secteur"]
 
 
-class ProprietaireFoncierSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+class ProprietaireFoncierSerializer(
+    AuditReadOnlyFieldsMixin, serializers.ModelSerializer
+):
     unites_pastorales = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    
+
     class Meta:
         model = ProprietaireFoncier
-        fields = [ 'id_proprietaire', 'nom_propr', 'prenom_propr',
-                  'tel_propr', 'mail_propr', 'adresse_propr', 'commentaire', 'unites_pastorales' ]
+        fields = [
+            "id_proprietaire",
+            "nom_propr",
+            "prenom_propr",
+            "tel_propr",
+            "mail_propr",
+            "adresse_propr",
+            "commentaire",
+            "unites_pastorales",
+        ]
 
-class ProprietaireUnitePastoraleSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    up_nom = serializers.CharField(source='unite_pastorale.nom_up', read_only=True)
+
+class ProprietaireUnitePastoraleSerializer(
+    AuditReadOnlyFieldsMixin, serializers.ModelSerializer
+):
+    up_nom = serializers.CharField(source="unite_pastorale.nom_up", read_only=True)
     proprietaire_nom = serializers.SerializerMethodField()
 
     def get_proprietaire_nom(self, obj):
         if obj.proprietaire:
-            return f"{obj.proprietaire.nom_propr} {obj.proprietaire.prenom_propr}".strip()
+            return (
+                f"{obj.proprietaire.nom_propr} {obj.proprietaire.prenom_propr}".strip()
+            )
         return ""
 
     class Meta:
         model = ProprietaireUnitePastorale
-        fields = ['id_proprietaire_up', 'proprietaire', 'unite_pastorale', 'up_nom', 'proprietaire_nom']
+        fields = [
+            "id_proprietaire_up",
+            "proprietaire",
+            "unite_pastorale",
+            "up_nom",
+            "proprietaire_nom",
+        ]
 
 
 class QuartierPastoSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
-    
+
     class Meta:
         model = QuartierPasto
-        geo_field = 'geometry'
+        geo_field = "geometry"
         auto_bbox = True
-        fields = ['id_quartier', 'code_quartier', 'nom_quartier', 'geometry', 'situation_exploitation']
-        
-    
+        fields = [
+            "id_quartier",
+            "code_quartier",
+            "nom_quartier",
+            "geometry",
+            "situation_exploitation",
+        ]
+
     def to_internal_value(self, data):
         # Intercepter les données de géométrie avant la validation
-        geometry = data.get('geometry', None)
+        geometry = data.get("geometry", None)
 
         # Vérifier si les coordonnées sont vides et définir geometry sur None si c'est le cas
-        if geometry and geometry.get('type') == 'Polygon' and not geometry.get('coordinates'):
-            data['geometry'] = None
+        if (
+            geometry
+            and geometry.get("type") == "Polygon"
+            and not geometry.get("coordinates")
+        ):
+            data["geometry"] = None
 
         return super().to_internal_value(data)
 
@@ -191,105 +260,125 @@ class QuartierPastoSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerialize
 
         # Vérifiez si la géométrie est None et renvoyez un objet géométrique par défaut
         if instance.geometry is None:
-            data['geometry'] = {
+            data["geometry"] = {
                 "type": "Polygon",
-                "coordinates": [[]]  # Un polygone vide
+                "coordinates": [[]],  # Un polygone vide
             }
-        
-        
+
         return data
+
 
 # Bloc plans de suivi (bleu)
 class TypeDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = TypeDeSuivi
-        fields = [ 'id_type_suivi', 'description' ]
+        fields = ["id_type_suivi", "description"]
+
 
 class PlanDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     unite_pastorale = serializers.PrimaryKeyRelatedField(
-        queryset = UnitePastorale.objects.all(),
-        allow_null = True
+        queryset=UnitePastorale.objects.all(), allow_null=True
     )
     unite_pastorale_detail = UnitePastoraleLSerializer(
-        source='unite_pastorale',
-        read_only=True
+        source="unite_pastorale", read_only=True
     )
     type_suivi = serializers.PrimaryKeyRelatedField(
-        queryset = TypeDeSuivi.objects.all(),
-        allow_null=True
+        queryset=TypeDeSuivi.objects.all(), allow_null=True
     )
-    type_suivi_detail = TypeDeSuiviSerializer(
-        source = 'type_suivi',
-        read_only = True
-    )
+    type_suivi_detail = TypeDeSuiviSerializer(source="type_suivi", read_only=True)
+
     class Meta:
         model = PlanDeSuivi
-        fields = [ 'id_plan_suivi', 'description', 'date_debut', 'date_fin', 'type_suivi', 'type_suivi_detail', 'unite_pastorale', 'unite_pastorale_detail' ]
+        fields = [
+            "id_plan_suivi",
+            "description",
+            "date_debut",
+            "date_fin",
+            "type_suivi",
+            "type_suivi_detail",
+            "unite_pastorale",
+            "unite_pastorale_detail",
+        ]
+
 
 class TypeDeMesureSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = TypeDeMesure
-        fields = [ 'id_type_mesure', 'description' ]
+        fields = ["id_type_mesure", "description"]
+
 
 class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     plan_suivi = serializers.PrimaryKeyRelatedField(
-        queryset = PlanDeSuivi.objects.all(),
-        allow_null = True
+        queryset=PlanDeSuivi.objects.all(), allow_null=True
     )
-    plan_suivi_detail = PlanDeSuiviSerializer(
-        source = 'plan_suivi',
-        read_only = True
-    )
+    plan_suivi_detail = PlanDeSuiviSerializer(source="plan_suivi", read_only=True)
     type_mesure = serializers.PrimaryKeyRelatedField(
-        queryset = TypeDeMesure.objects.all(),
-        allow_null = True,
+        queryset=TypeDeMesure.objects.all(),
+        allow_null=True,
     )
-    type_mesure_detail = TypeDeMesureSerializer(
-        source = 'type_mesure',
-        read_only = True
-    )
+    type_mesure_detail = TypeDeMesureSerializer(source="type_mesure", read_only=True)
+
     class Meta:
         model = MesureDePlan
-        fields = [ 'id_mesure_plan', 'description', 'commentaire', 'debut_periode', 'fin_periode', 'type_mesure', 'type_mesure_detail', 'plan_suivi', 'plan_suivi_detail' ]
+        fields = [
+            "id_mesure_plan",
+            "description",
+            "commentaire",
+            "debut_periode",
+            "fin_periode",
+            "type_mesure",
+            "type_mesure_detail",
+            "plan_suivi",
+            "plan_suivi_detail",
+        ]
+
 
 # Bloc expoitation
 class TypeConventionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+
     class Meta:
         model = TypeConvention
-        fields = [ 'id_type_convention', 'description' ]
+        fields = ["id_type_convention", "description"]
 
-class ConventionDExploitationSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
+
+class ConventionDExploitationSerializer(
+    AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
+):
     type_convention = serializers.PrimaryKeyRelatedField(
-        queryset = TypeConvention.objects.all(), allow_null = True
+        queryset=TypeConvention.objects.all(), allow_null=True
     )
-    type_convention_detail = TypeConventionSerializer(source='type_convention', read_only=True)
-    
-    exploitant_nom = serializers.CharField(source='exploitant.nom_exploitant', read_only=True)
-    up_nom = serializers.CharField(source='unite_pastorale.nom_up', read_only=True)
-    
+    type_convention_detail = TypeConventionSerializer(
+        source="type_convention", read_only=True
+    )
+
+    exploitant_nom = serializers.CharField(
+        source="exploitant.nom_exploitant", read_only=True
+    )
+    up_nom = serializers.CharField(source="unite_pastorale.nom_up", read_only=True)
+
     class Meta:
         model = ConventionDExploitation
-        geo_field = 'geometry'
+        geo_field = "geometry"
         auto_bbox = True
-        fields = '__all__'
-    
+        fields = "__all__"
+
     def to_representation(self, instance):
-        if (instance.geometry != None):
+        if instance.geometry != None:
             instance.geometry.transform(4326)
-        
+
         return super().to_representation(instance)
-    
 
 
-class SituationDExploitationSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+class SituationDExploitationSerializer(
+    AuditReadOnlyFieldsMixin, serializers.ModelSerializer
+):
 
     unite_pastorale = serializers.PrimaryKeyRelatedField(
-        queryset = UnitePastorale.objects.all(),
-        allow_null = True,
+        queryset=UnitePastorale.objects.all(),
+        allow_null=True,
     )
     unite_pastorale_detail = UnitePastoraleLSerializer(
-        source='unite_pastorale',
+        source="unite_pastorale",
         read_only=True,
     )
 
@@ -301,21 +390,33 @@ class SituationDExploitationSerializer(AuditReadOnlyFieldsMixin, serializers.Mod
     def to_internal_value(self, data):
         # Accept frontend payloads that send `id` instead of `id_situation`.
         data = dict(data)
-        if 'id' in data and 'id_situation' not in data:
-            data['id_situation'] = data['id']
+        if "id" in data and "id_situation" not in data:
+            data["id_situation"] = data["id"]
         return super().to_internal_value(data)
-    
+
     class Meta:
         model = SituationDExploitation
-        fields = [ 'id_situation', 'annee', 'nom_situation', 'situation_active', 'date_debut', 'date_fin',
-                  'exploitant', 'exploitant_nom', 'unite_pastorale', 'unite_pastorale_detail' ]
+        fields = [
+            "id_situation",
+            "annee",
+            "nom_situation",
+            "situation_active",
+            "date_debut",
+            "date_fin",
+            "exploitant",
+            "exploitant_nom",
+            "unite_pastorale",
+            "unite_pastorale_detail",
+        ]
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
 
         # determine target unite_pastorale and annee (support both create and update)
-        up = attrs.get('unite_pastorale', getattr(self.instance, 'unite_pastorale', None))
-        annee = attrs.get('annee', getattr(self.instance, 'annee', None))
+        up = attrs.get(
+            "unite_pastorale", getattr(self.instance, "unite_pastorale", None)
+        )
+        annee = attrs.get("annee", getattr(self.instance, "annee", None))
 
         # only enforce when an UP is provided
         if up is None or annee is None:
@@ -326,15 +427,19 @@ class SituationDExploitationSerializer(AuditReadOnlyFieldsMixin, serializers.Mod
             qs = qs.exclude(pk=self.instance.pk)
 
         if qs.exists():
-            raise serializers.ValidationError("Une situation existe déjà pour cette unité pastorale et cette année.")
+            raise serializers.ValidationError(
+                "Une situation existe déjà pour cette unité pastorale et cette année."
+            )
 
         return attrs
-    
+
 
 class ExploiterSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
-    nombre_animaux = serializers.IntegerField(required=False, allow_null=True, min_value=0)
-    quartier_nom = serializers.CharField(source='quartier.nom_quartier', read_only=True)
+
+    nombre_animaux = serializers.IntegerField(
+        required=False, allow_null=True, min_value=0
+    )
+    quartier_nom = serializers.CharField(source="quartier.nom_quartier", read_only=True)
     situation_exploitation = serializers.SerializerMethodField(read_only=True)
     cheptel_nom = serializers.SerializerMethodField(read_only=True)
     cheptel_nombre_animaux = serializers.SerializerMethodField(read_only=True)
@@ -344,7 +449,7 @@ class ExploiterSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer)
         if obj.cheptel_id is None:
             return "Tous les troupeaux"
 
-        if getattr(obj.cheptel, 'description', None):
+        if getattr(obj.cheptel, "description", None):
             return obj.cheptel.description
 
         return f"Troupeau #{obj.cheptel_id}"
@@ -355,113 +460,144 @@ class ExploiterSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer)
     def get_cheptel_nombre_animaux(self, obj):
         if obj.cheptel_id is None:
             return None
-        return getattr(obj.cheptel, 'nombre_animaux', None)
+        return getattr(obj.cheptel, "nombre_animaux", None)
 
     def get_situation_exploitation(self, obj):
-        if obj.cheptel_id and getattr(obj.cheptel, 'situation_exploitation_id', None):
+        if obj.cheptel_id and getattr(obj.cheptel, "situation_exploitation_id", None):
             return obj.cheptel.situation_exploitation_id
-        if obj.quartier_id and getattr(obj.quartier, 'situation_exploitation_id', None):
+        if obj.quartier_id and getattr(obj.quartier, "situation_exploitation_id", None):
             return obj.quartier.situation_exploitation_id
         return None
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
 
-        if 'nombre_animaux' not in attrs and self.instance is not None:
+        if "nombre_animaux" not in attrs and self.instance is not None:
             return attrs
 
-        declared_animaux = attrs.get('nombre_animaux', None)
+        declared_animaux = attrs.get("nombre_animaux", None)
         if declared_animaux is None:
             return attrs
 
-        cheptel = attrs.get('cheptel', getattr(self.instance, 'cheptel', None))
-        quartier = attrs.get('quartier', getattr(self.instance, 'quartier', None))
+        cheptel = attrs.get("cheptel", getattr(self.instance, "cheptel", None))
+        quartier = attrs.get("quartier", getattr(self.instance, "quartier", None))
 
         if cheptel is not None:
-            max_animaux = getattr(cheptel, 'nombre_animaux', 0) or 0
+            max_animaux = getattr(cheptel, "nombre_animaux", 0) or 0
         else:
-            situation_id = getattr(quartier, 'situation_exploitation_id', None)
+            situation_id = getattr(quartier, "situation_exploitation_id", None)
             if not situation_id:
-                raise serializers.ValidationError({
-                    'nombre_animaux': (
-                        "Impossible de valider nombre_animaux sans cheptel: "
-                        "le quartier doit être renseigné et lié à une situation."
-                    )
-                })
+                raise serializers.ValidationError(
+                    {
+                        "nombre_animaux": (
+                            "Impossible de valider nombre_animaux sans cheptel: "
+                            "le quartier doit être renseigné et lié à une situation."
+                        )
+                    }
+                )
 
             max_animaux = (
-                Cheptel.objects
-                .filter(situation_exploitation_id=situation_id)
-                .aggregate(total=Sum('nombre_animaux'))
-                .get('total')
+                Cheptel.objects.filter(situation_exploitation_id=situation_id)
+                .aggregate(total=Sum("nombre_animaux"))
+                .get("total")
                 or 0
             )
 
         if declared_animaux > max_animaux:
-            raise serializers.ValidationError({
-                'nombre_animaux': (
-                    f"La valeur maximale autorisée est {max_animaux}."
-                )
-            })
+            raise serializers.ValidationError(
+                {"nombre_animaux": (f"La valeur maximale autorisée est {max_animaux}.")}
+            )
 
         return attrs
-       
+
     class Meta:
         model = Exploiter
-        fields = [ 'id_exploiter', 'date_debut', 'date_fin', 'quartier', 'cheptel', 'nombre_animaux', 'commentaire',
-                  'quartier_nom', 'cheptel_nom', 'cheptel_nombre_animaux', 'tous_troupeaux', 'situation_exploitation' ]
-            
+        fields = [
+            "id_exploiter",
+            "date_debut",
+            "date_fin",
+            "quartier",
+            "cheptel",
+            "nombre_animaux",
+            "commentaire",
+            "quartier_nom",
+            "cheptel_nom",
+            "cheptel_nombre_animaux",
+            "tous_troupeaux",
+            "situation_exploitation",
+        ]
+
 
 class EleveurSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
 
     nom_complet = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Eleveur
-        read_only_fields = ['id_eleveur']
-        fields = [ 'id_eleveur', 'nom_eleveur', 'prenom_eleveur', 'adresse_eleveur', 'tel_eleveur', 'mail_eleveur', 'commentaire', 'nom_complet' ]
+        read_only_fields = ["id_eleveur"]
+        fields = [
+            "id_eleveur",
+            "nom_eleveur",
+            "prenom_eleveur",
+            "adresse_eleveur",
+            "tel_eleveur",
+            "mail_eleveur",
+            "commentaire",
+            "nom_complet",
+        ]
 
     def get_nom_complet(self, obj):
         nom = (obj.nom_eleveur or "").upper()
         prenom = obj.prenom_eleveur or ""
         return f"{nom} {prenom}".strip()
-        
+
+
 class TypeDExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+
     class Meta:
         model = TypeDExploitant
-        fields = [ 'id_type_exploitant', 'description' ]
-    
+        fields = ["id_type_exploitant", "description"]
+
 
 class ExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    membres = serializers.ListField(
-        child=serializers.IntegerField(), write_only=True
-    )
+    membres = serializers.ListField(child=serializers.IntegerField(), write_only=True)
     membres_ids = serializers.SerializerMethodField(read_only=True)
 
     type_exploitant = serializers.PrimaryKeyRelatedField(
-        queryset = TypeDExploitant.objects.all(), allow_null = True
+        queryset=TypeDExploitant.objects.all(), allow_null=True
     )
-    type_exploitant_detail = TypeDExploitantSerializer(source='type_exploitant', read_only=True)
+    type_exploitant_detail = TypeDExploitantSerializer(
+        source="type_exploitant", read_only=True
+    )
 
     president = serializers.PrimaryKeyRelatedField(
-        queryset = Eleveur.objects.all(), allow_null = True
+        queryset=Eleveur.objects.all(), allow_null=True
     )
 
     class Meta:
         model = Exploitant
-        read_only_fields = ['id_exploitant']
-        fields = ['id_exploitant', 'nom_exploitant', 'president', 'membres', 'membres_ids', 'type_exploitant', 'type_exploitant_detail']
+        read_only_fields = ["id_exploitant"]
+        fields = [
+            "id_exploitant",
+            "nom_exploitant",
+            "president",
+            "membres",
+            "membres_ids",
+            "type_exploitant",
+            "type_exploitant_detail",
+        ]
 
     def get_membres_ids(self, obj):
         # Récupérer uniquement les IDs des éleveurs associés via la table `EtreCompose`
-        membres = EtreCompose.objects.filter(exploitant=obj).values_list('eleveur_id', flat=True)
+        membres = EtreCompose.objects.filter(exploitant=obj).values_list(
+            "eleveur_id", flat=True
+        )
         return list(membres)
 
     def create(self, validated_data):
-        membres_data = validated_data.pop('membres', [])
+        membres_data = validated_data.pop("membres", [])
         exploitant = Exploitant.objects.create(**validated_data)
-        
+
         # Ajout des membres dans la table EtreCompose
         for eleveur_id in membres_data:
             eleveur = Eleveur.objects.get(id_eleveur=eleveur_id)
@@ -470,23 +606,33 @@ class ExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer
         return exploitant
 
     def update(self, instance, validated_data):
-        membres_data = validated_data.pop('membres', [])
-        instance.nom_exploitant = validated_data.get('nom_exploitant', instance.nom_exploitant)
+        membres_data = validated_data.pop("membres", [])
+        instance.nom_exploitant = validated_data.get(
+            "nom_exploitant", instance.nom_exploitant
+        )
         # instance.type = validated_data.get('type', instance.type)
-        instance.president = validated_data.get('president', instance.president)
-        instance.type_exploitant = validated_data.get('type_exploitant', instance.type_exploitant)
-        
+        instance.president = validated_data.get("president", instance.president)
+        instance.type_exploitant = validated_data.get(
+            "type_exploitant", instance.type_exploitant
+        )
+
         with transaction.atomic():
             instance.save()
 
             # Récupérer les IDs actuels des membres de l'exploitant
-            membres_actuels = set(EtreCompose.objects.filter(exploitant=instance).values_list('eleveur_id', flat=True))
+            membres_actuels = set(
+                EtreCompose.objects.filter(exploitant=instance).values_list(
+                    "eleveur_id", flat=True
+                )
+            )
             nouveaux_membres = set(membres_data)
 
             # Supprimer les membres qui ne sont plus associés
             membres_a_supprimer = membres_actuels - nouveaux_membres
             if membres_a_supprimer:
-                EtreCompose.objects.filter(exploitant=instance, eleveur_id__in=membres_a_supprimer).delete()
+                EtreCompose.objects.filter(
+                    exploitant=instance, eleveur_id__in=membres_a_supprimer
+                ).delete()
 
             # Ajouter les nouveaux membres
             membres_a_ajouter = nouveaux_membres - membres_actuels
@@ -496,145 +642,208 @@ class ExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer
 
         return instance
 
-       
+
 class EtreComposeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+
     class Meta:
         model = EtreCompose
-        fields = [ 'exploitant', 'eleveur' ]
+        fields = ["exploitant", "eleveur"]
+
 
 class SubventionPNVSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+
     exploitant = serializers.PrimaryKeyRelatedField(
-        queryset = Exploitant.objects.all(),
-        allow_null = True
+        queryset=Exploitant.objects.all(), allow_null=True
     )
     exploitant_detail = ExploitantSerializer(
-        source='exploitant',
-        read_only = True,
+        source="exploitant",
+        read_only=True,
     )
-    
+
     class Meta:
         model = SubventionPNV
-        fields = [ 'id_subvention', 'description', 'montant', 'engage', 'paye', 'exploitant', 'exploitant_detail' ]
+        fields = [
+            "id_subvention",
+            "description",
+            "montant",
+            "engage",
+            "paye",
+            "exploitant",
+            "exploitant_detail",
+        ]
+
 
 class LogementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     unite_pastorale = serializers.PrimaryKeyRelatedField(
-        queryset = UnitePastorale.objects.all(),
-        allow_null = True
+        queryset=UnitePastorale.objects.all(), allow_null=True
     )
     unite_pastorale_detail = UnitePastoraleLSerializer(
-        source='unite_pastorale',
+        source="unite_pastorale",
         read_only=True,
     )
 
     class Meta:
         model = Logement
-        geo_field = 'geom'
+        geo_field = "geom"
         auto_bbox = True
-        fields = '__all__'
-    
+        fields = "__all__"
+
     def to_representation(self, instance):
-        if (instance.geom != None):
+        if instance.geom != None:
             instance.geom.transform(4326)
-        
+
         return super().to_representation(instance)
 
+
 class CommoditeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+
     class Meta:
         model = Commodite
-        fields = [ 'id_commodite', 'description']
+        fields = ["id_commodite", "description"]
+
 
 class AbriDUrgenceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-        
-        class Meta:
-            model = AbriDUrgence
-            fields = [ 'id_abri_urgence', 'description', 'etat', 'created_by', 'created_on', 'modified_by', 'modified_on' ]
-            read_only_fields = ['created_by', 'created_on', 'modified_by', 'modified_on']
+
+    class Meta:
+        model = AbriDUrgence
+        fields = [
+            "id_abri_urgence",
+            "description",
+            "etat",
+            "created_by",
+            "created_on",
+            "modified_by",
+            "modified_on",
+        ]
+        read_only_fields = ["created_by", "created_on", "modified_by", "modified_on"]
 
 
+class AbriDUrgenceCommoditeSerializer(
+    AuditReadOnlyFieldsMixin, serializers.ModelSerializer
+):
+    abri_urgence_description = serializers.CharField(
+        source="abri_urgence.description", read_only=True
+    )
+    commodite_desc = serializers.CharField(
+        source="commodite.description", read_only=True
+    )
 
-class AbriDUrgenceCommoditeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    abri_urgence_description = serializers.CharField(source='abri_urgence.description', read_only=True)
-    commodite_desc = serializers.CharField(source='commodite.description', read_only=True)
-    
     class Meta:
         model = AbriDUrgenceCommodite
-        fields = [ 'id_abri_urgence_commodite', 'abri_urgence', 'commodite', 'etat', 'commentaire', 'quantite', 'abri_urgence_description', 'commodite_desc' ]
-        
-
+        fields = [
+            "id_abri_urgence_commodite",
+            "abri_urgence",
+            "commodite",
+            "etat",
+            "commentaire",
+            "quantite",
+            "abri_urgence_description",
+            "commodite_desc",
+        ]
 
 
 class BeneficierDeSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
-    
-    exploitant_nom = serializers.SerializerMethodField() # CharField(source='exploitant.nom_exploitant', read_only=True)
-    abri_description = serializers.SerializerMethodField() #CharField(source='abri_urgence.description', read_only=True)
+
+    exploitant_nom = (
+        serializers.SerializerMethodField()
+    )  # CharField(source='exploitant.nom_exploitant', read_only=True)
+    abri_description = (
+        serializers.SerializerMethodField()
+    )  # CharField(source='abri_urgence.description', read_only=True)
 
     def get_exploitant_nom(self, obj):
         return obj.exploitant.nom_exploitant if obj.exploitant else None
-    
+
     def get_abri_description(self, obj):
         return obj.abri_urgence.description if obj.abri_urgence else None
-    
+
     class Meta:
         model = BeneficierDe
-        geo_field = 'geometry'
+        geo_field = "geometry"
         auto_bbox = True
         fields = [
-            'id_beneficier_de', 'exploitant', 'abri_urgence', 'date_debut', 'date_fin', 'geometry',
-            'exploitant_nom', 'abri_description'
+            "id_beneficier_de",
+            "exploitant",
+            "abri_urgence",
+            "date_debut",
+            "date_fin",
+            "geometry",
+            "exploitant_nom",
+            "abri_description",
         ]
-    
+
     def to_internal_value(self, data):
         # Intercepter les données de géométrie avant la validation
-        geometry = data.get('geometry', None)
+        geometry = data.get("geometry", None)
 
         # Vérifier si les coordonnées sont vides et définir geometry sur None si c'est le cas
-        if geometry and geometry.get('type') == 'Point' and not geometry.get('coordinates'):
-            data['geometry'] = None
+        if (
+            geometry
+            and geometry.get("type") == "Point"
+            and not geometry.get("coordinates")
+        ):
+            data["geometry"] = None
 
         return super().to_internal_value(data)
-    
+
     def to_representation(self, instance):
-        if (instance.geometry != None):
+        if instance.geometry != None:
             instance.geometry.transform(4326)
-        
+
         return super().to_representation(instance)
+
 
 # Ruche / Berger / Cheptel
 class RucheSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
-    
+
     class Meta:
         model = Ruche
-        geo_field = 'geometry'
+        geo_field = "geometry"
         auto_bbox = True
-        fields = '__all__'
-    
+        fields = "__all__"
+
     def to_representation(self, instance):
-        if (instance.geometry != None):
+        if instance.geometry != None:
             instance.geometry.transform(4326)
-        
+
         return super().to_representation(instance)
 
+
 class BergerSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+
     class Meta:
         model = Berger
-        fields = [ 'id_berger', 'nom_berger', 'prenom_berger', 'adresse_berger', 'tel_berger', 'commentaire' ]
+        fields = [
+            "id_berger",
+            "nom_berger",
+            "prenom_berger",
+            "adresse_berger",
+            "tel_berger",
+            "commentaire",
+        ]
+
 
 class GardeSituationSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
-    berger_nom = serializers.CharField(source='berger.nom_berger', read_only=True)
-    berger_prenom = serializers.CharField(source='berger.prenom_berger', read_only=True)
-    situation_nom = serializers.CharField(source='situation_exploitation.nom_situation', read_only=True)
-    
+
+    berger_nom = serializers.CharField(source="berger.nom_berger", read_only=True)
+    berger_prenom = serializers.CharField(source="berger.prenom_berger", read_only=True)
+    situation_nom = serializers.CharField(
+        source="situation_exploitation.nom_situation", read_only=True
+    )
+
     class Meta:
         model = GardeSituation
-        fields = [ 'id_garde_situation', 'date_debut', 'date_fin', 'commentaire', 'situation_exploitation', 'berger',
-                  'situation_nom', 'berger_nom', 'berger_prenom' ]
-
-
+        fields = [
+            "id_garde_situation",
+            "date_debut",
+            "date_fin",
+            "commentaire",
+            "situation_exploitation",
+            "berger",
+            "situation_nom",
+            "berger_nom",
+            "berger_prenom",
+        ]
 
 
 ##################
@@ -647,7 +856,8 @@ class ProductionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer
 
     class Meta:
         model = Production
-        fields = [ 'id_production', 'description' ]
+        fields = ["id_production", "description"]
+
 
 class CategoriePensionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
@@ -656,27 +866,32 @@ class CategoriePensionSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeri
 
     class Meta:
         model = CategoriePension
-        fields = [ 'id_categorie_pension', 'description' ]
+        fields = ["id_categorie_pension", "description"]
+
 
 class EspeceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Espèce
     """
-    
+
     class Meta:
         model = Espece
-        fields = [ 'id_espece', 'description' ]
+        fields = ["id_espece", "description"]
+
 
 class RaceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Race
     """
 
-    espece_description = serializers.CharField(source='espece.description', read_only=True)
+    espece_description = serializers.CharField(
+        source="espece.description", read_only=True
+    )
 
     class Meta:
         model = Race
-        fields = [ 'id_race', 'description', 'espece', 'espece_description' ]
+        fields = ["id_race", "description", "espece", "espece_description"]
+
 
 class CategorieAnimauxSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
@@ -685,107 +900,124 @@ class CategorieAnimauxSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeri
 
     class Meta:
         model = CategorieAnimaux
-        fields = [ 'id_categorie_animaux', 'description', 'espece' ]
+        fields = ["id_categorie_animaux", "description", "espece"]
+
 
 class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     """
     Cheptel
     """
+
     # Année
     annee = serializers.SerializerMethodField()
 
     # Eleveur
     eleveur = serializers.PrimaryKeyRelatedField(
-        queryset = Eleveur.objects.all(),
-        allow_null = True,
+        queryset=Eleveur.objects.all(),
+        allow_null=True,
     )
     eleveur_detail = EleveurSerializer(
-        source='eleveur',
+        source="eleveur",
         read_only=True,
     )
-    
+
     # Situation d'exploitation
     situation_exploitation = serializers.PrimaryKeyRelatedField(
-        queryset = SituationDExploitation.objects.all(),
-        allow_null = True,
+        queryset=SituationDExploitation.objects.all(),
+        allow_null=True,
     )
     situation_detail = SituationDExploitationSerializer(
-        source='situation_exploitation',
-        read_only=True
+        source="situation_exploitation", read_only=True
     )
 
     # Production
     production = serializers.PrimaryKeyRelatedField(
-        queryset = Production.objects.all(),
-        allow_null = True,
+        queryset=Production.objects.all(),
+        allow_null=True,
     )
-    production_detail = ProductionSerializer(source='production', read_only=True)
+    production_detail = ProductionSerializer(source="production", read_only=True)
 
     # Catégorie de pension
     pension = serializers.PrimaryKeyRelatedField(
-        queryset = CategoriePension.objects.all(),
-        allow_null = True,
+        queryset=CategoriePension.objects.all(),
+        allow_null=True,
     )
-    pension_detail = CategoriePensionSerializer(source='pension', read_only=True)
+    pension_detail = CategoriePensionSerializer(source="pension", read_only=True)
 
     # Race
     race = serializers.PrimaryKeyRelatedField(
-        queryset = Race.objects.all(),
-        allow_null = True,
+        queryset=Race.objects.all(),
+        allow_null=True,
     )
-    race_detail = RaceSerializer(source='race', read_only=True)
+    race_detail = RaceSerializer(source="race", read_only=True)
 
     # Catégorie d'animaux
     categorie_animaux = serializers.PrimaryKeyRelatedField(
-        queryset = CategorieAnimaux.objects.all(),
-        allow_null = True,
+        queryset=CategorieAnimaux.objects.all(),
+        allow_null=True,
     )
-    categorie_animaux_detail = CategorieAnimauxSerializer(source='categorie_animaux', read_only=True)
+    categorie_animaux_detail = CategorieAnimauxSerializer(
+        source="categorie_animaux", read_only=True
+    )
 
     class Meta:
         model = Cheptel
-        fields = [ 'id_cheptel', 'date_debut', 'annee', 'date_fin', 'nombre_animaux', 'eleveur', 'eleveur_detail',
-                  'situation_exploitation', 'situation_detail', 'description',
-                  'coefficient_UGB',
-                  'production', 'production_detail',
-                  'pension', 'pension_detail',
-                  'race', 'race_detail',
-                  'categorie_animaux', 'categorie_animaux_detail' ]
+        fields = [
+            "id_cheptel",
+            "date_debut",
+            "annee",
+            "date_fin",
+            "nombre_animaux",
+            "eleveur",
+            "eleveur_detail",
+            "situation_exploitation",
+            "situation_detail",
+            "description",
+            "coefficient_UGB",
+            "production",
+            "production_detail",
+            "pension",
+            "pension_detail",
+            "race",
+            "race_detail",
+            "categorie_animaux",
+            "categorie_animaux_detail",
+        ]
 
     def get_annee(self, obj):
         if obj.date_debut:
             return obj.date_debut.year
         return None
 
+
 # FIN Mise à jour Cheptels / types de cheptel
 ##################
 
 
-
 # Evenements
 class TypeEvenementSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    
+
     class Meta:
         model = TypeEvenement
         fields = [
-            'id_type_evenement',
-            'description',
-            'created_by',
-            'created_on',
-            'modified_by',
-            'modified_on',
+            "id_type_evenement",
+            "description",
+            "created_by",
+            "created_on",
+            "modified_by",
+            "modified_on",
         ]
-        read_only_fields = ['created_by', 'created_on', 'modified_by', 'modified_on']
+        read_only_fields = ["created_by", "created_on", "modified_by", "modified_on"]
 
 
 class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     type_evenement_label = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Evenement
-        geo_field = 'geometry'
+        geo_field = "geometry"
         auto_bbox = True
-        fields = '__all__'
+        fields = "__all__"
 
     def get_type_evenement_label(self, obj):
         try:
@@ -794,9 +1026,9 @@ class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
             return None
 
     def to_representation(self, instance):
-        if (instance.geometry != None):
+        if instance.geometry != None:
             instance.geometry.transform(4326)
-        
+
         return super().to_representation(instance)
 
 
@@ -804,81 +1036,80 @@ class TypeEquipementSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerial
     class Meta:
         model = TypeEquipement
         fields = [
-            'id_type_equipement',
-            'description',
-            'categorie',
-            'created_by',
-            'created_on',
-            'modified_by',
-            'modified_on',
+            "id_type_equipement",
+            "description",
+            "categorie",
+            "created_by",
+            "created_on",
+            "modified_by",
+            "modified_on",
         ]
-        read_only_fields = ['created_by', 'created_on', 'modified_by', 'modified_on']
-
+        read_only_fields = ["created_by", "created_on", "modified_by", "modified_on"]
 
 
 class EquipementAlpageSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     type_equipement = serializers.PrimaryKeyRelatedField(
-        queryset = TypeEquipement.objects.filter(categorie__iexact='Alpage'),
-        allow_null = True,
+        queryset=TypeEquipement.objects.filter(categorie__iexact="Alpage"),
+        allow_null=True,
     )
     type_equipement_detail = TypeEquipementSerializer(
-        source='type_equipement',
-        read_only=True
-        )
+        source="type_equipement", read_only=True
+    )
     unite_pastorale = serializers.PrimaryKeyRelatedField(
-        queryset = UnitePastorale.objects.all(),
-        allow_null = True,
+        queryset=UnitePastorale.objects.all(),
+        allow_null=True,
     )
     unite_pastorale_detail = UnitePastoraleLSerializer(
-        source='unite_pastorale',
-        read_only=True
+        source="unite_pastorale", read_only=True
     )
 
     class Meta:
         model = EquipementAlpage
-        geo_field = 'geometry'
+        geo_field = "geometry"
         auto_bbox = True
-        fields = '__all__'
-    
+        fields = "__all__"
+
     def to_representation(self, instance):
-        if (instance.geometry != None):
+        if instance.geometry != None:
             instance.geometry.transform(4326)
-        
+
         return super().to_representation(instance)
-    
-class EquipementExploitantSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
+
+
+class EquipementExploitantSerializer(
+    AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
+):
     type_equipement = serializers.PrimaryKeyRelatedField(
-        queryset = TypeEquipement.objects.filter(categorie__iexact='Exploitant'),
-        allow_null = True,
+        queryset=TypeEquipement.objects.filter(categorie__iexact="Exploitant"),
+        allow_null=True,
     )
     type_equipement_detail = TypeEquipementSerializer(
-        source='type_equipement',
-        read_only=True
-        )
+        source="type_equipement", read_only=True
+    )
     situation_exploitation = serializers.PrimaryKeyRelatedField(
-        queryset = SituationDExploitation.objects.all(),
-        allow_null = True,
+        queryset=SituationDExploitation.objects.all(),
+        allow_null=True,
     )
     situation_exploitation_detail = serializers.SerializerMethodField()
     beneficier_de = serializers.PrimaryKeyRelatedField(
-        queryset = BeneficierDe.objects.all(),
-        allow_null = True,
-        required = False,
+        queryset=BeneficierDe.objects.all(),
+        allow_null=True,
+        required=False,
     )
     beneficier_de_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = EquipementExploitant
-        geo_field = 'geometry'
+        geo_field = "geometry"
         auto_bbox = True
-        fields = '__all__'
+        fields = "__all__"
 
     def get_situation_exploitation_detail(self, obj):
         if not obj.situation_exploitation:
             return None
         return {
-            'id_situation': obj.situation_exploitation.id_situation,
-            'nom_situation': obj.situation_exploitation.nom_situation,
+            "id_situation": obj.situation_exploitation.id_situation,
+            "nom_situation": obj.situation_exploitation.nom_situation,
         }
 
     def get_beneficier_de_detail(self, obj):
@@ -886,14 +1117,12 @@ class EquipementExploitantSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSe
         if not bd:
             return None
         return {
-            'abri_urgence': bd.abri_urgence_id,
-            'date_debut': bd.date_debut,
-            'date_fin': bd.date_fin,
+            "abri_urgence": bd.abri_urgence_id,
+            "date_debut": bd.date_debut,
+            "date_fin": bd.date_fin,
         }
 
     def to_representation(self, instance):
         if instance.geometry is not None:
             instance.geometry.transform(4326)
         return super().to_representation(instance)
-
-

@@ -17,4 +17,3 @@ ups_shp = Path(__file__).resolve().parent / "data" / "UP_coeur_fields_OK.shp"
 def run(verbose=True):
     lm = LayerMapping(UnitePastorale, ups_shp, ups_mapping, transform=False)
     lm.save(strict=True, verbose=verbose)
-

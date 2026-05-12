@@ -21,7 +21,6 @@ export const useMainStore = defineStore("main", {
   actions: {
     setUser(userData) {
       this.user = userData;
-      console.log("Utilisateur connecté :", this.user);
       localStorage.setItem("user", JSON.stringify(userData));
     },
     logout() {
@@ -43,13 +42,10 @@ export const useMainStore = defineStore("main", {
     async fetchUserPermissions() {
       try {
         const response = await auth.axiosInstance.get("/userpermissions/");
-        // console.log("FetchPermissions : Réponse API permissions :", response.data);
         this.username = response.data.username;
         this.firstName = response.data.first_name;
         this.lastName = response.data.last_name;
         this.userPermissions = response.data.permissions_by_model;
-
-        // console.log("Stocké dans le store :", this);
       } catch (error) {
         console.error("Erreur lors du chargement des permissions :", error);
         // this.setErrorMessage("Impossible de charger les permissions.");

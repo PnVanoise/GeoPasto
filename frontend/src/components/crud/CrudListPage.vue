@@ -249,9 +249,7 @@ function handleDelete(item) {
       window.dispatchEvent(
         new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } })
       );
-    } catch (err) {
-      console.error("Error deleting item", err);
-    }
+    } catch (err) {}
   })();
 }
 </script>

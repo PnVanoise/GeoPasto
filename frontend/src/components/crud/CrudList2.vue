@@ -229,9 +229,7 @@ const onCrudOpenView = async (event) => {
     if (target) {
       crud.openView(target);
     }
-  } catch (err) {
-    console.warn("Could not open view from crud-open-view event", err);
-  }
+  } catch (err) {}
 };
 
 const onCrudOpenEdit = async (event) => {
@@ -251,9 +249,7 @@ const onCrudOpenEdit = async (event) => {
     if (target) {
       crud.openEdit(target);
     }
-  } catch (err) {
-    console.warn("Could not open edit from crud-open-edit event", err);
-  }
+  } catch (err) {}
 };
 
 onMounted(() => {
@@ -287,7 +283,6 @@ watch(
 );
 
 const handleSubmit = async (formData) => {
-  console.log("Submitting form data:", formData);
   if (crud.mode.value === "add") {
     await crud.createItem(formData, props.requestParams);
   } else if (crud.mode.value === "edit" || crud.mode.value === "change") {
@@ -299,9 +294,7 @@ const handleSubmit = async (formData) => {
     window.dispatchEvent(
       new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } })
     );
-  } catch (e) {
-    console.warn("Could not dispatch geo-data-changed event", e);
-  }
+  } catch (e) {}
 };
 
 // Export visible rows as CSV
@@ -403,12 +396,8 @@ function handleDelete(item) {
         window.dispatchEvent(
           new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } })
         );
-      } catch (e) {
-        console.warn("Could not dispatch geo-data-changed event after delete", e);
-      }
-    } catch (err) {
-      console.error("Error deleting item", err);
-    }
+      } catch (e) {}
+    } catch (err) {}
   })();
 }
 </script>

@@ -435,9 +435,7 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {
-  props.onSubmit?.({ ...form }).catch((err) => console.error("Erreur soumission logement", err));
-};
+const submitForm = () => {};
 
 const closeModal = () => props.onClose?.();
 
@@ -449,9 +447,7 @@ onMounted(async () => {
     ]);
     choices.value = resChoices.data ?? {};
     ups.value = resUP.data ?? [];
-  } catch (err) {
-    console.error("Erreur chargement données logement", err);
-  }
+  } catch (err) {}
 });
 </script>
 

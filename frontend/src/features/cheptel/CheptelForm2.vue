@@ -266,10 +266,8 @@ const loadEleveurs = (explId) => {
           ...e,
           nom_complet: e.nom_complet ?? `${e.nom_eleveur || ""} ${e.prenom_eleveur || ""}`.trim(),
         }));
-        console.log("eleveur (filtered):", eleveurs.value);
       })
       .catch((error) => {
-        console.error("Erreur lors de la récupération de la liste des éleveurs.", error);
       });
   } else {
     auth.axiosInstance
@@ -280,10 +278,8 @@ const loadEleveurs = (explId) => {
           ...e,
           nom_complet: e.nom_complet ?? `${e.nom_eleveur || ""} ${e.prenom_eleveur || ""}`.trim(),
         }));
-        console.log("eleveur:", eleveurs.value);
       })
       .catch((error) => {
-        console.error("Erreur lors de la récupération de la liste des éleveurs.", error);
       });
   }
 };
@@ -320,7 +316,6 @@ watch(
             }
           })
           .catch((error) => {
-            console.error(
               "Erreur lors de la récupération de la liste des situations d'exploitation.",
               error
             );
@@ -356,7 +351,6 @@ onMounted(() => {
       } else {
         situations.value = data;
       }
-      console.log("situations:", situations.value);
       // If initialForm provided a situation id, ensure the model uses it after items loaded
       if (situLocked.value) {
         form.situation_exploitation =
@@ -366,7 +360,6 @@ onMounted(() => {
       }
     })
     .catch((error) => {
-      console.error(
         "Erreur lors de la récupération de la liste des situations d'exploitation.",
         error
       );
@@ -382,28 +375,24 @@ onMounted(() => {
     .then((response) => {
       productions.value = response.data;
     })
-    .catch(() => console.error("Erreur lors de la récupération des productions."));
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/categorie_pension/`)
     .then((response) => {
       pensions.value = response.data;
     })
-    .catch(() => console.error("Erreur lors de la récupération des catégories de pension."));
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/race/`)
     .then((response) => {
       races.value = response.data;
     })
-    .catch(() => console.error("Erreur lors de la récupération des races."));
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/categorie_animaux/`)
     .then((response) => {
       categoriesAnimaux.value = response.data;
     })
-    .catch(() => console.error("Erreur lors de la récupération des catégories d'animaux."));
 });
 
 // Submits
@@ -417,8 +406,6 @@ const submitForm = () => {
     }
     props
       .onSubmit(form)
-      .then(() => console.log("Form submitted OK"))
-      .catch((err) => console.error(err));
   }
 };
 

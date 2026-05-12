@@ -8,7 +8,6 @@ const state = reactive({
 
 export function useNotification() {
   const notify = ({ message, type = "success", duration = 3000 }) => {
-    console.log("notify called");
     const notification = {
       id: id++,
       message,

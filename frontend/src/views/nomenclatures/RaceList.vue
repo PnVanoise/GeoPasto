@@ -45,8 +45,6 @@ onMounted(async () => {
       label: e.description,
       value: e.id_espece,
     }));
-  } catch (e) {
-    console.error("Erreur lors du chargement des espèces pour le filtre", e);
-  }
+  } catch (e) {}
 });
 </script>

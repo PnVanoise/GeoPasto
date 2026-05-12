@@ -39,7 +39,6 @@ onMounted(async () => {
       );
       itemData.value = response.data ?? {};
     } catch (e) {
-      console.error("Erreur lors du chargement de la mesure de plan", e);
     } finally {
       isLoading.value = false;
     }

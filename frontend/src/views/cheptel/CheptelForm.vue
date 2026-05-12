@@ -45,7 +45,6 @@ onMounted(async () => {
       );
       itemData.value = response.data ?? {};
     } catch (e) {
-      console.error("Erreur lors du chargement du cheptel", e);
     } finally {
       isLoading.value = false;
     }

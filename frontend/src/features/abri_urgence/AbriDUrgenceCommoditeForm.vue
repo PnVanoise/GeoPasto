@@ -157,9 +157,7 @@ onMounted(() => {
     .then((response) => {
       abris.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des abris.", error);
-    });
+    .catch((error) => {});
 
   // Récupère les commodités
   auth.axiosInstance
@@ -167,18 +165,13 @@ onMounted(() => {
     .then((response) => {
       commodites.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des commodites.", error);
-    });
+    .catch((error) => {});
 });
 
 // Submit
 const submitForm = () => {
   if (props.onSubmit) {
-    props
-      .onSubmit(form)
-      .then(() => console.log("Form submitted OK"))
-      .catch((err) => console.error(err));
+    props.onSubmit(form);
   }
 };
 

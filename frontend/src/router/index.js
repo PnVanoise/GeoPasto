@@ -905,23 +905,18 @@ router.beforeEach(async (to, from, next) => {
   const liste = to.meta?.liste;
 
   if (!mainStore.userPermissions || Object.keys(mainStore.userPermissions).length === 0) {
-    // console.log("⚠️ Permissions non chargées, récupération en cours...");
     await mainStore.fetchUserPermissions();
   }
 
   if (requiredPermission && modelName) {
     const hasPermission = mainStore.hasPermission(modelName, requiredPermission);
-    console.log("modelname:", modelName);
-    console.log("reqperm:", requiredPermission);
 
     if (!hasPermission) {
       // Afficher un message d’erreur sans déconnexion
       mainStore.setErrorMessage(
         "Vous n’avez pas les droits nécessaires pour accéder à cette page."
       );
-      console.log(modelName, requiredPermission);
       // Rester sur la page précédente ou aller à une route "sûre"
-      console.log("liste", liste);
       return next(false);
     }
   }

@@ -50,13 +50,21 @@ export function useCrudPage(modelName, apiRouteName, idField = "id", options = {
   // ── Mutations avec redirection ───────────────────────────────────────────────
 
   const createItem = async (payload, extraQueryParams = null) => {
-    await crud.createItem(payload, extraQueryParams);
-    router.back();
+    try {
+      await crud.createItem(payload, extraQueryParams);
+      router.back();
+    } catch {
+      // erreur déjà notifiée par useCrud
+    }
   };
 
   const updateItem = async (payload, extraQueryParams = null) => {
-    await crud.updateItem(payload, extraQueryParams);
-    router.back();
+    try {
+      await crud.updateItem(payload, extraQueryParams);
+      router.back();
+    } catch {
+      // erreur déjà notifiée par useCrud
+    }
   };
 
   // deleteItem : pas de redirection, on reste sur la liste

@@ -439,18 +439,14 @@ const fetchTypes = async () => {
   try {
     const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/typeEvenement/`);
     types.value = res.data || [];
-  } catch (err) {
-    console.error("Erreur chargement types d'événements", err);
-  }
+  } catch (err) {}
 };
 
 const fetchSituations = async () => {
   try {
     const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/situationExploitation/`);
     situations.value = res.data || [];
-  } catch (err) {
-    console.error("Erreur chargement situations", err);
-  }
+  } catch (err) {}
 };
 
 const fetchContextFromSituation = async (situationId) => {
@@ -472,7 +468,6 @@ const fetchContextFromSituation = async (situationId) => {
       upContextGeoData.value = null;
     }
   } catch (err) {
-    console.error("Erreur chargement contexte situation", err);
     upContextGeoData.value = null;
   }
 };
@@ -488,7 +483,6 @@ const fetchQuartiersContext = async (situationId) => {
     );
     quartiersContextGeoData.value = toFeatureCollection(res.data);
   } catch (err) {
-    console.error("Erreur chargement quartiers de la situation", err);
     quartiersContextGeoData.value = null;
   }
 };
@@ -504,7 +498,6 @@ const fetchEvenementsContext = async (situationId) => {
     );
     evenementsContextGeoData.value = toFeatureCollection(res.data);
   } catch (err) {
-    console.error("Erreur chargement événements de contexte", err);
     evenementsContextGeoData.value = null;
   }
 };

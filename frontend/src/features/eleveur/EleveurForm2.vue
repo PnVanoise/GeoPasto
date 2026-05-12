@@ -164,10 +164,7 @@ const submitForm = () => {
   // payload propre (deep copy) : enlever champs read-only et n'envoyer l'id que pour update
   const payload = JSON.parse(JSON.stringify(form));
   if (props.mode === "add") delete payload.id_eleveur;
-  props
-    .onSubmit(payload)
-    .then(() => console.log("Form submitted OK"))
-    .catch((err) => console.error(err));
+  props.onSubmit(payload);
 };
 
 // Close

@@ -47,7 +47,6 @@ onMounted(async () => {
         delete itemData.value.properties.geometry;
       }
     } catch (e) {
-      console.error("Erreur lors du chargement de l'UP", e);
     } finally {
       isLoading.value = false;
     }

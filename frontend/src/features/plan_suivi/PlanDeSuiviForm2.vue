@@ -146,29 +146,21 @@ onMounted(() => {
     .then((response) => {
       typesuivis.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des types de suivi", error);
-    });
+    .catch((error) => {});
 
   // Récupère les unités pastorales
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/unitePastorale/light`)
     .then((response) => {
       ups.value = response.data;
-      console.log("ups:", ups.value);
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des unités pastorales", error);
-    });
+    .catch((error) => {});
 });
 
 // Submits
 const submitForm = () => {
   if (props.onSubmit) {
-    props
-      .onSubmit(form)
-      .then(() => console.log("Form submitted OK"))
-      .catch((err) => console.error(err));
+    props.onSubmit(form);
   }
 };
 

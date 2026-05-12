@@ -224,7 +224,6 @@ async function fetchGeoJSON() {
     datajson.value = await response.json();
     return datajson.value;
   } catch (error) {
-    console.error("Error fetching GeoJSON:", error);
     return null;
   }
 }
@@ -254,9 +253,7 @@ function startEdit() {
     });
     map.addControl(drawControl);
 
-    map.on("draw:editvertex", function (event) {
-      console.log("event.poly: ", event.poly);
-    });
+    map.on("draw:editvertex", function (event) {});
 
     map.on(L.Draw.Event.EDITED, function (event) {
       const layers = event.layers;
@@ -296,7 +293,6 @@ async function updateAlpage() {
     isEditing.value = false;
     map.removeLayer(editableLayers);
   } catch (error) {
-    console.error("Error updating GeoJSON:", error);
     alert("Erreur lors de la mise à jour du quartier.");
   }
 }
@@ -316,7 +312,6 @@ async function deleteAlpage() {
     alert("Quartier supprimé avec succès.");
     router.push("/mapview");
   } catch (error) {
-    console.error("Error deleting GeoJSON:", error);
     alert("Erreur lors de la suppression du quartier.");
   }
 }
@@ -360,9 +355,7 @@ onMounted(async () => {
       const bounds = geojsonLayer.getBounds();
       map.fitBounds(bounds);
     }
-  } catch (error) {
-    console.log("Erreur lors de l'initialisation de la carte : ", error);
-  }
+  } catch (error) {}
 });
 </script>
 

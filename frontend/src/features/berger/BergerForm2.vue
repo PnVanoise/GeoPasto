@@ -140,10 +140,7 @@ watch(
 // Submits
 const submitForm = () => {
   if (props.onSubmit) {
-    props
-      .onSubmit(form)
-      .then(() => console.log("Form submitted OK"))
-      .catch((err) => console.error(err));
+    props.onSubmit(form);
   }
 };
 

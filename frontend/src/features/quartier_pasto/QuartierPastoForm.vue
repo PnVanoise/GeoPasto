@@ -148,7 +148,6 @@ const fetchUpGeometry = async (upId) => {
       upGeoData.value = null;
     }
   } catch (e) {
-    console.error("Erreur lors de la récupération de la géométrie de l'UP", e);
     upGeoData.value = null;
   }
 };
@@ -322,7 +321,6 @@ const fetchContextQuartiersForSituation = async (situationId) => {
       features,
     };
   } catch (error) {
-    console.error("Erreur lors de la récupération des quartiers de contexte", error);
     contextQuartiersGeoData.value = null;
   }
 };
@@ -352,7 +350,6 @@ const submitForm = () => {
 
   if (!form.value.geometry) {
     geometryError.value = true;
-    console.warn(
       "QuartierPastoForm submit: geometry is null. Finish drawing (double-click) before saving."
     );
     return;
@@ -363,10 +360,8 @@ const submitForm = () => {
   props
     .onSubmit(form.value)
     .then(() => {
-      console.log("Form submission then block executed");
     })
     .catch((error) => {
-      console.error("There was an error in form submission!", error);
     });
 };
 
@@ -377,7 +372,6 @@ onMounted(() => {
       ups.value = response.data;
     })
     .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des unites pastorales", error);
     });
 
   auth.axiosInstance
@@ -386,7 +380,6 @@ onMounted(() => {
       situations.value = response.data || [];
     })
     .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des situations", error);
     });
 
   fetchContextQuartiersForSituation(form.value?.properties?.situation_exploitation);

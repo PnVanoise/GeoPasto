@@ -88,9 +88,7 @@ watch(
 );
 
 const submitForm = () => {
-  props
-    .onSubmit?.({ ...form })
-    .catch((err) => console.error("Erreur soumission UP/Propriétaire", err));
+  props.onSubmit?.({ ...form });
 };
 
 const closeModal = () => props.onClose?.();
@@ -106,9 +104,7 @@ onMounted(async () => {
       ...p,
       nom_complet: `${p.nom_propr} ${p.prenom_propr || ""}`.trim(),
     }));
-  } catch (err) {
-    console.error("Erreur chargement données UP/Propriétaire", err);
-  }
+  } catch (err) {}
 });
 </script>
 

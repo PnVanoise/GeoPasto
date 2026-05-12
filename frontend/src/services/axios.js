@@ -44,7 +44,6 @@ async function refreshAccessToken() {
     axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newAccess}`;
     return newAccess;
   } catch (error) {
-    console.error("Erreur lors du rafraîchissement du token :", error);
     logout();
     return null;
   }

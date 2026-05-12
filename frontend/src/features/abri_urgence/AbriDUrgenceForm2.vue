@@ -128,9 +128,7 @@ watch(
   { immediate: true }
 );
 
-const submitForm = () => {
-  props.onSubmit?.(form).catch((err) => console.error(err));
-};
+const submitForm = () => {};
 
 const closeModal = () => props.onClose?.();
 </script>

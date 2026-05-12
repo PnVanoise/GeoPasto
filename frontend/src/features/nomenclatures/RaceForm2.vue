@@ -110,11 +110,8 @@ onMounted(() => {
     .get(`${config.API_BASE_URL}/api/espece/`)
     .then((response) => {
       especes.value = response.data;
-      console.log("Espèces:", especes.value);
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des espèces", error);
-    });
+    .catch((error) => {});
 });
 
 // Submits
@@ -123,10 +120,7 @@ const submitForm = () => {
   // payload propre (deep copy) : enlever champs read-only et n'envoyer l'id que pour update
   const payload = JSON.parse(JSON.stringify(form));
   if (props.mode === "add") delete payload.id_race;
-  props
-    .onSubmit(payload)
-    .then(() => console.log("Form submitted OK"))
-    .catch((err) => console.error(err));
+  props.onSubmit(payload);
 };
 
 // Close

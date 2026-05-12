@@ -32,15 +32,10 @@ const props = defineProps({
 const form = ref({ ...props.initialForm });
 
 const submitForm = () => {
-  console.log("Form submitted with:", form.value);
   props
     .onSubmit(form.value)
-    .then(() => {
-      console.log("Form submission then block executed");
-    })
-    .catch((error) => {
-      console.error("There was an error in form submission!", error);
-    });
+    .then(() => {})
+    .catch((error) => {});
 };
 
 watch(
@@ -52,13 +47,9 @@ watch(
 );
 
 // Hooks de cycle de vie pour déboguer
-onMounted(() => {
-  console.log("TypeEquipementAlpageForm component mounted");
-});
+onMounted(() => {});
 
-onBeforeUnmount(() => {
-  console.log("TypeEquipementAlpageForm component before unmount");
-});
+onBeforeUnmount(() => {});
 </script>
 
 <style scoped>

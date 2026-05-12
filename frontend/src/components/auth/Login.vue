@@ -57,7 +57,6 @@ const login = async () => {
     if (error.response?.status === 401) {
       alert("Nom d’utilisateur ou mot de passe incorrect !");
     } else {
-      console.error("Erreur lors de la connexion :", error);
       mainStore.setErrorMessage("Erreur lors de la connexion.");
     }
   }

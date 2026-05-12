@@ -13,8 +13,6 @@
 import { useNotification } from "../../composables/useNotification";
 
 const { notifications, remove } = useNotification();
-
-console.log("NotificationContainer mounted, notifications:", notifications);
 </script>
 
 <style>

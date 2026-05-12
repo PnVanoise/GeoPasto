@@ -198,7 +198,6 @@ const fetchUnitePastoraleContext = async (upId) => {
     const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/${upId}/`);
     upContextGeoData.value = toFeatureCollection(res.data);
   } catch (err) {
-    console.error("Erreur chargement géométrie UP", err);
     upContextGeoData.value = null;
   }
 };
@@ -261,9 +260,7 @@ onMounted(async () => {
     ]);
     typesEquipement.value = typeRes.data || [];
     ups.value = upRes.data || [];
-  } catch (err) {
-    console.error("Erreur chargement refs equipement alpage", err);
-  }
+  } catch (err) {}
 
   if (form.unite_pastorale) {
     await fetchUnitePastoraleContext(form.unite_pastorale);

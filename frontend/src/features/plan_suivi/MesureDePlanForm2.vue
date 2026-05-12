@@ -156,9 +156,7 @@ onMounted(() => {
     .then((response) => {
       typemesures.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des types de mesure", error);
-    });
+    .catch((error) => {});
 
   // Récupère les plans de suivi
   auth.axiosInstance
@@ -166,18 +164,13 @@ onMounted(() => {
     .then((response) => {
       plansuivis.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des plans de suivi", error);
-    });
+    .catch((error) => {});
 });
 
 // Submits
 const submitForm = () => {
   if (props.onSubmit) {
-    props
-      .onSubmit(form)
-      .then(() => console.log("Form submitted OK"))
-      .catch((err) => console.error(err));
+    props.onSubmit(form);
   }
 };
 

@@ -211,9 +211,7 @@ onMounted(() => {
     .then((response) => {
       refUPs.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur chargement UPs de référence", error);
-    });
+    .catch((error) => {});
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/proprietaireFoncier/`)
@@ -223,9 +221,7 @@ onMounted(() => {
         props.initialForm?.properties?.proprios_ids || props.initialForm?.proprios_ids;
       if (Array.isArray(initIds)) form.properties.proprios = initIds.map((id) => Number(id));
     })
-    .catch((error) => {
-      console.error("Erreur chargement propriétaires", error);
-    });
+    .catch((error) => {});
 });
 
 watch(
@@ -269,7 +265,6 @@ const submitForm = () => {
   }
   payload.properties = propsObj;
   if (props.mode === "add") delete payload.id;
-  props.onSubmit(payload).catch((err) => console.error(err));
 };
 
 const closeModal = () => props.onClose?.();

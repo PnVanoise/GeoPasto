@@ -19,10 +19,7 @@ const errorMessage = computed(() => mainStore.errorMessage);
 const initializeUserData = async () => {
   try {
     await mainStore.fetchUserPermissions();
-    console.log("✅ Permissions chargées :", mainStore.userPermissions);
-  } catch (error) {
-    console.error("❌ Erreur lors du chargement des permissions :", error);
-  }
+  } catch (error) {}
 };
 
 const handleAuthenticated = async () => {

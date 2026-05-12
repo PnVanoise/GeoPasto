@@ -152,9 +152,7 @@ onMounted(() => {
     .then((response) => {
       situations.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération des situations d'exploitation.", error);
-    });
+    .catch((error) => {});
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/berger/`)
@@ -164,17 +162,12 @@ onMounted(() => {
         fullName: `${b.nom_berger} ${b.prenom_berger}`,
       }));
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération des bergers.", error);
-    });
+    .catch((error) => {});
 });
 
 const submitForm = () => {
   if (props.onSubmit) {
-    props
-      .onSubmit(form)
-      .then(() => console.log("Form submitted OK"))
-      .catch((err) => console.error(err));
+    props.onSubmit(form);
   }
 };
 

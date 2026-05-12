@@ -46,7 +46,6 @@ onMounted(async () => {
       );
       itemData.value = response.data ?? {};
     } catch (e) {
-      console.error("Erreur lors du chargement de l'équipement alpage", e);
     } finally {
       isLoading.value = false;
     }

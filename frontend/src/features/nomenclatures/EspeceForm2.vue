@@ -96,10 +96,7 @@ const submitForm = () => {
   const payload = JSON.parse(JSON.stringify(form));
   delete payload.membres_ids;
   if (props.mode === "add") delete payload.id_espece;
-  props
-    .onSubmit(payload)
-    .then(() => console.log("Form submitted OK"))
-    .catch((err) => console.error(err));
+  props.onSubmit(payload);
 };
 
 // Close

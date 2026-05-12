@@ -110,9 +110,7 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {
-  props.onSubmit?.({ ...form }).catch((err) => console.error("Erreur soumission ruche", err));
-};
+const submitForm = () => {};
 
 const closeModal = () => props.onClose?.();
 
@@ -120,9 +118,7 @@ onMounted(async () => {
   try {
     const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/situationExploitation/`);
     situations.value = res.data || [];
-  } catch (err) {
-    console.error("Erreur chargement situations", err);
-  }
+  } catch (err) {}
 });
 </script>
 

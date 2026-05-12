@@ -66,7 +66,6 @@ const baseMaps = {
 
 async function fetchGeoJSON() {
   try {
-    console.log(config.API_BASE_URL);
     const response = await fetch(`${config.API_BASE_URL}/api/quartierUP/`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -74,7 +73,6 @@ async function fetchGeoJSON() {
     const datajson = await response.json();
     return datajson;
   } catch (error) {
-    console.error("Error fetching GeoJSON:", error);
     return null;
   }
 }
@@ -135,9 +133,7 @@ onMounted(async () => {
         onEachFeature: onEachFeature,
       }).addTo(map);
     }
-  } catch (error) {
-    console.log("Erreur lors de l'initialisation de la carte : ", error);
-  }
+  } catch (error) {}
 });
 </script>
 

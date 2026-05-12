@@ -34,8 +34,21 @@
     </section>
 
     <div class="form-actions">
-      <v-btn density="comfortable" color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn density="comfortable" v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">{{ btTitle }}</v-btn>
+      <v-btn
+        density="comfortable"
+        color="info"
+        @click="closeModal"
+        prepend-icon="mdi-arrow-left-circle"
+        >Retour</v-btn
+      >
+      <v-btn
+        density="comfortable"
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+        >{{ btTitle }}</v-btn
+      >
     </div>
   </form>
 </template>
@@ -43,7 +56,7 @@
 <script setup>
 import { reactive, watch, ref, computed, onMounted } from "vue";
 import config from "../../../config";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 
 const props = defineProps({
@@ -72,10 +85,9 @@ const btTitle = computed(() => {
 const form = reactive({
   description: "",
   espece: "",
- });
+});
 
 const especes = ref([]);
-
 
 watch(
   () => props.initialForm,
@@ -98,11 +110,8 @@ onMounted(() => {
     .get(`${config.API_BASE_URL}/api/espece/`)
     .then((response) => {
       especes.value = response.data;
-      console.log("CategorieAnimaux - Espèces reçues:", response.data);
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des espèces", error);
-    });
+    .catch((error) => {});
 });
 
 // Submits
@@ -110,10 +119,8 @@ const submitForm = () => {
   if (!props.onSubmit) return;
   // payload propre (deep copy) : enlever champs read-only et n'envoyer l'id que pour update
   const payload = JSON.parse(JSON.stringify(form));
-  if (props.mode === 'add') delete payload.id_categorie_animaux;
-  props.onSubmit(payload)
-    .then(() => console.log("Form submitted OK"))
-    .catch(err => console.error(err));
+  if (props.mode === "add") delete payload.id_categorie_animaux;
+  props.onSubmit(payload);
 };
 
 // Close
@@ -129,7 +136,9 @@ const closeModal = () => {
   border-radius: 8px;
   padding: 0.75rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .layout-card:hover {
@@ -156,8 +165,12 @@ const closeModal = () => {
   font-size: 0.88rem;
 }
 
-.form-ligne { padding: 4px; }
-.form-cell { padding: 4px; }
+.form-ligne {
+  padding: 4px;
+}
+.form-cell {
+  padding: 4px;
+}
 
 .form-actions {
   display: flex;
@@ -171,5 +184,3 @@ const closeModal = () => {
   pointer-events: none;
 }
 </style>
-
-

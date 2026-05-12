@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        language: system
+        entry: backend/venv/bin/black
+        types: [python]
+        files: ^backend/
+        exclude: ^backend/.*/migrations/
+
+      - id: prettier
+        name: prettier
+        language: system
+        entry: frontend/node_modules/.bin/prettier --write
+        files: ^frontend/src/.*\.(js|vue|css)$

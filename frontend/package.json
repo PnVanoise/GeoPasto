@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "test": "vitest"
+    "test": "vitest",
+    "format": "prettier --write \"src/**/*.{js,vue,css}\"",
+    "format:check": "prettier --check \"src/**/*.{js,vue,css}\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -38,6 +40,7 @@
     "@vuepress/bundler-vite": "^2.0.0-rc.14",
     "@vuepress/theme-default": "^2.0.0-rc.37",
     "jsdom": "^22.1.0",
+    "prettier": "^3.8.3",
     "sass": "^1.97.3",
     "vite": "^5.3.1",
     "vite-plugin-vuetify": "^2.1.3",

@@ -2,27 +2,52 @@ from datetime import date
 from django.test import TestCase
 
 from alpages.models import (
-    QuartierPasto, SituationDExploitation, Exploiter, Ruche,
-    Eleveur, AbriDUrgence, Commodite, AbriDUrgenceCommodite
+    QuartierPasto,
+    SituationDExploitation,
+    Exploiter,
+    Ruche,
+    Eleveur,
+    AbriDUrgence,
+    Commodite,
+    AbriDUrgenceCommodite,
 )
 
 
 class ModelsSmokeTest(TestCase):
 
     def test_create_basic_models_and_relations(self):
-        quartier = QuartierPasto.objects.create(id_quartier=10, code_quartier='Q10', nom_quartier='Q10')
+        quartier = QuartierPasto.objects.create(
+            id_quartier=10, code_quartier="Q10", nom_quartier="Q10"
+        )
         orig = SituationDExploitation.objects.create(
-            id_situation=10, nom_situation='S10', situation_active=True, date_debut=date(2020, 1, 1)
+            id_situation=10,
+            nom_situation="S10",
+            situation_active=True,
+            date_debut=date(2020, 1, 1),
         )
 
-        Exploiter.objects.create(id_exploiter=10, quartier=quartier, situation_exploitation=orig, date_debut=date(2020,1,1))
-        ruche = Ruche.objects.create(id_ruche=10, description='R10', geometry='POINT(0 0)', situation_exploitation=orig)
+        Exploiter.objects.create(
+            id_exploiter=10,
+            quartier=quartier,
+            situation_exploitation=orig,
+            date_debut=date(2020, 1, 1),
+        )
+        ruche = Ruche.objects.create(
+            id_ruche=10,
+            description="R10",
+            geometry="POINT(0 0)",
+            situation_exploitation=orig,
+        )
 
-        eleveur = Eleveur.objects.create(id_eleveur=10, nom_eleveur='E10')
+        eleveur = Eleveur.objects.create(id_eleveur=10, nom_eleveur="E10")
 
-        abri = AbriDUrgence.objects.create(id_abri_urgence=10, description='A10', etat='OK')
-        commod = Commodite.objects.create(id_commodite=10, description='C10')
-        AbriDUrgenceCommodite.objects.create(id_abri_urgence_commodite=10, abri_urgence=abri, commodite=commod, etat='OK')
+        abri = AbriDUrgence.objects.create(
+            id_abri_urgence=10, description="A10", etat="OK"
+        )
+        commod = Commodite.objects.create(id_commodite=10, description="C10")
+        AbriDUrgenceCommodite.objects.create(
+            id_abri_urgence_commodite=10, abri_urgence=abri, commodite=commod, etat="OK"
+        )
 
         # Simple assertions
         self.assertEqual(QuartierPasto.objects.count(), 1)

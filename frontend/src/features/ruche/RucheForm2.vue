@@ -50,7 +50,12 @@
 
     <div class="form-actions">
       <v-btn color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">
+      <v-btn
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+      >
         {{ btTitle }}
       </v-btn>
     </div>
@@ -105,10 +110,7 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {
-  props.onSubmit?.({ ...form })
-    .catch((err) => console.error("Erreur soumission ruche", err));
-};
+const submitForm = () => {};
 
 const closeModal = () => props.onClose?.();
 
@@ -116,9 +118,7 @@ onMounted(async () => {
   try {
     const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/situationExploitation/`);
     situations.value = res.data || [];
-  } catch (err) {
-    console.error("Erreur chargement situations", err);
-  }
+  } catch (err) {}
 });
 </script>
 
@@ -153,11 +153,23 @@ onMounted(async () => {
   font-size: 0.82rem;
   font-weight: 600;
 }
-.geometry-status.is-set   { color: #166534; background: #dcfce7; border: 1px solid #86efac; }
-.geometry-status.is-missing { color: #92400e; background: #fef3c7; border: 1px solid #fcd34d; }
+.geometry-status.is-set {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+.geometry-status.is-missing {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
 
-.form-ligne { padding: 4px; }
-.form-cell  { padding: 4px; }
+.form-ligne {
+  padding: 4px;
+}
+.form-cell {
+  padding: 4px;
+}
 
 .form-actions {
   display: flex;
@@ -167,6 +179,8 @@ onMounted(async () => {
 }
 
 @media (max-width: 900px) {
-  .ruche-layout { grid-template-columns: 1fr; }
+  .ruche-layout {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

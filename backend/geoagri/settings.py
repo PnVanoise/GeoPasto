@@ -19,23 +19,25 @@ from django.core.exceptions import ImproperlyConfigured
 # Load .env from project root. Try python-dotenv first, otherwise fall back
 # to a tiny manual loader so the settings work even if dot-env isn't
 # installed in the runtime environment (e.g. systemd/gunicorn venv mismatch).
-env_path = Path(__file__).resolve().parents[2] / '.env'
+env_path = Path(__file__).resolve().parents[2] / ".env"
 try:
     from dotenv import load_dotenv
+
     load_dotenv(env_path)
 except Exception:
     # Manual loader: read KEY=VALUE lines and set into os.environ if not set
     if env_path.exists():
         for raw in env_path.read_text().splitlines():
             line = raw.strip()
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 continue
-            if '=' not in line:
+            if "=" not in line:
                 continue
-            key, _, val = line.partition('=')
+            key, _, val = line.partition("=")
             key = key.strip()
             val = val.strip().strip('"').strip("'")
             os.environ.setdefault(key, val)
+
 
 def get_env(key, default=None):
     val = os.environ.get(key, default)
@@ -43,8 +45,9 @@ def get_env(key, default=None):
         raise ImproperlyConfigured(f"Missing {key} environment variable")
     return val
 
-SECRET_KEY = get_env('DJANGO_SECRET_KEY')
-DEBUG = get_env('DEBUG', 'False') == 'True'
+
+SECRET_KEY = get_env("DJANGO_SECRET_KEY")
+DEBUG = get_env("DEBUG", "False") == "True"
 
 if not SECRET_KEY:
     raise ImproperlyConfigured("DJANGO_SECRET_KEY environment variable is not set")
@@ -62,40 +65,40 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Ajouts geopasto
-    'django_extensions',
-    'django.contrib.gis',
-    'rest_framework',
-    'rest_framework_gis',
-    'rest_framework_simplejwt',
-    'corsheaders',
-    'leaflet',
-    'alpages',
-    'accounts',
+    "django_extensions",
+    "django.contrib.gis",
+    "rest_framework",
+    "rest_framework_gis",
+    "rest_framework_simplejwt",
+    "corsheaders",
+    "leaflet",
+    "alpages",
+    "accounts",
 ]
 
 MIDDLEWARE = [
-    'geoagri.middleware.RemoveCOOPHeaderMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "geoagri.middleware.RemoveCOOPHeaderMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 # Configuration CORS
@@ -113,58 +116,58 @@ CORS_ALLOW_ALL_ORIGINS = False
 
 # Optionnel : Ajouter des headers spécifiques si nécessaire
 CORS_ALLOW_HEADERS = [
-    'content-type',
-    'authorization',
-    'X-Requested-With',
+    "content-type",
+    "authorization",
+    "X-Requested-With",
 ]
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
-ROOT_URLCONF = 'geoagri.urls'
+ROOT_URLCONF = "geoagri.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'geoagri.wsgi.application'
-
+WSGI_APPLICATION = "geoagri.wsgi.application"
 
 
 # If a DATABASE_URL is provided, prefer it (requires dj-database-url if you
 # want full parsing). Otherwise build the DB dict from individual env vars.
 DATABASES = {}
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     try:
         import dj_database_url
-        DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
+
+        DATABASES = {"default": dj_database_url.parse(DATABASE_URL)}
     except Exception:
         # dj-database-url not installed; fall back to manual parsing below
         DATABASES = {}
 
 if not DATABASES:
     DATABASES = {
-        'default': {
-            'ENGINE': get_env('DATABASE_ENGINE', 'django.contrib.gis.db.backends.postgis'),
-            'NAME': get_env('DATABASE_NAME', 'geoagri'),
-            'HOST': get_env('DATABASE_HOST', '151.80.250.138'),
-            'PORT': str(get_env('DATABASE_PORT', '5432')),
-            'USER': get_env('DATABASE_USER', 'geoagri_dba'),
-            'PASSWORD': get_env('DATABASE_PASSWORD', 'Geoagri1234!'),
+        "default": {
+            "ENGINE": get_env("DATABASE_ENGINE"),
+            "NAME": get_env("DATABASE_NAME"),
+            "HOST": get_env("DATABASE_HOST"),
+            "PORT": str(get_env("DATABASE_PORT")),
+            "USER": get_env("DATABASE_USER"),
+            "PASSWORD": get_env("DATABASE_PASSWORD"),
         }
     }
 
@@ -173,16 +176,16 @@ if not DATABASES:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -190,9 +193,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -202,73 +205,75 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = '/home/geoagri/geopasto/geopasto_back/geoagri/static/'
+STATIC_URL = "/static/"
+STATIC_ROOT = "/home/geoagri/geopasto/geopasto_back/geoagri/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 LEAFLET_CONFIG = {
-    'DEFAULT_CENTER': (0, 0),
-    'DEFAULT_ZOOM': 5,
-    'MIN_ZOOM': 3,
-    'MAX_ZOOM': 18,
-    'TILES': [
-        ('OpenStreetMap', 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            'attribution': '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-        }),
+    "DEFAULT_CENTER": (0, 0),
+    "DEFAULT_ZOOM": 5,
+    "MIN_ZOOM": 3,
+    "MAX_ZOOM": 18,
+    "TILES": [
+        (
+            "OpenStreetMap",
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                "attribution": '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            },
+        ),
     ],
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    ),
-    'EXCEPTION_HANDLER': 'alpages.exceptions.api_exception_handler'
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
+    "EXCEPTION_HANDLER": "alpages.exceptions.api_exception_handler",
 }
 
 # Configuration de Simple JWT
 # Durée de vie des tokens d'accès et de rafraîchissement
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=12), # durée du token d'accès
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7), # durée du refresh token
-    'ROTATE_REFRESH_TOKENS': False, # si utilisation de refresh tokens, ne pas les faire tourner à chaque utilisation
-    'BLACKLIST_AFTER_ROTATION': True, # si rotation de refresh tokens, les blacklister après rotation
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),  # durée du token d'accès
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # durée du refresh token
+    "ROTATE_REFRESH_TOKENS": False,  # si utilisation de refresh tokens, ne pas les faire tourner à chaque utilisation
+    "BLACKLIST_AFTER_ROTATION": True,  # si rotation de refresh tokens, les blacklister après rotation
 }
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "debug.log"),
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
         },
-        'alpages': {  # Remplacez 'myapp' par le nom de votre application
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
+        "alpages": {  # Remplacez 'myapp' par le nom de votre application
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
         },
     },
 }
 
 GRAPH_MODELS = {
-  'app_labels': ["alpages", ],
+    "app_labels": [
+        "alpages",
+    ],
 }

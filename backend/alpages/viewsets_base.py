@@ -3,8 +3,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from django.utils import timezone
-from django.db.models.deletion import ProtectedError
-from django.db.utils import IntegrityError
 
 import logging
 
@@ -26,25 +24,25 @@ class BaseModelViewSet(ModelViewSet):
         with ``viewset.queryset`` set directly. Using this helper avoids
         accessing request-dependent ``get_queryset`` implementations.
         """
-        qs = getattr(self, 'queryset', None)
+        qs = getattr(self, "queryset", None)
         if qs is not None:
-            return qs.all() if hasattr(qs, 'all') else qs
+            return qs.all() if hasattr(qs, "all") else qs
         return self.get_queryset()
 
     def _get_model_field_names(self, serializer):
-        model = getattr(getattr(serializer, 'Meta', None), 'model', None)
+        model = getattr(getattr(serializer, "Meta", None), "model", None)
         if model is None:
             return set()
         return {field.name for field in model._meta.concrete_fields}
 
     def _get_actor_name(self):
-        request = getattr(self, 'request', None)
-        user = getattr(request, 'user', None)
-        if not user or not getattr(user, 'is_authenticated', False):
+        request = getattr(self, "request", None)
+        user = getattr(request, "user", None)
+        if not user or not getattr(user, "is_authenticated", False):
             return None
-        if hasattr(user, 'get_username'):
+        if hasattr(user, "get_username"):
             return user.get_username() or None
-        return getattr(user, 'username', None)
+        return getattr(user, "username", None)
 
     def _audit_save_kwargs(self, serializer, is_create):
         actor = self._get_actor_name()
@@ -54,14 +52,14 @@ class BaseModelViewSet(ModelViewSet):
         field_names = self._get_model_field_names(serializer)
         save_kwargs = {}
 
-        if is_create and 'created_by' in field_names:
-            save_kwargs['created_by'] = actor
+        if is_create and "created_by" in field_names:
+            save_kwargs["created_by"] = actor
 
-        if (not is_create) and 'modified_by' in field_names:
-            save_kwargs['modified_by'] = actor
+        if (not is_create) and "modified_by" in field_names:
+            save_kwargs["modified_by"] = actor
 
-        if (not is_create) and 'modified_on' in field_names:
-            save_kwargs['modified_on'] = timezone.now()
+        if (not is_create) and "modified_on" in field_names:
+            save_kwargs["modified_on"] = timezone.now()
 
         return save_kwargs
 
@@ -74,30 +72,43 @@ class BaseModelViewSet(ModelViewSet):
         serializer.save(**save_kwargs)
 
     def create(self, request, *args, **kwargs):
-        logger.debug(f"BaseModelViewset {self.__class__.__name__} - Received data for creation: {request.data}")
+        logger.debug(
+            f"BaseModelViewset {self.__class__.__name__} - Received data for creation: {request.data}"
+        )
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            logger.debug(f"BaseModelViewset {self.__class__.__name__} - Created instance: {serializer.data}")
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        logger.warning(f"BaseModelViewset {self.__class__.__name__} - Validation errors during creation: {serializer.errors}")
+            logger.debug(
+                f"BaseModelViewset {self.__class__.__name__} - Created instance: {serializer.data}"
+            )
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            )
+        logger.warning(
+            f"BaseModelViewset {self.__class__.__name__} - Validation errors during creation: {serializer.errors}"
+        )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     def update(self, request, *args, **kwargs):
-        logger.debug(f"BaseModelViewset {self.__class__.__name__} - Received data for update: {request.data}")
-        partial = kwargs.pop('partial', False)
+        logger.debug(
+            f"BaseModelViewset {self.__class__.__name__} - Received data for update: {request.data}"
+        )
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         if serializer.is_valid():
             self.perform_update(serializer)
-            logger.debug(f"BaseModelViewset {self.__class__.__name__} - Updated instance: {serializer.data}")
+            logger.debug(
+                f"BaseModelViewset {self.__class__.__name__} - Updated instance: {serializer.data}"
+            )
             return Response(serializer.data)
-        logger.warning(f"BaseModelViewset {self.__class__.__name__} - Validation errors during update: {serializer.errors}")
+        logger.warning(
+            f"BaseModelViewset {self.__class__.__name__} - Validation errors during update: {serializer.errors}"
+        )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'], url_path='getNextId')
+    @action(detail=False, methods=["get"], url_path="getNextId")
     def get_next_id(self, request):
         """
         Generic next-id endpoint. Only returns a next id when the model uses a
@@ -107,19 +118,23 @@ class BaseModelViewSet(ModelViewSet):
         try:
             qs = self._resolve_base_queryset().order_by(self.get_pk_field_name())
         except Exception:
-            logger.warning(f"BaseModelViewset {self.__class__.__name__} - Error occurred while fetching queryset for next ID")
-            return Response({'next_id': None})
+            logger.warning(
+                f"BaseModelViewset {self.__class__.__name__} - Error occurred while fetching queryset for next ID"
+            )
+            return Response({"next_id": None})
         last = qs.last()
         if not last:
-            return Response({'next_id': 1})
+            return Response({"next_id": 1})
         pk_name = self.get_pk_field_name()
         last_val = getattr(last, pk_name, None)
         try:
             next_id = int(last_val) + 1
         except Exception:
-            logger.warning(f"BaseModelViewset {self.__class__.__name__} - Error occurred while calculating next ID")
-            return Response({'next_id': None})
-        return Response({'next_id': next_id})
+            logger.warning(
+                f"BaseModelViewset {self.__class__.__name__} - Error occurred while calculating next ID"
+            )
+            return Response({"next_id": None})
+        return Response({"next_id": next_id})
 
     def list(self, request, *args, **kwargs):
         """
@@ -150,12 +165,18 @@ class BaseModelViewSet(ModelViewSet):
         or override `self.pagination_class` before calling to select a
         pagination class.
         """
-        qs = queryset if queryset is not None else self.filter_queryset(self.get_queryset())
+        qs = (
+            queryset
+            if queryset is not None
+            else self.filter_queryset(self.get_queryset())
+        )
 
         # If no `page` param, return full list
-        if 'page' not in request.GET:
+        if "page" not in request.GET:
             if serializer_class is not None:
-                serializer = serializer_class(qs, many=True, context=self.get_serializer_context())
+                serializer = serializer_class(
+                    qs, many=True, context=self.get_serializer_context()
+                )
             else:
                 serializer = self.get_serializer(qs, many=True)
             return Response(serializer.data)
@@ -164,13 +185,17 @@ class BaseModelViewSet(ModelViewSet):
         page = self.paginate_queryset(qs)
         if page is not None:
             if serializer_class is not None:
-                serializer = serializer_class(page, many=True, context=self.get_serializer_context())
+                serializer = serializer_class(
+                    page, many=True, context=self.get_serializer_context()
+                )
             else:
                 serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
         if serializer_class is not None:
-            serializer = serializer_class(qs, many=True, context=self.get_serializer_context())
+            serializer = serializer_class(
+                qs, many=True, context=self.get_serializer_context()
+            )
         else:
             serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)

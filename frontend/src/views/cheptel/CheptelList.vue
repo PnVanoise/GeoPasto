@@ -13,9 +13,9 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
-import CrudListPage from '../../components/crud/CrudListPage.vue';
-import auth from '@/services/axios';
+import { ref, watch, onMounted } from "vue";
+import CrudListPage from "../../components/crud/CrudListPage.vue";
+import auth from "@/services/axios";
 
 const columns = [
   { field: "eleveur_detail.nom_complet", label: "Éleveur", sortable: true },
@@ -26,11 +26,11 @@ const columns = [
 ];
 
 const searchFields = [
-  'eleveur_detail.nom_complet',
-  'situation_detail.unite_pastorale_detail.nom_up',
-  'description',
-  'nombre_animaux',
-  'annee',
+  "eleveur_detail.nom_complet",
+  "situation_detail.unite_pastorale_detail.nom_up",
+  "description",
+  "nombre_animaux",
+  "annee",
 ];
 
 const upOptions = ref([]);
@@ -41,7 +41,8 @@ const cheptelFilters = ref([
     type: "checkbox",
     label: `Année courante (${new Date().getFullYear()})`,
     default: false,
-    apply: (rows, value) => !value ? rows : rows.filter(r => r.annee === new Date().getFullYear()),
+    apply: (rows, value) =>
+      !value ? rows : rows.filter((r) => r.annee === new Date().getFullYear()),
   },
   {
     key: "up",
@@ -49,14 +50,17 @@ const cheptelFilters = ref([
     label: "Unité pastorale",
     options: upOptions,
     default: "",
-    apply: (rows, value) => !value ? rows : rows.filter(r =>
-      r.situation_detail?.unite_pastorale_detail?.id_unite_pastorale == Number(value)
-    ),
+    apply: (rows, value) =>
+      !value
+        ? rows
+        : rows.filter(
+            (r) => r.situation_detail?.unite_pastorale_detail?.id_unite_pastorale == Number(value)
+          ),
   },
 ]);
 
 onMounted(async () => {
   const r = await auth.axiosInstance.get("/unitePastorale/light/");
-  upOptions.value = r.data.map(f => ({ label: f.nom_up, value: f.id_unite_pastorale }));
+  upOptions.value = r.data.map((f) => ({ label: f.nom_up, value: f.id_unite_pastorale }));
 });
 </script>

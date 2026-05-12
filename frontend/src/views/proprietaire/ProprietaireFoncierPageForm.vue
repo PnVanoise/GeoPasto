@@ -19,7 +19,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
 import ProprietaireFoncierForm2 from "../../features/proprietaire/ProprietaireFoncierForm2.vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "@/../config";
 
 const route = useRoute();
@@ -28,7 +28,7 @@ const router = useRouter();
 const crud = useCrudPage("proprietairefoncier", "proprietaireFoncier", "id_proprietaire");
 const { pageMode, handleSubmit } = crud;
 
-const itemData  = ref({});
+const itemData = ref({});
 const isLoading = ref(!!route.params.id);
 
 onMounted(async () => {
@@ -39,7 +39,6 @@ onMounted(async () => {
       );
       itemData.value = response.data ?? {};
     } catch (e) {
-      console.error("Erreur lors du chargement du propriétaire foncier", e);
     } finally {
       isLoading.value = false;
     }

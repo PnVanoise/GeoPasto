@@ -20,7 +20,6 @@
           required
         />
 
-
         <v-select
           v-model="form.properties.situation_exploitation"
           :items="situations"
@@ -31,7 +30,6 @@
           density="comfortable"
           clearable
         />
-
       </section>
 
       <section class="layout-card map-card">
@@ -43,7 +41,8 @@
           density="compact"
           class="geometry-alert"
         >
-          Dessinez d'abord la géométrie du quartier (double-clic pour terminer le polygone), puis enregistrez.
+          Dessinez d'abord la géométrie du quartier (double-clic pour terminer le polygone), puis
+          enregistrez.
         </v-alert>
         <QuartierGeometryEditorOl
           ref="geometryEditorRef"
@@ -57,8 +56,16 @@
     </div>
 
     <div class="actions-row">
-      <v-btn density="comfortable" color="info" prepend-icon="mdi-arrow-left-circle" @click="closeForm">Retour</v-btn>
-      <v-btn density="comfortable" color="success" type="submit" prepend-icon="mdi-content-save">Enregistrer</v-btn>
+      <v-btn
+        density="comfortable"
+        color="info"
+        prepend-icon="mdi-arrow-left-circle"
+        @click="closeForm"
+        >Retour</v-btn
+      >
+      <v-btn density="comfortable" color="success" type="submit" prepend-icon="mdi-content-save"
+        >Enregistrer</v-btn
+      >
     </div>
   </v-form>
 </template>
@@ -66,7 +73,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "../../../config";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
 
@@ -76,7 +83,6 @@ const resolvedMode = computed(() => {
   }
   return props.isEdit ? "change" : "add";
 });
-
 
 const props = defineProps({
   initialForm: Object,
@@ -122,20 +128,26 @@ const contextLayers = computed(() => {
 });
 
 const fetchUpGeometry = async (upId) => {
-  if (!upId) { upGeoData.value = null; return; }
+  if (!upId) {
+    upGeoData.value = null;
+    return;
+  }
   try {
-    const response = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/${upId}/`);
+    const response = await auth.axiosInstance.get(
+      `${config.API_BASE_URL}/api/unitePastorale/${upId}/`
+    );
     const feature = response.data;
     if (feature?.geometry) {
       upGeoData.value = {
         type: "FeatureCollection",
-        features: [{ type: "Feature", geometry: feature.geometry, properties: feature.properties || {} }],
+        features: [
+          { type: "Feature", geometry: feature.geometry, properties: feature.properties || {} },
+        ],
       };
     } else {
       upGeoData.value = null;
     }
   } catch (e) {
-    console.error("Erreur lors de la récupération de la géométrie de l'UP", e);
     upGeoData.value = null;
   }
 };
@@ -143,12 +155,7 @@ const fetchUpGeometry = async (upId) => {
 const normalizeForm = (src) => {
   const base = src || {};
   const propsData = base.properties || {};
-  const quartierId =
-    base.id
-    ?? base.id_quartier
-    ?? propsData.id_quartier
-    ?? propsData.id
-    ?? null;
+  const quartierId = base.id ?? base.id_quartier ?? propsData.id_quartier ?? propsData.id ?? null;
 
   return {
     ...base,
@@ -160,7 +167,8 @@ const normalizeForm = (src) => {
       code_quartier: propsData.code_quartier ?? base.code_quartier ?? "",
       nom_quartier: propsData.nom_quartier ?? base.nom_quartier ?? "",
       unite_pastorale: propsData.unite_pastorale ?? base.unite_pastorale ?? null,
-      situation_exploitation: propsData.situation_exploitation ?? base.situation_exploitation ?? null,
+      situation_exploitation:
+        propsData.situation_exploitation ?? base.situation_exploitation ?? null,
     },
     geometry: base.geometry || null,
   };
@@ -238,13 +246,13 @@ const normalizeComparableId = (rawId) => {
 
 const getCurrentQuartierId = () => {
   return (
-    form.value?.id
-    ?? form.value?.id_quartier
-    ?? form.value?.properties?.id_quartier
-    ?? props.initialForm?.id
-    ?? props.initialForm?.id_quartier
-    ?? props.initialForm?.properties?.id_quartier
-    ?? null
+    form.value?.id ??
+    form.value?.id_quartier ??
+    form.value?.properties?.id_quartier ??
+    props.initialForm?.id ??
+    props.initialForm?.id_quartier ??
+    props.initialForm?.properties?.id_quartier ??
+    null
   );
 };
 
@@ -313,7 +321,6 @@ const fetchContextQuartiersForSituation = async (situationId) => {
       features,
     };
   } catch (error) {
-    console.error("Erreur lors de la récupération des quartiers de contexte", error);
     contextQuartiersGeoData.value = null;
   }
 };
@@ -321,13 +328,13 @@ const fetchContextQuartiersForSituation = async (situationId) => {
 const submitForm = () => {
   if (props.isEdit) {
     const existingId =
-      form.value.id
-      ?? form.value.id_quartier
-      ?? form.value.properties?.id_quartier
-      ?? props.initialForm?.id
-      ?? props.initialForm?.id_quartier
-      ?? props.initialForm?.properties?.id_quartier
-      ?? null;
+      form.value.id ??
+      form.value.id_quartier ??
+      form.value.properties?.id_quartier ??
+      props.initialForm?.id ??
+      props.initialForm?.id_quartier ??
+      props.initialForm?.properties?.id_quartier ??
+      null;
     form.value.id = existingId;
     form.value.id_quartier = existingId;
     if (!form.value.properties) form.value.properties = {};
@@ -343,7 +350,8 @@ const submitForm = () => {
 
   if (!form.value.geometry) {
     geometryError.value = true;
-    console.warn("QuartierPastoForm submit: geometry is null. Finish drawing (double-click) before saving.");
+      "QuartierPastoForm submit: geometry is null. Finish drawing (double-click) before saving."
+    );
     return;
   }
 
@@ -352,10 +360,8 @@ const submitForm = () => {
   props
     .onSubmit(form.value)
     .then(() => {
-      console.log("Form submission then block executed");
     })
     .catch((error) => {
-      console.error("There was an error in form submission!", error);
     });
 };
 
@@ -366,7 +372,6 @@ onMounted(() => {
       ups.value = response.data;
     })
     .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des unites pastorales", error);
     });
 
   auth.axiosInstance
@@ -375,7 +380,6 @@ onMounted(() => {
       situations.value = response.data || [];
     })
     .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des situations", error);
     });
 
   fetchContextQuartiersForSituation(form.value?.properties?.situation_exploitation);
@@ -410,13 +414,19 @@ watch(
   (newForm) => {
     const normalized = normalizeForm(newForm);
 
-    const incomingId = normalized?.id ?? normalized?.id_quartier ?? normalized?.properties?.id_quartier ?? null;
-    const currentId = form.value?.id ?? form.value?.id_quartier ?? form.value?.properties?.id_quartier ?? null;
+    const incomingId =
+      normalized?.id ?? normalized?.id_quartier ?? normalized?.properties?.id_quartier ?? null;
+    const currentId =
+      form.value?.id ?? form.value?.id_quartier ?? form.value?.properties?.id_quartier ?? null;
     const sameQuartier = normalizeComparableId(incomingId) === normalizeComparableId(currentId);
 
     // When parent context data refreshes, keep in-progress geometry instead of resetting to null.
     const incomingGeometry = normalized?.geometry;
-    const hasIncomingGeometry = !!(incomingGeometry && Array.isArray(incomingGeometry.coordinates) && incomingGeometry.coordinates.length);
+    const hasIncomingGeometry = !!(
+      incomingGeometry &&
+      Array.isArray(incomingGeometry.coordinates) &&
+      incomingGeometry.coordinates.length
+    );
     if (sameQuartier && !hasIncomingGeometry && form.value?.geometry) {
       normalized.geometry = form.value.geometry;
     }
@@ -443,7 +453,9 @@ watch(
   border-radius: 8px;
   padding: 0.75rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .layout-card:hover {

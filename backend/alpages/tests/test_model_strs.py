@@ -23,10 +23,21 @@ from alpages import models as m
         (m.AbriDUrgence, {"description": "ABRI"}, "ABRI"),
         (
             m.AbriDUrgenceCommodite,
-            {"abri_urgence": m.AbriDUrgence(description="A"), "commodite": m.Commodite(description="C"), "quantite": "2"},
+            {
+                "abri_urgence": m.AbriDUrgence(description="A"),
+                "commodite": m.Commodite(description="C"),
+                "quantite": "2",
+            },
             "A a 2 de C",
         ),
-        (m.BeneficierDe, {"exploitant": m.Exploitant(nom_exploitant="EXP"), "abri_urgence": m.AbriDUrgence(description="AB")}, "EXP bénéficie de AB"),
+        (
+            m.BeneficierDe,
+            {
+                "exploitant": m.Exploitant(nom_exploitant="EXP"),
+                "abri_urgence": m.AbriDUrgence(description="AB"),
+            },
+            "EXP bénéficie de AB",
+        ),
         (m.Ruche, {"description": "R1"}, "R1"),
         (m.Berger, {"nom_berger": "B1", "prenom_berger": "P1"}, "B1"),
         (m.GardeSituation, {"id_garde_situation": 7}, "7"),

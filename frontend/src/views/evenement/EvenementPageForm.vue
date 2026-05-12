@@ -20,7 +20,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
 import EventForm2 from "../../features/evenement/EventForm2.vue";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import config from "@/../config";
 
 const route = useRoute();
@@ -29,7 +29,7 @@ const router = useRouter();
 const crud = useCrud("evenement", "evenement", "id_evenement", { geojson: true });
 
 const pageMode = computed(() => {
-  if (route.name === "evenement-add")  return "add";
+  if (route.name === "evenement-add") return "add";
   if (route.name === "evenement-edit") return "change";
   return "view";
 });
@@ -38,7 +38,7 @@ const contextIds = computed(() => ({
   idSituation: route.query.context_id_situation ? Number(route.query.context_id_situation) : null,
 }));
 
-const itemData  = ref({});
+const itemData = ref({});
 const isLoading = ref(!!route.params.id);
 
 onMounted(async () => {
@@ -49,7 +49,6 @@ onMounted(async () => {
       );
       itemData.value = response.data ?? {};
     } catch (e) {
-      console.error("Erreur lors du chargement de l'événement", e);
     } finally {
       isLoading.value = false;
     }

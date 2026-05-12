@@ -1,11 +1,21 @@
 <template>
   <form @submit.prevent="login">
-    <v-text-field variant="underlined"
-      density="compact" v-model="userCredentials.username" label="Nom d'utilisateur" required />
-    <v-text-field variant="underlined"
-      density="compact" v-model="userCredentials.password" label="Mot de passe" type="password" required />
-    <v-btn
-      class="submit-btn" density="compact" type="submit" color="info">Connexion</v-btn>
+    <v-text-field
+      variant="underlined"
+      density="compact"
+      v-model="userCredentials.username"
+      label="Nom d'utilisateur"
+      required
+    />
+    <v-text-field
+      variant="underlined"
+      density="compact"
+      v-model="userCredentials.password"
+      label="Mot de passe"
+      type="password"
+      required
+    />
+    <v-btn class="submit-btn" density="compact" type="submit" color="info">Connexion</v-btn>
   </form>
 </template>
 
@@ -13,7 +23,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useMainStore } from "../../store";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 
 const router = useRouter();
 const mainStore = useMainStore();
@@ -43,12 +53,10 @@ const login = async () => {
     auth.axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${response.data.access}`;
 
     router.push("/"); // redirection automatique vers la home
-
   } catch (error) {
     if (error.response?.status === 401) {
       alert("Nom d’utilisateur ou mot de passe incorrect !");
     } else {
-      console.error("Erreur lors de la connexion :", error);
       mainStore.setErrorMessage("Erreur lors de la connexion.");
     }
   }
@@ -67,7 +75,4 @@ form {
   margin-top: 0;
 }
 </style>
-<style scoped>
-
-
-</style>
+<style scoped></style>

@@ -16,13 +16,18 @@
                 v-model="form.logement_code"
                 label="Code logement"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details required
+                density="compact"
+                variant="underlined"
+                hide-details
+                required
               />
               <v-text-field
                 v-model="form.nom_logement"
                 label="Nom"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details
+                density="compact"
+                variant="underlined"
+                hide-details
               />
               <v-select
                 v-model="form.unite_pastorale"
@@ -32,7 +37,10 @@
                 label="Unité pastorale"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.statut"
@@ -42,7 +50,10 @@
                 label="Statut"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.acces_final"
@@ -52,7 +63,10 @@
                 label="Accès final"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.propriete"
@@ -62,7 +76,10 @@
                 label="Propriété"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.type_logement"
@@ -72,7 +89,10 @@
                 label="Type de logement"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.multiusage"
@@ -82,7 +102,10 @@
                 label="Multiusage"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.activite_laitiere"
@@ -92,7 +115,10 @@
                 label="Activité laitière"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.etat_batiment"
@@ -102,7 +128,10 @@
                 label="État structurel du bâtiment"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
             </div>
           </v-window-item>
@@ -117,7 +146,10 @@
                 label="Accueil public"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.mixite_possible"
@@ -127,7 +159,10 @@
                 label="Mixité possible"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.surface_logement"
@@ -137,7 +172,10 @@
                 label="Surface logement"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.presence_douche"
@@ -147,7 +185,10 @@
                 label="Douche"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.type_wc"
@@ -157,7 +198,10 @@
                 label="WC"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.alim_elec"
@@ -167,7 +211,10 @@
                 label="Alimentation électrique"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.alim_eau"
@@ -177,7 +224,10 @@
                 label="Alimentation en eau"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.origine_eau"
@@ -187,7 +237,10 @@
                 label="Origine eau"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
             </div>
           </v-window-item>
@@ -202,7 +255,10 @@
                 label="Qualité eau"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.dispo_eau"
@@ -212,7 +268,10 @@
                 label="Disponibilité eau"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.assainissement"
@@ -222,7 +281,10 @@
                 label="Assainissement"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.chauffe_eau"
@@ -232,7 +294,10 @@
                 label="Chauffe-eau"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.chauffage"
@@ -242,7 +307,10 @@
                 label="Chauffage"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
               <v-select
                 v-model="form.stockage_indep"
@@ -252,7 +320,10 @@
                 label="Stockage indépendant"
                 :menu-props="selectMenuProps"
                 :disabled="props.mode === 'view'"
-                density="compact" variant="underlined" hide-details clearable
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
               />
             </div>
           </v-window-item>
@@ -274,7 +345,12 @@
 
     <div class="form-actions">
       <v-btn color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">
+      <v-btn
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+      >
         {{ btTitle }}
       </v-btn>
     </div>
@@ -312,18 +388,34 @@ const choices = ref({});
 const ups = ref([]);
 
 const CHOICE_FIELDS = [
-  "statut", "acces_final", "propriete", "type_logement", "multiusage",
-  "activite_laitiere", "etat_batiment", "accueil_public", "mixite_possible",
-  "surface_logement", "presence_douche", "type_wc", "alim_elec", "alim_eau",
-  "origine_eau", "qualite_eau", "dispo_eau", "assainissement", "chauffe_eau",
-  "chauffage", "stockage_indep",
+  "statut",
+  "acces_final",
+  "propriete",
+  "type_logement",
+  "multiusage",
+  "activite_laitiere",
+  "etat_batiment",
+  "accueil_public",
+  "mixite_possible",
+  "surface_logement",
+  "presence_douche",
+  "type_wc",
+  "alim_elec",
+  "alim_eau",
+  "origine_eau",
+  "qualite_eau",
+  "dispo_eau",
+  "assainissement",
+  "chauffe_eau",
+  "chauffage",
+  "stockage_indep",
 ];
 
 const form = reactive({
   logement_code: "",
   nom_logement: "",
   unite_pastorale: null,
-  ...Object.fromEntries(CHOICE_FIELDS.map(f => [f, null])),
+  ...Object.fromEntries(CHOICE_FIELDS.map((f) => [f, null])),
   geometry: null,
 });
 
@@ -343,10 +435,7 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {
-  props.onSubmit?.({ ...form })
-    .catch((err) => console.error("Erreur soumission logement", err));
-};
+const submitForm = () => {};
 
 const closeModal = () => props.onClose?.();
 
@@ -358,9 +447,7 @@ onMounted(async () => {
     ]);
     choices.value = resChoices.data ?? {};
     ups.value = resUP.data ?? [];
-  } catch (err) {
-    console.error("Erreur chargement données logement", err);
-  }
+  } catch (err) {}
 });
 </script>
 
@@ -379,7 +466,9 @@ onMounted(async () => {
   border-radius: 8px;
   padding: 0.75rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .layout-card:hover {
@@ -387,11 +476,21 @@ onMounted(async () => {
   box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
 }
 
-.logement-form :deep(.v-input--density-compact .v-field__input) { min-height: 38px; padding-top: 6px; padding-bottom: 6px; }
-.logement-form :deep(.v-label.v-field-label) { font-size: 0.82rem; }
-.logement-form :deep(.v-input) { font-size: 0.88rem; }
+.logement-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.logement-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+.logement-form :deep(.v-input) {
+  font-size: 0.88rem;
+}
 .logement-form :deep(.v-field__input),
-.logement-form :deep(.v-select__selection-text) { font-size: 0.88rem; }
+.logement-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
+}
 
 .fields-grid {
   display: grid;
@@ -414,8 +513,16 @@ onMounted(async () => {
   font-size: 0.82rem;
   font-weight: 600;
 }
-.geometry-status.is-set     { color: #166534; background: #dcfce7; border: 1px solid #86efac; }
-.geometry-status.is-missing { color: #92400e; background: #fef3c7; border: 1px solid #fcd34d; }
+.geometry-status.is-set {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+.geometry-status.is-missing {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
 
 .form-actions {
   display: flex;
@@ -425,7 +532,11 @@ onMounted(async () => {
 }
 
 @media (max-width: 900px) {
-  .logement-layout { grid-template-columns: 1fr; }
-  .fields-grid { grid-template-columns: 1fr; }
+  .logement-layout {
+    grid-template-columns: 1fr;
+  }
+  .fields-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

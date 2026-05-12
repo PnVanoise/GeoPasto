@@ -19,4 +19,3 @@ alpages_shp = Path(__file__).resolve().parent / "data" / "quartiers_alpages.shp"
 def run(verbose=True):
     lm = LayerMapping(QuartierUP, alpages_shp, alpages_mapping, transform=False)
     lm.save(strict=True, verbose=verbose)
-

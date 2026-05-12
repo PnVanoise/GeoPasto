@@ -8,7 +8,10 @@
             v-model="form.description"
             label="Description"
             :disabled="props.mode === 'view'"
-            density="compact" variant="underlined" hide-details clearable
+            density="compact"
+            variant="underlined"
+            hide-details
+            clearable
           />
         </div>
       </div>
@@ -18,13 +21,16 @@
             v-model="form.etat"
             label="État de l'abri"
             :disabled="props.mode === 'view'"
-            density="compact" variant="underlined" hide-details clearable
+            density="compact"
+            variant="underlined"
+            hide-details
+            clearable
           />
         </div>
       </div>
     </section>
 
-    <section class="layout-card" style="margin-top: 1rem;">
+    <section class="layout-card" style="margin-top: 1rem">
       <h4 class="section-title">Commodités associées</h4>
       <template v-if="props.mode === 'add'">
         <div class="w3-panel w3-pale-yellow info-panel">
@@ -55,7 +61,12 @@
 
     <div class="form-actions">
       <v-btn color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">
+      <v-btn
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+      >
         {{ btTitle }}
       </v-btn>
     </div>
@@ -65,8 +76,8 @@
 <script setup>
 import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
-import CrudList2 from '../../components/crud/CrudList2.vue';
-import AbriDUrgenceCommoditeForm from './AbriDUrgenceCommoditeForm.vue';
+import CrudList2 from "../../components/crud/CrudList2.vue";
+import AbriDUrgenceCommoditeForm from "./AbriDUrgenceCommoditeForm.vue";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -92,32 +103,32 @@ const form = reactive({
 });
 
 const commGridColumns = ref([
-  { field: 'commodite_desc', label: 'Commodité', sortable: true },
-  { field: 'etat',           label: 'État',       sortable: true },
-  { field: 'quantite',       label: 'Quantité',   sortable: true },
+  { field: "commodite_desc", label: "Commodité", sortable: true },
+  { field: "etat", label: "État", sortable: true },
+  { field: "quantite", label: "Quantité", sortable: true },
 ]);
 
 const commFilters = ref([
   {
-    key: 'abriFilter',
-    type: 'hidden',
-    default: '',
+    key: "abriFilter",
+    type: "hidden",
+    default: "",
     apply: (items, _value) => {
       if (!form.id_abri_urgence) return [];
-      return (items || []).filter(i => i.abri_urgence === form.id_abri_urgence);
-    }
-  }
+      return (items || []).filter((i) => i.abri_urgence === form.id_abri_urgence);
+    },
+  },
 ]);
 
 watch(
   () => props.initialForm,
-  (newVal) => { if (newVal) Object.assign(form, newVal); },
+  (newVal) => {
+    if (newVal) Object.assign(form, newVal);
+  },
   { immediate: true }
 );
 
-const submitForm = () => {
-  props.onSubmit?.(form).catch(err => console.error(err));
-};
+const submitForm = () => {};
 
 const closeModal = () => props.onClose?.();
 </script>
@@ -130,20 +141,49 @@ const closeModal = () => props.onClose?.();
   border-radius: 8px;
   padding: 0.75rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 .layout-card:hover {
   border-color: #c8d0db;
   box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
 }
-.abri-urgence-form :deep(.v-input--density-compact .v-field__input) { min-height: 38px; padding-top: 6px; padding-bottom: 6px; }
-.abri-urgence-form :deep(.v-label.v-field-label) { font-size: 0.82rem; }
-.abri-urgence-form :deep(.v-input) { font-size: 0.88rem; }
+.abri-urgence-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.abri-urgence-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+.abri-urgence-form :deep(.v-input) {
+  font-size: 0.88rem;
+}
 .abri-urgence-form :deep(.v-field__input),
-.abri-urgence-form :deep(.v-select__selection-text) { font-size: 0.88rem; }
-.form-ligne { padding: 4px; }
-.form-cell { padding: 4px; }
-.section-title { margin: 0 0 0.5rem; font-size: 0.95rem; font-weight: 600; }
-.info-panel { padding: 12px; border: 1px solid #ddd; }
-.form-actions { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem; }
+.abri-urgence-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
+}
+.form-ligne {
+  padding: 4px;
+}
+.form-cell {
+  padding: 4px;
+}
+.section-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.info-panel {
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+.form-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
 </style>

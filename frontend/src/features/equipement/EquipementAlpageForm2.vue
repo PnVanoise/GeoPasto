@@ -4,7 +4,6 @@
   <form class="eqpt-form" @submit.prevent="submitForm">
     <div class="eqpt-layout">
       <section class="layout-card">
-
         <div class="w3-row form-ligne">
           <div class="w3-half form-cell">
             <v-text-field
@@ -96,7 +95,13 @@
 
     <div class="form-actions">
       <v-btn color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">{{ btTitle }}</v-btn>
+      <v-btn
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+        >{{ btTitle }}</v-btn
+      >
     </div>
   </form>
 </template>
@@ -104,7 +109,7 @@
 <script setup>
 import { computed, reactive, ref, watch, onMounted } from "vue";
 import config from "../../../config";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
 import { selectMenuProps } from "../../composables/useSelectMenuProps";
 
@@ -175,7 +180,9 @@ const toFeatureCollection = (payload) => {
   if (payload.geometry) {
     return {
       type: "FeatureCollection",
-      features: [{ type: "Feature", geometry: payload.geometry, properties: payload.properties || {} }],
+      features: [
+        { type: "Feature", geometry: payload.geometry, properties: payload.properties || {} },
+      ],
     };
   }
   return null;
@@ -191,7 +198,6 @@ const fetchUnitePastoraleContext = async (upId) => {
     const res = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/${upId}/`);
     upContextGeoData.value = toFeatureCollection(res.data);
   } catch (err) {
-    console.error("Erreur chargement géométrie UP", err);
     upContextGeoData.value = null;
   }
 };
@@ -211,14 +217,14 @@ watch(
 
     form.description = src.description ?? "";
     form.etat = src.etat ?? "";
-    form.type_equipement = normalizeFkId(
-      src.type_equipement ?? src.type_equipement_detail,
-      ["id_type_equipement", "id"]
-    );
-    form.unite_pastorale = normalizeFkId(
-      src.unite_pastorale ?? src.unite_pastorale_detail,
-      ["id_unite_pastorale", "id"]
-    );
+    form.type_equipement = normalizeFkId(src.type_equipement ?? src.type_equipement_detail, [
+      "id_type_equipement",
+      "id",
+    ]);
+    form.unite_pastorale = normalizeFkId(src.unite_pastorale ?? src.unite_pastorale_detail, [
+      "id_unite_pastorale",
+      "id",
+    ]);
     form.geometry = base.geometry ?? src.geometry ?? null;
     geometryType.value = form.geometry?.type || "Point";
   },
@@ -254,9 +260,7 @@ onMounted(async () => {
     ]);
     typesEquipement.value = typeRes.data || [];
     ups.value = upRes.data || [];
-  } catch (err) {
-    console.error("Erreur chargement refs equipement alpage", err);
-  }
+  } catch (err) {}
 
   if (form.unite_pastorale) {
     await fetchUnitePastoraleContext(form.unite_pastorale);
@@ -279,7 +283,9 @@ onMounted(async () => {
   border-radius: 8px;
   padding: 0.75rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .layout-card:hover {
@@ -333,8 +339,12 @@ onMounted(async () => {
   border: 1px solid #fcd34d;
 }
 
-.form-ligne { padding: 4px; }
-.form-cell { padding: 4px; }
+.form-ligne {
+  padding: 4px;
+}
+.form-cell {
+  padding: 4px;
+}
 .form-actions {
   display: flex;
   justify-content: center;

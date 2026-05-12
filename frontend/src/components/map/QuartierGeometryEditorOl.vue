@@ -129,14 +129,17 @@ const geometryTypeForDraw = () => {
   return props.geometryType || "Polygon";
 };
 
-
 const hexToRgba = (hexColor, alpha = 0.2) => {
   if (typeof hexColor !== "string") return `rgba(51, 65, 85, ${alpha})`;
   const sanitized = hexColor.replace("#", "");
   if (![3, 6].includes(sanitized.length)) return `rgba(51, 65, 85, ${alpha})`;
-  const normalized = sanitized.length === 3
-    ? sanitized.split("").map((char) => char + char).join("")
-    : sanitized;
+  const normalized =
+    sanitized.length === 3
+      ? sanitized
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : sanitized;
   const r = parseInt(normalized.slice(0, 2), 16);
   const g = parseInt(normalized.slice(2, 4), 16);
   const b = parseInt(normalized.slice(4, 6), 16);
@@ -158,11 +161,12 @@ const buildContextFeatureStyle = (feature) => {
     ? layerStyle.pointStrokeWidth
     : 1.3;
 
-  const styleZIndex = (geometryType === "Point" || geometryType === "MultiPoint")
-    ? 32
-    : (geometryType === "LineString" || geometryType === "MultiLineString")
-      ? 24
-      : 12;
+  const styleZIndex =
+    geometryType === "Point" || geometryType === "MultiPoint"
+      ? 32
+      : geometryType === "LineString" || geometryType === "MultiLineString"
+        ? 24
+        : 12;
 
   let imageStyle;
   if (pointShape === "triangle") {
@@ -259,13 +263,19 @@ const computeGeometryValidity = (geometry) => {
   if (geometry.type === "Polygon") {
     const ring = geometry.coordinates?.[0];
     const isValidPolygon = Array.isArray(ring) && ring.length >= 4;
-    return { isValid: isValidPolygon, reason: isValidPolygon ? null : "polygon_coordinates_invalid" };
+    return {
+      isValid: isValidPolygon,
+      reason: isValidPolygon ? null : "polygon_coordinates_invalid",
+    };
   }
 
   if (geometry.type === "MultiPolygon") {
     const firstRing = geometry.coordinates?.[0]?.[0];
     const isValidMultiPolygon = Array.isArray(firstRing) && firstRing.length >= 4;
-    return { isValid: isValidMultiPolygon, reason: isValidMultiPolygon ? null : "multipolygon_coordinates_invalid" };
+    return {
+      isValid: isValidMultiPolygon,
+      reason: isValidMultiPolygon ? null : "multipolygon_coordinates_invalid",
+    };
   }
 
   return { isValid: false, reason: "unsupported_geometry_type" };
@@ -559,7 +569,11 @@ const validateModification = () => {
 
 const finishDraw = () => {
   if (!drawInteraction) return;
-  try { drawInteraction.finishDrawing(); } catch (_) { /* pas assez de points */ }
+  try {
+    drawInteraction.finishDrawing();
+  } catch (_) {
+    /* pas assez de points */
+  }
 };
 
 const handleValider = () => {
@@ -667,13 +681,7 @@ onMounted(async () => {
 
   map = new Map({
     target: mapElement.value,
-    layers: [
-      baseMapsGroup,
-      overlaysGroup,
-      contextLayer,
-      vectorLayer,
-      contextPointOverlayLayer,
-    ],
+    layers: [baseMapsGroup, overlaysGroup, contextLayer, vectorLayer, contextPointOverlayLayer],
     view: new View({
       center: [751000, 5721000],
       zoom: 10,
@@ -714,7 +722,9 @@ watch(
 
 watch(
   () => props.disabled,
-  () => { applyInteractionMode(); }
+  () => {
+    applyInteractionMode();
+  }
 );
 
 watch(
@@ -728,7 +738,11 @@ watch(
 watch(
   () => props.drawOnly,
   (val) => {
-    if (!val) { isDrawing.value = false; hasDrawn.value = false; isModifying.value = false; }
+    if (!val) {
+      isDrawing.value = false;
+      hasDrawn.value = false;
+      isModifying.value = false;
+    }
     applyInteractionMode();
   }
 );

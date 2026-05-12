@@ -1,5 +1,5 @@
-import { computed } from 'vue';
-import { useMainStore } from '../store';
+import { computed } from "vue";
+import { useMainStore } from "../store";
 
 export function usePermissions(modelName) {
   const mainStore = useMainStore();
@@ -12,10 +12,10 @@ export function usePermissions(modelName) {
   // Actions standardisées pour une GRID ou CRUD
   const actionsFor = () =>
     computed(() => ({
-      add: can('add'),
-      view: can('view'),
-      edit: can('change'),
-      delete: can('delete'),
+      add: can("add"),
+      view: can("view"),
+      edit: can("change"),
+      delete: can("delete"),
     })).value;
 
   return { can, actionsFor };

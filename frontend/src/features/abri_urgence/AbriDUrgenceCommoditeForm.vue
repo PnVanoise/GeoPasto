@@ -68,10 +68,23 @@
         />
       </div>
     </div>
-    
+
     <div class="form-actions">
-      <v-btn density="comfortable" color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
-      <v-btn density="comfortable" v-if="props.mode !== 'view'" color="success" type="submit" prepend-icon="mdi-content-save">{{ btTitle }}</v-btn>
+      <v-btn
+        density="comfortable"
+        color="info"
+        @click="closeModal"
+        prepend-icon="mdi-arrow-left-circle"
+        >Retour</v-btn
+      >
+      <v-btn
+        density="comfortable"
+        v-if="props.mode !== 'view'"
+        color="success"
+        type="submit"
+        prepend-icon="mdi-content-save"
+        >{{ btTitle }}</v-btn
+      >
     </div>
   </form>
 </template>
@@ -79,7 +92,7 @@
 <script setup>
 import { reactive, watch, ref, computed, onMounted } from "vue";
 import config from "../../../config";
-import auth from '@/services/axios';
+import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 
 const props = defineProps({
@@ -144,9 +157,7 @@ onMounted(() => {
     .then((response) => {
       abris.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des abris.", error);
-    });
+    .catch((error) => {});
 
   // Récupère les commodités
   auth.axiosInstance
@@ -154,17 +165,13 @@ onMounted(() => {
     .then((response) => {
       commodites.value = response.data;
     })
-    .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des commodites.", error);
-    });
+    .catch((error) => {});
 });
 
 // Submit
 const submitForm = () => {
   if (props.onSubmit) {
-    props.onSubmit(form)
-      .then(() => console.log("Form submitted OK"))
-      .catch(err => console.error(err));
+    props.onSubmit(form);
   }
 };
 
@@ -172,9 +179,7 @@ const submitForm = () => {
 const closeModal = () => {
   props.onClose?.();
 };
-
 </script>
-
 
 <style scoped>
 .form-actions {
@@ -186,6 +191,6 @@ const closeModal = () => {
 }
 
 .disable-events {
-  pointer-events: none
+  pointer-events: none;
 }
 </style>

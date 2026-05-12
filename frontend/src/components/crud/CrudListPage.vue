@@ -18,7 +18,7 @@
         />
 
         <template v-if="props.showFilters" v-for="filter in props.filters" :key="filter.key">
-          <div v-if="filter.type === 'checkbox'" style="margin: 0 10px;">
+          <div v-if="filter.type === 'checkbox'" style="margin: 0 10px">
             <v-switch
               v-model="activeFilters[filter.key]"
               :label="filter.label"
@@ -30,7 +30,7 @@
             />
           </div>
 
-          <div v-if="filter.type === 'select'" style="margin: 0 10px; min-width:200px;">
+          <div v-if="filter.type === 'select'" style="margin: 0 10px; min-width: 200px">
             <v-select
               :items="[{ value: '', label: '-- Tous --' }].concat(unref(filter.options) || [])"
               item-title="label"
@@ -104,27 +104,27 @@ import Grid3 from "../ui/Grid3.vue";
 import { useCrudPage } from "../../composables/useCrudPage";
 
 const props = defineProps({
-  modelName:        String,
-  apiRouteName:     String,
-  title:            String,
-  itemLabel:        { type: String,   default: "élément" },
-  columns:          Array,
-  idField:          { type: String,   default: "id" },
-  bgColor:          { type: String,   default: "#808080" },
-  geojsonMode:      { type: Boolean,  default: false },
-  searchFields:     { type: Array,    default: () => [] },
-  filters:          { type: Array,    default: () => [] },
-  showTitle:        { type: Boolean,  default: true },
-  showHeader:       { type: Boolean,  default: true },
-  showSearch:       { type: Boolean,  default: true },
-  showFilters:      { type: Boolean,  default: true },
-  showAddButton:    { type: Boolean,  default: true },
-  showExportButtons:{ type: Boolean,  default: true },
-  forceAdd:         { type: Boolean,  default: false },
-  viewOnly:         { type: Boolean,  default: false },
-  requestParams:    { type: Object,   default: null },
-  addQueryParams:   { type: Object,   default: () => ({}) },
-  selectedId:       { type: [Number, String], default: null },
+  modelName: String,
+  apiRouteName: String,
+  title: String,
+  itemLabel: { type: String, default: "élément" },
+  columns: Array,
+  idField: { type: String, default: "id" },
+  bgColor: { type: String, default: "#808080" },
+  geojsonMode: { type: Boolean, default: false },
+  searchFields: { type: Array, default: () => [] },
+  filters: { type: Array, default: () => [] },
+  showTitle: { type: Boolean, default: true },
+  showHeader: { type: Boolean, default: true },
+  showSearch: { type: Boolean, default: true },
+  showFilters: { type: Boolean, default: true },
+  showAddButton: { type: Boolean, default: true },
+  showExportButtons: { type: Boolean, default: true },
+  forceAdd: { type: Boolean, default: false },
+  viewOnly: { type: Boolean, default: false },
+  requestParams: { type: Object, default: null },
+  addQueryParams: { type: Object, default: () => ({}) },
+  selectedId: { type: [Number, String], default: null },
 });
 
 const emit = defineEmits(["update:filteredItems", "row-hover", "row-click"]);
@@ -132,17 +132,23 @@ const emit = defineEmits(["update:filteredItems", "row-hover", "row-click"]);
 const gridRef = ref(null);
 
 defineExpose({
-  scrollToId(id) { gridRef.value?.scrollToId(id); },
-  refresh() { crud.fetchAll(null, props.requestParams); },
+  scrollToId(id) {
+    gridRef.value?.scrollToId(id);
+  },
+  refresh() {
+    crud.fetchAll(null, props.requestParams);
+  },
 });
 
 // ── useCrudPage à la place de useCrud ────────────────────────────────────────
-const crud = useCrudPage(props.modelName, props.apiRouteName, props.idField, { geojson: props.geojsonMode });
+const crud = useCrudPage(props.modelName, props.apiRouteName, props.idField, {
+  geojson: props.geojsonMode,
+});
 
-const searchQuery  = ref("");
+const searchQuery = ref("");
 const activeFilters = ref({});
 
-props.filters.forEach(f => {
+props.filters.forEach((f) => {
   activeFilters.value[f.key] = f.default ?? "";
 });
 
@@ -157,18 +163,18 @@ const filteredEntries = computed(() => {
 
   if (searchQuery.value && searchQuery.value.trim() !== "") {
     const q = searchQuery.value.toLowerCase();
-    items = items.filter(item => {
+    items = items.filter((item) => {
       if (props.searchFields.length === 0) {
         return JSON.stringify(item).toLowerCase().includes(q);
       }
-      return props.searchFields.some(field => {
+      return props.searchFields.some((field) => {
         const value = getNestedValue(item, field);
         return value?.toString().toLowerCase().includes(q);
       });
     });
   }
 
-  props.filters.forEach(f => {
+  props.filters.forEach((f) => {
     const value = activeFilters.value[f.key];
     items = f.apply(items, value);
   });
@@ -197,7 +203,7 @@ watch(
 
 function exportCsv(rows, filename) {
   const headerFields = (props.columns || []).map((c) => c.label || c.field);
-  const fields       = (props.columns || []).map((c) => c.field);
+  const fields = (props.columns || []).map((c) => c.field);
   const escape = (value) => {
     if (value == null) return "";
     return `"${String(value).replace(/"/g, '""')}"`;
@@ -207,9 +213,9 @@ function exportCsv(rows, filename) {
     lines.push(fields.map((f) => escape(getNestedValue(r, f))).join(","));
   }
   const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href     = url;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
@@ -217,8 +223,12 @@ function exportCsv(rows, filename) {
   URL.revokeObjectURL(url);
 }
 
-function exportVisible()    { exportCsv(filteredEntries.value,  "export_visible.csv"); }
-function handleExportAll()  { exportCsv(crud.items.value,       "export_all.csv"); }
+function exportVisible() {
+  exportCsv(filteredEntries.value, "export_visible.csv");
+}
+function handleExportAll() {
+  exportCsv(crud.items.value, "export_all.csv");
+}
 
 // ── Actions grille ───────────────────────────────────────────────────────────
 
@@ -236,10 +246,10 @@ function handleDelete(item) {
   (async () => {
     try {
       await crud.deleteItem(item, props.requestParams);
-      window.dispatchEvent(new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } }));
-    } catch (err) {
-      console.error("Error deleting item", err);
-    }
+      window.dispatchEvent(
+        new CustomEvent("geo-data-changed", { detail: { modelName: props.modelName } })
+      );
+    } catch (err) {}
   })();
 }
 </script>

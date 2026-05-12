@@ -231,31 +231,6 @@ const router = createRouter({
       ],
     },
     {
-      path: '/type-cheptel',
-      children: [
-        {
-          path: '',
-          name: 'typecheptel-list',
-          component: () => import('@/views/type_cheptel/TypeCheptelList.vue'),
-        },
-        {
-          path: 'add',
-          name: 'typecheptel-add',
-          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
-        },
-        {
-          path: ':id',
-          name: 'typecheptel-view',
-          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
-        },
-        {
-          path: ':id/edit',
-          name: 'typecheptel-edit',
-          component: () => import('@/views/type_cheptel/TypeCheptelForm.vue'),
-        },
-      ],
-    },
-    {
       path: '/',
       name: 'home',
       component: () => import('@/views/unite_pastorale/UnitePastoraleList.vue'),
@@ -441,10 +416,10 @@ const router = createRouter({
     {
       path: '/garde-situation',
       children: [
-        { path: '',         name: 'gardesituation-list', component: () => import('@/views/garde_troupeau/GardeTroupeauList.vue') },
-        { path: 'add',      name: 'gardesituation-add',  component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
-        { path: ':id',      name: 'gardesituation-view', component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
-        { path: ':id/edit', name: 'gardesituation-edit', component: () => import('@/views/garde_troupeau/GardeTroupeauPageForm.vue') },
+        { path: '',         name: 'gardesituation-list', component: () => import('@/views/garde_situation/GardeSituationList.vue') },
+        { path: 'add',      name: 'gardesituation-add',  component: () => import('@/views/garde_situation/GardeSituationPageForm.vue') },
+        { path: ':id',      name: 'gardesituation-view', component: () => import('@/views/garde_situation/GardeSituationPageForm.vue') },
+        { path: ':id/edit', name: 'gardesituation-edit', component: () => import('@/views/garde_situation/GardeSituationPageForm.vue') },
       ],
     },
     // {
@@ -517,15 +492,6 @@ const router = createRouter({
         { path: 'add',      name: 'commodite-add',  component: () => import('@/views/commodite/CommoditePageForm.vue') },
         { path: ':id',      name: 'commodite-view', component: () => import('@/views/commodite/CommoditePageForm.vue') },
         { path: ':id/edit', name: 'commodite-edit', component: () => import('@/views/commodite/CommoditePageForm.vue') },
-      ],
-    },
-    {
-      path: '/logement-commodite',
-      children: [
-        { path: '',         name: 'logementcommodite-list', component: () => import('@/views/logement_commodite/LogementCommoditeList.vue') },
-        { path: 'add',      name: 'logementcommodite-add',  component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
-        { path: ':id',      name: 'logementcommodite-view', component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
-        { path: ':id/edit', name: 'logementcommodite-edit', component: () => import('@/views/logement_commodite/LogementCommoditePageForm.vue') },
       ],
     },
   ]

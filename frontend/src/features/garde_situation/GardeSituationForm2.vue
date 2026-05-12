@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="garde-troupeau-form" @submit.prevent="submitForm">
+  <form class="garde-situation-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
@@ -10,9 +10,9 @@
             :items="situations"
             item-title="nom_situation"
             item-value="id_situation"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view'"
             label="Situation d'exploitation"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -25,9 +25,9 @@
             :items="bergers"
             item-title="fullName"
             item-value="id_berger"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view'"
             label="Berger"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -40,8 +40,8 @@
             type="date"
             label="Date de début"
             v-model="form.date_debut"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            dense
+            :disabled="props.mode === 'view'"
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -52,8 +52,8 @@
             type="date"
             label="Date de fin"
             v-model="form.date_fin"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            dense
+            :disabled="props.mode === 'view'"
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -65,9 +65,9 @@
           <v-text-field
             id="commentaire"
             v-model="form.commentaire"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view'"
             label="Commentaire"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -134,38 +134,28 @@ watch(
 );
 
 onMounted(() => {
-  // Récupère les situations
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/situationExploitation/`)
     .then((response) => {
       situations.value = response.data;
-      // console.log("situations:", situations.value);
     })
     .catch((error) => {
-      console.error(
-        "Erreur lors de la récupération de la liste des situations d'exploitation.",
-        error
-      );
+      console.error("Erreur lors de la récupération des situations d'exploitation.", error);
     });
 
-  // Récupère les bergers
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/berger/`)
     .then((response) => {
-      // Ajoute un champ `fullName` pour l'affichage dans le v-select
       bergers.value = response.data.map((b) => ({
         ...b,
         fullName: `${b.nom_berger} ${b.prenom_berger}`,
       }));
-      // console.log("bergers (with fullName):", bergers.value);
     })
     .catch((error) => {
-      console.error("Erreur lors de la récupération de la liste des bergers.", error);
+      console.error("Erreur lors de la récupération des bergers.", error);
     });
 });
 
-
-// Submits
 const submitForm = () => {
   if (props.onSubmit) {
     props.onSubmit(form)
@@ -174,7 +164,6 @@ const submitForm = () => {
   }
 };
 
-// Close
 const closeModal = () => {
   props.onClose?.();
 };
@@ -194,14 +183,12 @@ const closeModal = () => {
   border-color: #c8d0db;
   box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
 }
-.garde-troupeau-form :deep(.v-input--density-compact .v-field__input) { min-height: 38px; padding-top: 6px; padding-bottom: 6px; }
-.garde-troupeau-form :deep(.v-label.v-field-label) { font-size: 0.82rem; }
-.garde-troupeau-form :deep(.v-input) { font-size: 0.88rem; }
-.garde-troupeau-form :deep(.v-field__input),
-.garde-troupeau-form :deep(.v-select__selection-text) { font-size: 0.88rem; }
+.garde-situation-form :deep(.v-input--density-compact .v-field__input) { min-height: 38px; padding-top: 6px; padding-bottom: 6px; }
+.garde-situation-form :deep(.v-label.v-field-label) { font-size: 0.82rem; }
+.garde-situation-form :deep(.v-input) { font-size: 0.88rem; }
+.garde-situation-form :deep(.v-field__input),
+.garde-situation-form :deep(.v-select__selection-text) { font-size: 0.88rem; }
 .form-ligne { padding: 4px; }
 .form-cell { padding: 4px; }
 .form-actions { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem; }
-.disable-events { pointer-events: none; }
 </style>
-

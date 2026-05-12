@@ -524,27 +524,6 @@ class Commodite(AuditFieldsMixin, models.Model):
         return str(self.description)
     
 
-class LogementCommodite(AuditFieldsMixin, models.Model):
-    """
-    Association Logement / Commodite
-    """
-    
-    id_logement_commodite = models.BigAutoField(primary_key=True)
-    logement = models.ForeignKey('alpages.Logement', on_delete=models.PROTECT, blank=True, null=True, related_name='commodites')
-    commodite = models.ForeignKey('alpages.Commodite', on_delete=models.PROTECT, blank=True, null=True, related_name='logements')
-    etat = models.CharField(max_length=50, null=False, blank=False)
-    commentaire = models.CharField(max_length=50, null=True, blank=True)
-    quantite = models.CharField(max_length=50, null=True, blank=True)
-    
-    
-    class Meta:
-        verbose_name = "logement / commodité"
-        verbose_name_plural = "logements / commodités"
-
-    def __str__(self):
-        return f"{self.logement} a {self.quantite} de {self.commodite}"
-
-
 class AbriDUrgence(AuditFieldsMixin, models.Model):
     """
     Abri d'urgence
@@ -764,12 +743,23 @@ class Cheptel(AuditFieldsMixin, models.Model):
 
     eleveur = models.ForeignKey('alpages.Eleveur', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
     situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
-    type_cheptel = models.ForeignKey('alpages.TypeCheptel', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
-
     nombre_animaux = models.IntegerField(null=False, blank=False)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
-    
+
+    coefficient_UGB = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=False,
+        blank=False,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+    )
+    production = models.ForeignKey('alpages.Production', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
+    pension = models.ForeignKey('alpages.CategoriePension', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
+    race = models.ForeignKey('alpages.Race', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
+    categorie_animaux = models.ForeignKey('alpages.CategorieAnimaux', on_delete=models.PROTECT, blank=True, null=True, related_name='cheptels')
+
     class Meta:
         verbose_name = "troupeau"
         verbose_name_plural = "troupeaux"
@@ -781,38 +771,10 @@ class Cheptel(AuditFieldsMixin, models.Model):
         ]
 
     def __str__(self):
-        return f"{self.eleveur} élève {self.type_cheptel} dans la situation {self.situation_exploitation}"
-
-class TypeCheptel(AuditFieldsMixin, models.Model):
-    """
-    Type de cheptel
-    """
-    
-    id_type_cheptel = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
-    coefficient_UGB = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
-        null=False,
-        blank=False,
-        default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-    )
-    production = models.ForeignKey('alpages.Production', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
-    pension = models.ForeignKey('alpages.CategoriePension', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
-    race = models.ForeignKey('alpages.Race', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
-    categorie_animaux = models.ForeignKey('alpages.CategorieAnimaux', on_delete=models.PROTECT, blank=True, null=True, related_name='types_cheptel')
-
-    class Meta:
-        db_table = 'alpages_type_cheptel'
-        verbose_name = "type de cheptel"
-        verbose_name_plural = "types de cheptel"
-
-    def __str__(self):
-        return str(self.description)
+        return f"{self.eleveur} élève {self.description} dans la situation {self.situation_exploitation}"
 
 
-# FIN Mise à jour Cheptels / types de cheptel
+# FIN Cheptel
 ##################
 
 # Evénements
@@ -894,11 +856,18 @@ class EquipementExploitant(AuditFieldsMixin, models.Model):
     """
 
     id_equipement_exploitant = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
     type_equipement = models.ForeignKey('alpages.TypeEquipement', on_delete=models.PROTECT, blank=True, null=True, related_name='eqptsExploitant')
     situation_exploitation = models.ForeignKey('alpages.SituationDExploitation', on_delete=models.PROTECT, blank=True, null=True, related_name='eqptsExploitant')
+    beneficier_de = models.ForeignKey(
+        'alpages.BeneficierDe',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='equipement',
+    )
 
     class Meta:
         verbose_name = "équipement d'exploitant"

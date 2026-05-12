@@ -21,14 +21,14 @@ const columns = [
   { field: "eleveur_detail.nom_complet", label: "Éleveur", sortable: true },
   { field: "situation_detail.unite_pastorale_detail.nom_up", label: "UP", sortable: true },
   { field: "annee", label: "Année", sortable: true },
-  { field: "type_cheptel_detail.description", label: "Type cheptel", sortable: true },
+  { field: "description", label: "Description", sortable: true },
   { field: "nombre_animaux", label: "Nombre d'animaux", sortable: true },
 ];
 
 const searchFields = [
   'eleveur_detail.nom_complet',
   'situation_detail.unite_pastorale_detail.nom_up',
-  'type_cheptel_detail.description',
+  'description',
   'nombre_animaux',
   'annee',
 ];

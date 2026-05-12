@@ -19,11 +19,11 @@ from alpages.models import (
     TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan,
     TypeConvention, SituationDExploitation, Exploiter,
     Eleveur, TypeDExploitant, Exploitant, EtreCompose, SubventionPNV,
-    Logement, Commodite, LogementCommodite,
+    Logement, Commodite,
     AbriDUrgence, AbriDUrgenceCommodite, BeneficierDe,
     Berger, GardeSituation,
     Production, CategoriePension, Espece, Race, CategorieAnimaux,
-    Cheptel, TypeCheptel,
+    Cheptel,
     TypeEvenement, TypeEquipement,
 )
 from alpages.serializers import (
@@ -31,11 +31,11 @@ from alpages.serializers import (
     ExploiterSerializer,
     QuartierPastoSerializer, GardeSituationSerializer,ExploitantSerializer,
     BeneficierDeSerializer, PlanDeSuiviSerializer, MesureDePlanSerializer,
-    SubventionPNVSerializer, LogementCommoditeSerializer,
+    SubventionPNVSerializer,
     TypeConventionSerializer, TypeDeSuiviSerializer, TypeDeMesureSerializer,
     BergerSerializer, ProductionSerializer,
     CategoriePensionSerializer, EspeceSerializer, RaceSerializer,
-    CategorieAnimauxSerializer, CheptelSerializer, TypeCheptelSerializer,
+    CategorieAnimauxSerializer, CheptelSerializer,
     TypeEvenementSerializer, TypeEquipementSerializer, AbriDUrgenceSerializer,
     CommoditeSerializer, AbriDUrgenceCommoditeSerializer,
 )
@@ -504,23 +504,6 @@ class SubventionPNVSerializerTest(TestCase):
 
 
 # ============================================================================
-# LogementCommoditeSerializer
-# ============================================================================
-
-class LogementCommoditeSerializerTest(TestCase):
-    """Tests for the logement_code and commodite_desc source-based fields."""
-
-    def test_logement_code_and_commodite_desc_match_source_values(self):
-        log = Logement.objects.create(logement_code='L100')
-        com = Commodite.objects.create(id_commodite=100, description='Eau chaude')
-        lc = LogementCommodite.objects.create(
-            id_logement_commodite=100, logement=log, commodite=com, etat='Bon',
-        )
-        data = LogementCommoditeSerializer(lc).data
-        self.assertEqual(data['logement_code'], 'L100')
-        self.assertEqual(data['commodite_desc'], 'Eau chaude')
-
-
 # ============================================================================
 # Simple field-presence tests (one method per serializer)
 # ============================================================================
@@ -622,17 +605,6 @@ class CheptelSerializerFieldsTest(TestCase):
         data = CheptelSerializer(cheptel).data
         self.assertIn('id_cheptel', data)
         self.assertIn('description', data)
-
-
-class TypeCheptelSerializerFieldsTest(TestCase):
-    def test_fields_present(self):
-        tc = TypeCheptel.objects.create(
-            id_type_cheptel=100, description='TypeCheptelTest',
-        )
-        data = TypeCheptelSerializer(tc).data
-        self.assertIn('id_type_cheptel', data)
-        self.assertIn('description', data)
-        self.assertIn('coefficient_UGB', data)
 
 
 class TypeEvenementSerializerFieldsTest(TestCase):

@@ -41,26 +41,11 @@
         />
       </div>
     </div>
-    <!-- Ligne 1 : Type cheptel | Nombre -->
+    <!-- Ligne : Nombre d'animaux -->
     <div class="w3-row form-ligne">
       <div class="w3-half form-cell">
-        <v-select 
-          id="typeCheptel"
-          v-model="form.type_cheptel"
-          :items="typeCs"
-          item-title="description"
-          item-value="id_type_cheptel"
-          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-          label="Type de cheptel"
-          dense
-          variant="underlined"
-          hide-details
-          clearable
-        />
-      </div>
-      <div class="w3-half form-cell">
         <v-text-field
-          id="nombre" 
+          id="nombre"
           v-model="form.nombre_animaux"
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
           label="Nombre d'animaux"
@@ -114,6 +99,85 @@
         />
       </div>
     </div>
+    <!-- Ligne : Race | Catégorie animaux -->
+    <div class="w3-row form-ligne">
+      <div class="w3-half form-cell">
+        <v-select
+          v-model="form.race"
+          :items="races"
+          item-title="description"
+          item-value="id_race"
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          label="Race"
+          density="compact"
+          variant="underlined"
+          hide-details
+          clearable
+        />
+      </div>
+      <div class="w3-half form-cell">
+        <v-select
+          v-model="form.categorie_animaux"
+          :items="categoriesAnimaux"
+          item-title="description"
+          item-value="id_categorie_animaux"
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          label="Catégorie d'animaux"
+          density="compact"
+          variant="underlined"
+          hide-details
+          clearable
+        />
+      </div>
+    </div>
+    <!-- Ligne : Production | Pension -->
+    <div class="w3-row form-ligne">
+      <div class="w3-half form-cell">
+        <v-select
+          v-model="form.production"
+          :items="productions"
+          item-title="description"
+          item-value="id_production"
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          label="Production"
+          density="compact"
+          variant="underlined"
+          hide-details
+          clearable
+        />
+      </div>
+      <div class="w3-half form-cell">
+        <v-select
+          v-model="form.pension"
+          :items="pensions"
+          item-title="description"
+          item-value="id_categorie_pension"
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          label="Catégorie de pension"
+          density="compact"
+          variant="underlined"
+          hide-details
+          clearable
+        />
+      </div>
+    </div>
+    <!-- Ligne : Coefficient UGB -->
+    <div class="w3-row form-ligne">
+      <div class="w3-half form-cell">
+        <v-text-field
+          v-model="form.coefficient_UGB"
+          label="Coefficient UGB"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+          density="compact"
+          variant="underlined"
+          hide-details
+        />
+      </div>
+    </div>
     </section>
 
     <div class="form-actions">
@@ -156,16 +220,23 @@ const form = reactive({
   id_cheptel: null,
   eleveur: "",
   situation_exploitation: "",
-  type_cheptel: "",
   nombre_animaux: "",
   description: "",
   date_debut: "",
   date_fin: "",
+  coefficient_UGB: 0,
+  production: null,
+  pension: null,
+  race: null,
+  categorie_animaux: null,
 });
 
 const situations = ref([]);
 const eleveurs = ref([]);
-const typeCs = ref([]);
+const productions = ref([]);
+const pensions = ref([]);
+const races = ref([]);
+const categoriesAnimaux = ref([]);
 
 const situLocked = computed(() => !!props.initialForm?.situation_exploitation);
 
@@ -271,19 +342,25 @@ onMounted(() => {
   loadEleveurs(explId);
   
 
-  // Récupère les types de cheptel
   auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/type_cheptel/`)
-    .then((response) => {
-      typeCs.value = response.data;
-      console.log("typeCs:", typeCs.value);
-    })
-    .catch((error) => {
-      console.error(
-        "Erreur lors de la récupération de la liste des types de cheptel.",
-        error
-      );
-    });
+    .get(`${config.API_BASE_URL}/api/production/`)
+    .then((response) => { productions.value = response.data; })
+    .catch(() => console.error("Erreur lors de la récupération des productions."));
+
+  auth.axiosInstance
+    .get(`${config.API_BASE_URL}/api/categorie_pension/`)
+    .then((response) => { pensions.value = response.data; })
+    .catch(() => console.error("Erreur lors de la récupération des catégories de pension."));
+
+  auth.axiosInstance
+    .get(`${config.API_BASE_URL}/api/race/`)
+    .then((response) => { races.value = response.data; })
+    .catch(() => console.error("Erreur lors de la récupération des races."));
+
+  auth.axiosInstance
+    .get(`${config.API_BASE_URL}/api/categorie_animaux/`)
+    .then((response) => { categoriesAnimaux.value = response.data; })
+    .catch(() => console.error("Erreur lors de la récupération des catégories d'animaux."));
 });
 
 
@@ -293,8 +370,7 @@ const submitForm = () => {
     // Ensure required fields exist for backend
     if (!form.description) {
       const ev = eleveurs.value.find(e => e.id_eleveur === form.eleveur) || {};
-      const type = (typeCs.value || []).find(t => t.id_type_cheptel === form.type_cheptel) || {};
-      form.description = `${ev.nom_complet || (ev.nom_eleveur ? `${ev.nom_eleveur} ${ev.prenom_eleveur}` : '')} ${type.description ? ' - ' + type.description : ''}`.trim();
+      form.description = `${ev.nom_complet || (ev.nom_eleveur ? `${ev.nom_eleveur} ${ev.prenom_eleveur}` : '')}`.trim();
     }
     props.onSubmit(form)
       .then(() => console.log("Form submitted OK"))

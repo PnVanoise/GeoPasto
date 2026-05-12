@@ -106,7 +106,12 @@
           <v-select
             v-model="form.race"
             :items="races"
-            item-title="description"
+            :item-title="
+              (item) =>
+                item.espece_description
+                  ? `${item.espece_description} — ${item.description}`
+                  : item.description
+            "
             item-value="id_race"
             :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
             label="Race"
@@ -120,7 +125,12 @@
           <v-select
             v-model="form.categorie_animaux"
             :items="categoriesAnimaux"
-            item-title="description"
+            :item-title="
+              (item) =>
+                item.espece_description
+                  ? `${item.espece_description} — ${item.description}`
+                  : item.description
+            "
             item-value="id_categorie_animaux"
             :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
             label="Catégorie d'animaux"
@@ -267,8 +277,7 @@ const loadEleveurs = (explId) => {
           nom_complet: e.nom_complet ?? `${e.nom_eleveur || ""} ${e.prenom_eleveur || ""}`.trim(),
         }));
       })
-      .catch((error) => {
-      });
+      .catch((error) => {});
   } else {
     auth.axiosInstance
       .get(`${config.API_BASE_URL}/api/eleveur/`)
@@ -279,8 +288,7 @@ const loadEleveurs = (explId) => {
           nom_complet: e.nom_complet ?? `${e.nom_eleveur || ""} ${e.prenom_eleveur || ""}`.trim(),
         }));
       })
-      .catch((error) => {
-      });
+      .catch((error) => {});
   }
 };
 
@@ -315,15 +323,22 @@ watch(
               form.situation_exploitation = initialSitu;
             }
           })
-          .catch((error) => {
-              "Erreur lors de la récupération de la liste des situations d'exploitation.",
-              error
-            );
-          });
+          .catch(() => {});
       }
     }
   },
   { immediate: true }
+);
+
+watch(
+  () => form.situation_exploitation,
+  (newSituId, oldSituId) => {
+    if (newSituId === oldSituId) return;
+    const situ = situations.value.find((s) => s.id_situation === newSituId || s.id === newSituId);
+    const explId = situ?.exploitant ?? null;
+    form.eleveur = null;
+    loadEleveurs(explId);
+  }
 );
 
 onMounted(() => {
@@ -359,40 +374,28 @@ onMounted(() => {
           props.initialForm.id_situation;
       }
     })
-    .catch((error) => {
-        "Erreur lors de la récupération de la liste des situations d'exploitation.",
-        error
-      );
-    });
+    .catch(() => {});
 
   // Récupère les éleveurs via le helper
   const explId =
     props.initialForm?.exploitant ?? props.initialForm?.situation_detail?.exploitant ?? null;
   loadEleveurs(explId);
 
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/production/`)
-    .then((response) => {
-      productions.value = response.data;
-    })
+  auth.axiosInstance.get(`${config.API_BASE_URL}/api/production/`).then((response) => {
+    productions.value = response.data;
+  });
 
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/categorie_pension/`)
-    .then((response) => {
-      pensions.value = response.data;
-    })
+  auth.axiosInstance.get(`${config.API_BASE_URL}/api/categorie_pension/`).then((response) => {
+    pensions.value = response.data;
+  });
 
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/race/`)
-    .then((response) => {
-      races.value = response.data;
-    })
+  auth.axiosInstance.get(`${config.API_BASE_URL}/api/race/`).then((response) => {
+    races.value = response.data;
+  });
 
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/categorie_animaux/`)
-    .then((response) => {
-      categoriesAnimaux.value = response.data;
-    })
+  auth.axiosInstance.get(`${config.API_BASE_URL}/api/categorie_animaux/`).then((response) => {
+    categoriesAnimaux.value = response.data;
+  });
 });
 
 // Submits
@@ -404,8 +407,7 @@ const submitForm = () => {
       form.description =
         `${ev.nom_complet || (ev.nom_eleveur ? `${ev.nom_eleveur} ${ev.prenom_eleveur}` : "")}`.trim();
     }
-    props
-      .onSubmit(form)
+    props.onSubmit(form);
   }
 };
 

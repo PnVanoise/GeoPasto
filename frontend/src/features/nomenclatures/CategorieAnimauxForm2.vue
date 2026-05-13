@@ -16,6 +16,22 @@
           />
         </div>
         <div class="w3-half form-cell">
+          <v-text-field
+            v-model="form.coefficient_UGB"
+            :disabled="props.mode === 'view'"
+            label="Coefficient UGB"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            density="compact"
+            variant="underlined"
+            hide-details
+          />
+        </div>
+      </div>
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
           <v-select
             id="espece"
             v-model="form.espece"
@@ -84,6 +100,7 @@ const btTitle = computed(() => {
 
 const form = reactive({
   description: "",
+  coefficient_UGB: 0,
   espece: "",
 });
 

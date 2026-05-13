@@ -296,14 +296,6 @@ watch(
             <div
               :class="[
                 'nav-item w3-signal-grey transparent',
-                { active: route.path.startsWith('/type-cheptel') },
-              ]"
-            >
-              <RouterLink to="/type-cheptel">Types de cheptel</RouterLink>
-            </div>
-            <div
-              :class="[
-                'nav-item w3-signal-grey transparent',
                 { active: route.path.startsWith('/type-mesure') },
               ]"
             >

@@ -18,7 +18,7 @@ import { useCrud } from "./useCrud";
  *  - `${modelName}-view`  (param :id)
  *
  * Usage :
- *   const crud = useCrudPage('typecheptel', 'type_cheptel', 'id_type_cheptel')
+ *   const crud = useCrudPage('eleveur', 'eleveur', 'id_eleveur')
  *   const { pageMode, handleSubmit } = crud
  */
 export function useCrudPage(modelName, apiRouteName, idField = "id", options = {}) {

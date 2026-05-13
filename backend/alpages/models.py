@@ -939,6 +939,14 @@ class CategorieAnimaux(AuditFieldsMixin, models.Model):
 
     id_categorie_animaux = models.AutoField(primary_key=True)
     description = models.CharField(max_length=50, null=False, blank=False)
+    coefficient_UGB = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=False,
+        blank=False,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+    )
     espece = models.ForeignKey(
         "alpages.Espece",
         on_delete=models.PROTECT,

@@ -17,6 +17,7 @@ import CrudListPage from "../../components/crud/CrudListPage.vue";
 const columns = [
   { field: "description", label: "Description", sortable: true },
   { field: "espece_description", label: "Espèce", sortable: true },
+  { field: "coefficient_UGB", label: "Coeff. UGB", sortable: true },
 ];
 const searchFields = ["description", "espece_description"];
 </script>

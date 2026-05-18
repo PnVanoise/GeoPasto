@@ -119,12 +119,14 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     let body = payload;
     if (geojsonMode) {
       if (payload && payload.properties) {
-        body = { type: "Feature", properties: payload.properties };
-        if (payload.geometry) body.geometry = payload.geometry;
+        body = {
+          type: "Feature",
+          properties: payload.properties,
+          geometry: payload.geometry ?? null,
+        };
       } else {
         const { geometry, id: rootId, ...props } = payload || {};
-        body = { type: "Feature", properties: props };
-        if (geometry) body.geometry = geometry;
+        body = { type: "Feature", properties: props, geometry: geometry ?? null };
       }
     }
     const sendBody = JSON.parse(JSON.stringify(body));

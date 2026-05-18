@@ -350,8 +350,6 @@ const submitForm = () => {
 
   if (!form.value.geometry) {
     geometryError.value = true;
-      "QuartierPastoForm submit: geometry is null. Finish drawing (double-click) before saving."
-    );
     return;
   }
 
@@ -359,10 +357,8 @@ const submitForm = () => {
 
   props
     .onSubmit(form.value)
-    .then(() => {
-    })
-    .catch((error) => {
-    });
+    .then(() => {})
+    .catch((error) => {});
 };
 
 onMounted(() => {
@@ -371,16 +367,14 @@ onMounted(() => {
     .then((response) => {
       ups.value = response.data;
     })
-    .catch((error) => {
-    });
+    .catch((error) => {});
 
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/situationExploitation/`)
     .then((response) => {
       situations.value = response.data || [];
     })
-    .catch((error) => {
-    });
+    .catch((error) => {});
 
   fetchContextQuartiersForSituation(form.value?.properties?.situation_exploitation);
   fetchUpGeometry(form.value?.properties?.unite_pastorale);

@@ -1,9 +1,9 @@
 <template>
   <CrudListPage
-    title="Plans de suivi"
+    title="Suivis"
     modelName="plandesuivi"
     apiRouteName="planSuivi"
-    itemLabel="un plan de suivi"
+    itemLabel="un suivi"
     idField="id_plan_suivi"
     :columns="columns"
     :bgColor="'#f7ba0b'"

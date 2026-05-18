@@ -24,7 +24,13 @@ from alpages.models import (
     QuartierPasto,
     ProprietaireUnitePastorale,
 )
-from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
+from alpages.models import (
+    TypeDeSuivi,
+    PlanDeSuivi,
+    TypeDeMesure,
+    MesureDePlan,
+    RealisationMesure,
+)
 from alpages.models import (
     TypeConvention,
     ConventionDExploitation,
@@ -79,6 +85,7 @@ from alpages.serializers import (
     PlanDeSuiviSerializer,
     TypeDeMesureSerializer,
     MesureDePlanSerializer,
+    RealisationMesureSerializer,
 )
 from alpages.serializers import (
     TypeConventionSerializer,
@@ -257,6 +264,33 @@ class MesureDePlanViewset(BaseModelViewSet):
             .select_related("plan_suivi")
             .order_by("id_mesure_plan")
         )
+        plan_suivi = self.request.GET.get("plan_suivi")
+        if plan_suivi is not None:
+            queryset = queryset.filter(plan_suivi_id=plan_suivi)
+        unite_pastorale = self.request.GET.get("unite_pastorale")
+        if unite_pastorale is not None:
+            queryset = queryset.filter(plan_suivi__unite_pastorale_id=unite_pastorale)
+        return queryset
+
+
+class RealisationMesureViewset(BaseModelViewSet):
+    serializer_class = RealisationMesureSerializer
+
+    def get_queryset(self):
+        queryset = (
+            RealisationMesure.objects.all()
+            .select_related("mesure_plan", "situation")
+            .order_by("id_realisation_mesure")
+        )
+        mesure_plan = self.request.GET.get("mesure_plan")
+        if mesure_plan is not None:
+            queryset = queryset.filter(mesure_plan_id=mesure_plan)
+        situation = self.request.GET.get("situation")
+        if situation is not None:
+            queryset = queryset.filter(situation_id=situation)
+        plan_suivi = self.request.GET.get("plan_suivi")
+        if plan_suivi is not None:
+            queryset = queryset.filter(mesure_plan__plan_suivi_id=plan_suivi)
         return queryset
 
 
@@ -860,6 +894,9 @@ class PlanDeSuiviViewset(BaseModelViewSet):
             .select_related("unite_pastorale")
             .order_by("id_plan_suivi")
         )
+        unite_pastorale = self.request.GET.get("unite_pastorale")
+        if unite_pastorale is not None:
+            queryset = queryset.filter(unite_pastorale_id=unite_pastorale)
         return queryset
 
 

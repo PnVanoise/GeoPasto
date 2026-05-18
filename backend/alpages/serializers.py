@@ -11,7 +11,13 @@ from alpages.models import (
     QuartierPasto,
     ProprietaireUnitePastorale,
 )
-from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
+from alpages.models import (
+    TypeDeSuivi,
+    PlanDeSuivi,
+    TypeDeMesure,
+    MesureDePlan,
+    RealisationMesure,
+)
 from alpages.models import (
     TypeConvention,
     ConventionDExploitation,
@@ -307,7 +313,7 @@ class TypeDeMesureSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializ
         fields = ["id_type_mesure", "description"]
 
 
-class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     plan_suivi = serializers.PrimaryKeyRelatedField(
         queryset=PlanDeSuivi.objects.all(), allow_null=True
     )
@@ -316,6 +322,33 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializ
         queryset=TypeDeMesure.objects.all(),
         allow_null=True,
     )
+    type_mesure_detail = TypeDeMesureSerializer(source="type_mesure", read_only=True)
+
+    class Meta:
+        model = MesureDePlan
+        geo_field = "geometry"
+        fields = [
+            "id_mesure_plan",
+            "description",
+            "commentaire",
+            "debut_periode",
+            "fin_periode",
+            "type_mesure",
+            "type_mesure_detail",
+            "plan_suivi",
+            "plan_suivi_detail",
+            "geometry",
+        ]
+
+    def to_representation(self, instance):
+        if instance.geometry is not None:
+            instance.geometry.transform(4326)
+        return super().to_representation(instance)
+
+
+class MesureDePlanSimpleSerializer(
+    AuditReadOnlyFieldsMixin, serializers.ModelSerializer
+):
     type_mesure_detail = TypeDeMesureSerializer(source="type_mesure", read_only=True)
 
     class Meta:
@@ -329,7 +362,32 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializ
             "type_mesure",
             "type_mesure_detail",
             "plan_suivi",
-            "plan_suivi_detail",
+        ]
+
+
+class RealisationMesureSerializer(
+    AuditReadOnlyFieldsMixin, serializers.ModelSerializer
+):
+    mesure_plan = serializers.PrimaryKeyRelatedField(
+        queryset=MesureDePlan.objects.all()
+    )
+    situation = serializers.PrimaryKeyRelatedField(
+        queryset=SituationDExploitation.objects.all()
+    )
+    mesure_plan_detail = MesureDePlanSimpleSerializer(
+        source="mesure_plan", read_only=True
+    )
+
+    class Meta:
+        model = RealisationMesure
+        fields = [
+            "id_realisation_mesure",
+            "mesure_plan",
+            "mesure_plan_detail",
+            "situation",
+            "statut",
+            "commentaire",
+            "date_realisation",
         ]
 
 

@@ -15,9 +15,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCrudPage } from "@/composables/useCrudPage";
+import { useCrud } from "@/composables/useCrud";
 import MesureDePlanForm2 from "../../features/plan_suivi/MesureDePlanForm2.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
@@ -25,8 +25,13 @@ import config from "@/../config";
 const route = useRoute();
 const router = useRouter();
 
-const crud = useCrudPage("mesuredeplan", "mesurePlan", "id_mesure_plan");
-const { pageMode, handleSubmit } = crud;
+const crud = useCrud("mesuredeplan", "mesurePlan", "id_mesure_plan", { geojson: true });
+
+const pageMode = computed(() => {
+  if (route.name === "mesuredeplan-add") return "add";
+  if (route.name === "mesuredeplan-edit") return "change";
+  return "view";
+});
 
 const itemData = ref({});
 const isLoading = ref(!!route.params.id);
@@ -42,13 +47,26 @@ onMounted(async () => {
     } finally {
       isLoading.value = false;
     }
+  } else {
+    const prefill = {};
+    if (route.query.plan_suivi) prefill.plan_suivi = Number(route.query.plan_suivi);
+    itemData.value = prefill;
   }
 });
+
+async function handleSubmit(formData) {
+  if (pageMode.value === "add") {
+    await crud.createItem(formData);
+  } else {
+    await crud.updateItem({ ...formData, id_mesure_plan: Number(route.params.id) });
+  }
+  router.back();
+}
 </script>
 
 <style scoped>
 .form-page {
-  max-width: 860px;
+  max-width: 1200px;
   margin: 2rem auto;
   padding: 0 1rem;
 }

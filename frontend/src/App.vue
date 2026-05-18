@@ -429,9 +429,9 @@ watch(
             </div>
           </div>
 
-          <!-- Accordeon 'Plans et Mesures'-->
+          <!-- Accordeon 'Suivis et Mesures'-->
           <div class="nav-item w3-signal-red" @click="toggleAccordion('plan')">
-            Plans et Mesures
+            Suivis et Mesures
             <i
               class="fa fa-caret-down accordion-caret"
               :class="{ open: isAccordionOpen('plan') }"
@@ -444,7 +444,7 @@ watch(
                 { active: route.path.startsWith('/plan-suivi') },
               ]"
             >
-              <RouterLink to="/plan-suivi">Plans par alpage</RouterLink>
+              <RouterLink to="/plan-suivi">Suivis par alpage</RouterLink>
             </div>
             <div
               :class="[

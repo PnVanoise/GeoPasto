@@ -7,7 +7,7 @@
       v-else
       :initialForm="itemData"
       :mode="pageMode"
-      itemLabel="un plan de suivi"
+      itemLabel="un suivi"
       :onSubmit="handleSubmit"
       :onClose="() => router.back()"
     />
@@ -42,6 +42,10 @@ onMounted(async () => {
     } finally {
       isLoading.value = false;
     }
+  } else {
+    const prefill = {};
+    if (route.query.unite_pastorale) prefill.unite_pastorale = Number(route.query.unite_pastorale);
+    itemData.value = prefill;
   }
 });
 </script>

@@ -7,6 +7,7 @@
     idField="id_mesure_plan"
     :columns="columns"
     :bgColor="'#f7ba0b'"
+    :geojsonMode="true"
     :searchFields="searchFields"
   />
 </template>

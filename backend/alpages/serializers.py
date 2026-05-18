@@ -307,7 +307,7 @@ class TypeDeMesureSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializ
         fields = ["id_type_mesure", "description"]
 
 
-class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     plan_suivi = serializers.PrimaryKeyRelatedField(
         queryset=PlanDeSuivi.objects.all(), allow_null=True
     )
@@ -320,6 +320,7 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializ
 
     class Meta:
         model = MesureDePlan
+        geo_field = "geometry"
         fields = [
             "id_mesure_plan",
             "description",
@@ -330,7 +331,13 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializ
             "type_mesure_detail",
             "plan_suivi",
             "plan_suivi_detail",
+            "geometry",
         ]
+
+    def to_representation(self, instance):
+        if instance.geometry is not None:
+            instance.geometry.transform(4326)
+        return super().to_representation(instance)
 
 
 # Bloc expoitation

@@ -257,6 +257,12 @@ class MesureDePlanViewset(BaseModelViewSet):
             .select_related("plan_suivi")
             .order_by("id_mesure_plan")
         )
+        plan_suivi = self.request.GET.get("plan_suivi")
+        if plan_suivi is not None:
+            queryset = queryset.filter(plan_suivi_id=plan_suivi)
+        unite_pastorale = self.request.GET.get("unite_pastorale")
+        if unite_pastorale is not None:
+            queryset = queryset.filter(plan_suivi__unite_pastorale_id=unite_pastorale)
         return queryset
 
 
@@ -860,6 +866,9 @@ class PlanDeSuiviViewset(BaseModelViewSet):
             .select_related("unite_pastorale")
             .order_by("id_plan_suivi")
         )
+        unite_pastorale = self.request.GET.get("unite_pastorale")
+        if unite_pastorale is not None:
+            queryset = queryset.filter(unite_pastorale_id=unite_pastorale)
         return queryset
 
 

@@ -75,7 +75,7 @@
               item-title="description"
               item-value="id_plan_suivi"
               :disabled="props.mode === 'view'"
-              label="Plan de suivi"
+              label="Suivi"
               density="compact"
               variant="underlined"
               hide-details

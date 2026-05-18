@@ -11,7 +11,13 @@ from alpages.models import (
     QuartierPasto,
     ProprietaireUnitePastorale,
 )
-from alpages.models import TypeDeSuivi, PlanDeSuivi, TypeDeMesure, MesureDePlan
+from alpages.models import (
+    TypeDeSuivi,
+    PlanDeSuivi,
+    TypeDeMesure,
+    MesureDePlan,
+    RealisationMesure,
+)
 from alpages.models import (
     TypeConvention,
     ConventionDExploitation,
@@ -338,6 +344,51 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
         if instance.geometry is not None:
             instance.geometry.transform(4326)
         return super().to_representation(instance)
+
+
+class MesureDePlanSimpleSerializer(
+    AuditReadOnlyFieldsMixin, serializers.ModelSerializer
+):
+    type_mesure_detail = TypeDeMesureSerializer(source="type_mesure", read_only=True)
+
+    class Meta:
+        model = MesureDePlan
+        fields = [
+            "id_mesure_plan",
+            "description",
+            "commentaire",
+            "debut_periode",
+            "fin_periode",
+            "type_mesure",
+            "type_mesure_detail",
+            "plan_suivi",
+        ]
+
+
+class RealisationMesureSerializer(
+    AuditReadOnlyFieldsMixin, serializers.ModelSerializer
+):
+    mesure_plan = serializers.PrimaryKeyRelatedField(
+        queryset=MesureDePlan.objects.all()
+    )
+    situation = serializers.PrimaryKeyRelatedField(
+        queryset=SituationDExploitation.objects.all()
+    )
+    mesure_plan_detail = MesureDePlanSimpleSerializer(
+        source="mesure_plan", read_only=True
+    )
+
+    class Meta:
+        model = RealisationMesure
+        fields = [
+            "id_realisation_mesure",
+            "mesure_plan",
+            "mesure_plan_detail",
+            "situation",
+            "statut",
+            "commentaire",
+            "date_realisation",
+        ]
 
 
 # Bloc expoitation

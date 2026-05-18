@@ -27,6 +27,7 @@ from alpages.views import (
     PlanDeSuiviViewset,
     TypeDeMesureViewset,
     MesureDePlanViewset,
+    RealisationMesureViewset,
     EtreComposeViewset,
     SubventionPNVViewset,
     AbriDUrgenceViewset,
@@ -117,6 +118,9 @@ router.register("typeSuivi", TypeDeSuiviViewset, basename="typesuivi")
 router.register("planSuivi", PlanDeSuiviViewset, basename="plansuivi")
 router.register("typeMesure", TypeDeMesureViewset, basename="typemesure")
 router.register("mesurePlan", MesureDePlanViewset, basename="mesureplan")
+router.register(
+    "realisationMesure", RealisationMesureViewset, basename="realisationmesure"
+)
 
 router.register("typeEquipement", TypeEquipementViewset, basename="typeequipement")
 router.register(

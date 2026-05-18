@@ -7,7 +7,7 @@
       v-else
       :initialForm="itemData"
       :mode="pageMode"
-      itemLabel="un plan de suivi"
+      itemLabel="un suivi"
       :onSubmit="handleSubmit"
       :onClose="() => router.back()"
     />

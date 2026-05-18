@@ -245,6 +245,39 @@ class MesureDePlan(AuditFieldsMixin, models.Model):
         return str(self.description)
 
 
+class RealisationMesure(AuditFieldsMixin, models.Model):
+    STATUT_CHOICES = [
+        ("non_realisee", "Non réalisée"),
+        ("partielle", "Partiellement réalisée"),
+        ("realisee", "Réalisée"),
+    ]
+
+    id_realisation_mesure = models.BigAutoField(primary_key=True)
+    mesure_plan = models.ForeignKey(
+        "alpages.MesureDePlan",
+        on_delete=models.PROTECT,
+        related_name="realisations",
+    )
+    situation = models.ForeignKey(
+        "alpages.SituationDExploitation",
+        on_delete=models.PROTECT,
+        related_name="realisations_mesures",
+    )
+    statut = models.CharField(
+        max_length=20, choices=STATUT_CHOICES, default="non_realisee"
+    )
+    commentaire = models.TextField(null=True, blank=True)
+    date_realisation = models.DateField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "réalisation de mesure"
+        verbose_name_plural = "réalisations de mesures"
+        unique_together = [("mesure_plan", "situation")]
+
+    def __str__(self):
+        return f"{self.mesure_plan} – {self.situation} – {self.statut}"
+
+
 # Bloc exploitation
 class TypeConvention(AuditFieldsMixin, models.Model):
     """

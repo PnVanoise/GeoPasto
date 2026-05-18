@@ -157,8 +157,8 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
         zIndex: 13,
       },
       popup: {
-        typeLabel: "Mesure de plan",
-        attribute: "description",
+        typeLabel: "Mesure",
+        attribute: "popup_label",
         idAttribute: "id_mesure_plan",
         route: "",
       },
@@ -445,12 +445,17 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
         .filter((f) => f?.geometry)
         .map((f) => {
           const rawId = f?.id ?? f?.properties?.id_mesure_plan ?? f?.properties?.id;
+          const typeMesure = f?.properties?.type_mesure_detail?.description;
+          const desc = f?.properties?.description;
+          const popupLabel =
+            [typeMesure, desc].filter(Boolean).join(" – ") || desc || `Mesure ${rawId}`;
           return {
             ...f,
             id: rawId != null ? `mesure_plan:${rawId}` : undefined,
             properties: {
               ...(f?.properties || {}),
               id_mesure_plan: rawId ?? f?.properties?.id_mesure_plan,
+              popup_label: popupLabel,
             },
           };
         });

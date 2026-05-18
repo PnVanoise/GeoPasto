@@ -75,24 +75,41 @@
 
     <template v-if="props.mode !== 'add' && form.id_plan_suivi">
       <section class="layout-card mesures-card">
-        <CrudListPage
-          title="Mesures de plan"
-          modelName="mesuredeplan"
-          apiRouteName="mesurePlan"
-          itemLabel="une mesure de plan"
-          idField="id_mesure_plan"
-          :columns="mesureColumns"
-          :bgColor="'#64748b'"
-          :geojsonMode="true"
-          :showTitle="false"
-          :showHeader="true"
-          :showSearch="false"
-          :showExportButtons="false"
-          :showFilters="false"
-          :viewOnly="props.mode === 'view'"
-          :requestParams="{ plan_suivi: form.id_plan_suivi }"
-          :addQueryParams="{ plan_suivi: form.id_plan_suivi }"
-        />
+        <v-tabs v-model="activeTab" density="compact" class="plan-tabs">
+          <v-tab value="mesures" prepend-icon="mdi-clipboard-list-outline">Mesures</v-tab>
+          <v-tab value="avancement" prepend-icon="mdi-chart-bar">Avancement</v-tab>
+        </v-tabs>
+
+        <v-window v-model="activeTab" class="tab-content">
+          <v-window-item value="mesures">
+            <CrudListPage
+              title="Mesures de plan"
+              modelName="mesuredeplan"
+              apiRouteName="mesurePlan"
+              itemLabel="une mesure de plan"
+              idField="id_mesure_plan"
+              :columns="mesureColumns"
+              :bgColor="'#64748b'"
+              :geojsonMode="true"
+              :showTitle="false"
+              :showHeader="true"
+              :showSearch="false"
+              :showExportButtons="false"
+              :showFilters="false"
+              :viewOnly="props.mode === 'view'"
+              :requestParams="{ plan_suivi: form.id_plan_suivi }"
+              :addQueryParams="{ plan_suivi: form.id_plan_suivi }"
+            />
+          </v-window-item>
+
+          <v-window-item value="avancement">
+            <PlanAvancementView
+              :plan-id="form.id_plan_suivi"
+              :unite-pastorale-id="form.unite_pastorale"
+              :view-only="props.mode === 'view'"
+            />
+          </v-window-item>
+        </v-window>
       </section>
     </template>
 
@@ -115,6 +132,7 @@ import config from "../../../config";
 import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 import CrudListPage from "../../components/crud/CrudListPage.vue";
+import PlanAvancementView from "./PlanAvancementView.vue";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -147,6 +165,8 @@ const form = reactive({
   type_suivi: null,
   unite_pastorale: null,
 });
+
+const activeTab = ref("mesures");
 
 const typesuivis = ref([]);
 const ups = ref([]);
@@ -214,6 +234,13 @@ const closeModal = () => {
 }
 .mesures-card {
   min-height: 200px;
+}
+.plan-tabs {
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.tab-content {
+  min-height: 180px;
 }
 .plan-suivi-form :deep(.v-input--density-compact .v-field__input) {
   min-height: 38px;

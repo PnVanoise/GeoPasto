@@ -2,6 +2,9 @@ from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import F, Q, Sum
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
+from django.utils import timezone
 
 from .choices_logement import (
     LST_STATUT,
@@ -43,14 +46,14 @@ class AuditFieldsMixin(models.Model):
 # Bloc administratif (orange)
 class UnitePastorale(AuditFieldsMixin, models.Model):
     """
-    Unité pastorales
+    Unité pastorale. La géométrie active est un cache calculé depuis GeometrieUnitePastorale.
     """
 
     id_unite_pastorale = models.BigAutoField(primary_key=True)
     code_up = models.CharField(max_length=50, null=False, blank=False)
     nom_up = models.CharField(max_length=50, null=False, blank=False)
     annee_version = models.BigIntegerField(null=False, blank=False)
-    geometry = models.MultiPolygonField(srid=2154, null=False, blank=False)
+    geom_active = models.MultiPolygonField(srid=2154, null=True, blank=True)
     version_active = models.BooleanField(null=False, blank=False)
     secteur = models.CharField(max_length=50, null=True, blank=True)
 
@@ -60,6 +63,51 @@ class UnitePastorale(AuditFieldsMixin, models.Model):
 
     def __str__(self):
         return str(self.nom_up)
+
+
+class GeometrieUnitePastorale(AuditFieldsMixin, models.Model):
+    """
+    Historique des géométries d'une unité pastorale.
+    Une seule entrée doit être valide (date_debut <= aujourd'hui <= date_fin ou date_fin nulle) à un instant donné.
+    """
+
+    id_geometrie_up = models.BigAutoField(primary_key=True)
+    unite_pastorale = models.ForeignKey(
+        "alpages.UnitePastorale",
+        on_delete=models.PROTECT,
+        related_name="geometries",
+    )
+    geometry = models.MultiPolygonField(srid=2154)
+    date_debut_validite = models.DateField()
+    date_fin_validite = models.DateField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "géométrie d'unité pastorale"
+        verbose_name_plural = "géométries d'unités pastorales"
+        ordering = ["-date_debut_validite"]
+
+    def __str__(self):
+        return f"{self.unite_pastorale} — {self.date_debut_validite}"
+
+
+def _refresh_geom_active(up):
+    today = timezone.now().date()
+    geom_entry = (
+        GeometrieUnitePastorale.objects.filter(
+            unite_pastorale=up,
+            date_debut_validite__lte=today,
+        )
+        .filter(Q(date_fin_validite__isnull=True) | Q(date_fin_validite__gte=today))
+        .order_by("-date_debut_validite")
+        .first()
+    )
+    up.geom_active = geom_entry.geometry if geom_entry else None
+    up.save(update_fields=["geom_active"])
+
+
+@receiver([post_save, post_delete], sender=GeometrieUnitePastorale)
+def sync_geom_active(sender, instance, **kwargs):
+    _refresh_geom_active(instance.unite_pastorale)
 
 
 class ProprietaireFoncier(AuditFieldsMixin, models.Model):

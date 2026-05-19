@@ -20,6 +20,7 @@ from .viewsets_base import BaseModelViewSet
 from alpages.models import Logement, Commodite
 from alpages.models import (
     UnitePastorale,
+    GeometrieUnitePastorale,
     ProprietaireFoncier,
     QuartierPasto,
     ProprietaireUnitePastorale,
@@ -76,6 +77,7 @@ from alpages.serializers import LogementSerializer, CommoditeSerializer
 from alpages.serializers import (
     UnitePastoraleSerializer,
     UnitePastoraleLSerializer,
+    GeometrieUnitePastoraleSerializer,
     ProprietaireFoncierSerializer,
     QuartierPastoSerializer,
     ProprietaireUnitePastoraleSerializer,
@@ -236,6 +238,17 @@ class UnitePastoraleViewset(BaseModelViewSet):
         return self.conditional_list(
             request, serializer_class=UnitePastoraleLSerializer
         )
+
+
+class GeometrieUnitePastoraleViewset(BaseModelViewSet):
+    serializer_class = GeometrieUnitePastoraleSerializer
+
+    def get_queryset(self):
+        queryset = GeometrieUnitePastorale.objects.all()
+        id_up = self.request.GET.get("unite_pastorale")
+        if id_up is not None:
+            queryset = queryset.filter(unite_pastorale_id=id_up)
+        return queryset
 
 
 class ProprietaireFoncierViewset(BaseModelViewSet):
@@ -431,9 +444,17 @@ class SituationDExploitationViewset(BaseModelViewSet):
                 code_up=old_up.code_up,
                 nom_up=old_up.nom_up,
                 annee_version=situation.annee,
-                geometry=union_multipolygon,
+                geom_active=union_multipolygon,
                 version_active=True,
                 secteur=old_up.secteur,
+            )
+
+            # enregistrement dans l'historique des géométries
+            GeometrieUnitePastorale.objects.create(
+                unite_pastorale=new_up,
+                geometry=union_multipolygon,
+                date_debut_validite=date(situation.annee, 1, 1),
+                date_fin_validite=None,
             )
 
             # duplication des propriétaires

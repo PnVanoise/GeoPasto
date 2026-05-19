@@ -3,106 +3,135 @@
   <form class="up-form" @submit.prevent="submitForm">
     <div class="up-form-layout">
       <section class="layout-card">
-        <div class="form-cell">
-          <v-text-field
-            v-model="form.properties.code_up"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Code UP"
-            density="compact"
-            variant="underlined"
-            hide-details
-            clearable
-          />
-        </div>
-        <div class="form-cell">
-          <v-text-field
-            v-model="form.properties.nom_up"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Nom UP"
-            density="compact"
-            variant="underlined"
-            hide-details
-            clearable
-          />
-        </div>
-        <div class="form-cell">
-          <v-select
-            v-model="form.properties.secteur"
-            :items="secteurOptions"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Secteur"
-            density="compact"
-            variant="underlined"
-            hide-details
-            clearable
-          />
-        </div>
-        <div class="w3-row form-ligne inline-two-fields">
-          <div class="w3-half form-cell">
-            <v-text-field
-              v-model="form.properties.annee_version"
-              :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-              label="Année version"
-              density="compact"
-              variant="underlined"
-              hide-details
-              clearable
-            />
-          </div>
-          <div class="w3-half form-cell inline-switch-cell">
-            <v-switch
-              v-model="form.properties.version_active"
-              :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-              label="Version active ?"
-              color="primary"
-              density="compact"
-              hide-details
-            />
-          </div>
-        </div>
-        <div class="form-cell">
-          <v-select
-            v-model="form.properties.proprios"
-            :items="proprietairesOptions"
-            item-value="id_proprietaire"
-            item-title="full_name"
-            multiple
-            chips
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Propriétaires"
-            density="compact"
-            variant="underlined"
-            :menu-props="{ maxHeight: '300px' }"
-          />
-        </div>
+        <v-tabs v-model="activeTab" density="compact" color="primary" class="up-tabs">
+          <v-tab value="fiche">Fiche</v-tab>
+          <v-tab value="geometries" :disabled="props.mode === 'add'">Géométries</v-tab>
+        </v-tabs>
 
-        <div class="up-section-gap">
-          <h4 class="section-title">Situations d'exploitation</h4>
-          <template v-if="props.mode === 'add'">
-            <div class="w3-panel w3-pale-yellow info-panel">
-              Enregistrez l'unité pastorale pour pouvoir ajouter des situations d'exploitation.
+        <v-window v-model="activeTab">
+          <v-window-item value="fiche">
+            <div class="form-cell">
+              <v-text-field
+                v-model="form.properties.code_up"
+                :disabled="props.mode === 'view' || !can('change')"
+                label="Code UP"
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
+              />
             </div>
-          </template>
-          <template v-else-if="form.id">
-            <CrudListPage
-              modelName="situationdexploitation"
-              apiRouteName="situationExploitation"
-              itemLabel="une situation"
-              idField="id_situation"
-              :columns="situGridColumns"
-              :bgColor="'#154889'"
+            <div class="form-cell">
+              <v-text-field
+                v-model="form.properties.nom_up"
+                :disabled="props.mode === 'view' || !can('change')"
+                label="Nom UP"
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
+              />
+            </div>
+            <div class="form-cell">
+              <v-select
+                v-model="form.properties.secteur"
+                :items="secteurOptions"
+                :disabled="props.mode === 'view' || !can('change')"
+                label="Secteur"
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
+              />
+            </div>
+            <div class="w3-row form-ligne inline-two-fields">
+              <div class="w3-half form-cell">
+                <v-text-field
+                  v-model="form.properties.annee_version"
+                  :disabled="props.mode === 'view' || !can('change')"
+                  label="Année version"
+                  density="compact"
+                  variant="underlined"
+                  hide-details
+                  clearable
+                />
+              </div>
+              <div class="w3-half form-cell inline-switch-cell">
+                <v-switch
+                  v-model="form.properties.version_active"
+                  :disabled="props.mode === 'view' || !can('change')"
+                  label="Version active ?"
+                  color="primary"
+                  density="compact"
+                  hide-details
+                />
+              </div>
+            </div>
+            <div class="form-cell">
+              <v-select
+                v-model="form.properties.proprios"
+                :items="proprietairesOptions"
+                item-value="id_proprietaire"
+                item-title="full_name"
+                multiple
+                chips
+                :disabled="props.mode === 'view' || !can('change')"
+                label="Propriétaires"
+                density="compact"
+                variant="underlined"
+                :menu-props="{ maxHeight: '300px' }"
+              />
+            </div>
+
+            <div class="up-section-gap">
+              <h4 class="section-title">Situations d'exploitation</h4>
+              <template v-if="props.mode === 'add'">
+                <div class="w3-panel w3-pale-yellow info-panel">
+                  Enregistrez l'unité pastorale pour pouvoir ajouter des situations d'exploitation.
+                </div>
+              </template>
+              <template v-else-if="form.id">
+                <CrudListPage
+                  modelName="situationdexploitation"
+                  apiRouteName="situationExploitation"
+                  itemLabel="une situation"
+                  idField="id_situation"
+                  :columns="situGridColumns"
+                  :bgColor="'#154889'"
+                  :showTitle="false"
+                  :showHeader="true"
+                  :showSearch="true"
+                  :showFilters="false"
+                  :filters="[]"
+                  :forceAdd="false"
+                  :viewOnly="props.mode === 'view'"
+                  :requestParams="form.id ? { id_up: form.id } : null"
+                  :addQueryParams="form.id ? { unite_pastorale: form.id } : {}"
+                />
+              </template>
+            </div>
+          </v-window-item>
+
+          <v-window-item value="geometries">
+            <CrudList2
+              modelName="geometrieunitepastorale"
+              apiRouteName="geometrieUP"
+              itemLabel="une géométrie"
+              idField="id_geometrie_up"
+              :geojsonMode="true"
+              :formComponent="GeometrieUPForm"
+              :columns="geomGridColumns"
               :showTitle="false"
               :showHeader="true"
-              :showSearch="true"
+              :showSearch="false"
               :showFilters="false"
               :filters="[]"
-              :forceAdd="false"
               :viewOnly="props.mode === 'view'"
-              :requestParams="form.id ? { id_up: form.id } : null"
-              :addQueryParams="form.id ? { unite_pastorale: form.id } : {}"
+              :requestParams="form.id ? { unite_pastorale: form.id } : null"
+              :initialNewItem="form.id ? { properties: { unite_pastorale: form.id } } : null"
             />
-          </template>
-        </div>
+          </v-window-item>
+        </v-window>
       </section>
 
       <section class="layout-card map-card">
@@ -142,6 +171,32 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="showGeomChangeDialog" max-width="480" persistent>
+    <v-card>
+      <v-card-title class="text-h6">Changement de géométrie</v-card-title>
+      <v-card-text>
+        <p class="mb-3">
+          La géométrie a été modifiée. Indiquez la date à partir de laquelle la nouvelle géométrie
+          est valide. L'ancienne sera clôturée la veille.
+        </p>
+        <v-text-field
+          v-model="nouvelleGeomDebut"
+          label="Date de début de la nouvelle géométrie"
+          type="date"
+          density="compact"
+          variant="underlined"
+          hide-details="auto"
+          :error-messages="geomChangeError"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn text @click="showGeomChangeDialog = false">Annuler</v-btn>
+        <v-btn color="success" @click="confirmerChangementGeom">Confirmer</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -151,6 +206,8 @@ import { usePermissions } from "@/composables/usePermissions";
 import config from "@/../config";
 import QuartierGeometryEditorOl from "@/components/map/QuartierGeometryEditorOl.vue";
 import CrudListPage from "@/components/crud/CrudListPage.vue";
+import CrudList2 from "@/components/crud/CrudList2.vue";
+import GeometrieUPForm from "./GeometrieUPForm.vue";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -173,12 +230,24 @@ const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"
 const refUPs = ref([]);
 const showMissingGeometry = ref(false);
 const proprietaires = ref([]);
+const activeTab = ref("fiche");
 const secteurOptions = ["Haute Tarentaise", "Haute Maurienne", "Pralognan"];
+
+const originalGeometry = ref(null);
+const showGeomChangeDialog = ref(false);
+const nouvelleGeomDebut = ref("");
+const geomChangeError = ref("");
+let pendingPayload = null;
 
 const situGridColumns = ref([
   { field: "annee", label: "Année", sortable: true },
   { field: "exploitant_nom", label: "Exploitant", sortable: true },
   { field: "situation_active", label: "Active ?", sortable: true },
+]);
+
+const geomGridColumns = ref([
+  { field: "date_debut_validite", label: "Début validité", sortable: true },
+  { field: "date_fin_validite", label: "Fin validité", sortable: true },
 ]);
 
 const form = reactive({
@@ -197,6 +266,10 @@ const form = reactive({
   },
   geometry: props.initialForm?.geometry || null,
 });
+
+originalGeometry.value = props.initialForm?.geometry
+  ? JSON.stringify(props.initialForm.geometry)
+  : null;
 
 const proprietairesOptions = computed(() =>
   (proprietaires.value || []).map((p) => ({
@@ -252,19 +325,83 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {
-  if (!props.onSubmit) return;
+const buildPayload = () => {
   const payload = JSON.parse(JSON.stringify(form));
-  if (!payload.geometry) {
-    showMissingGeometry.value = true;
-    return;
-  }
   const propsObj = payload.properties || {};
   if (Array.isArray(propsObj.proprios) && propsObj.proprios.length > 0) {
     propsObj.proprios_ids = Array.from(propsObj.proprios);
   }
   payload.properties = propsObj;
   if (props.mode === "add") delete payload.id;
+  return payload;
+};
+
+const geometryChanged = () => {
+  if (!form.geometry) return false;
+  return JSON.stringify(form.geometry) !== originalGeometry.value;
+};
+
+const submitForm = () => {
+  if (!props.onSubmit) return;
+  const payload = buildPayload();
+  if (!payload.geometry) {
+    showMissingGeometry.value = true;
+    return;
+  }
+  if (props.mode === "change" && geometryChanged()) {
+    pendingPayload = payload;
+    nouvelleGeomDebut.value = new Date().toISOString().slice(0, 10);
+    geomChangeError.value = "";
+    showGeomChangeDialog.value = true;
+    return;
+  }
+  props.onSubmit(payload);
+};
+
+const confirmerChangementGeom = async () => {
+  if (!nouvelleGeomDebut.value) {
+    geomChangeError.value = "La date de début est obligatoire.";
+    return;
+  }
+  geomChangeError.value = "";
+
+  const upId = form.id;
+  const dateDebut = nouvelleGeomDebut.value;
+  const dateFin = new Date(new Date(dateDebut) - 86400000).toISOString().slice(0, 10);
+
+  try {
+    // Clôturer la géométrie active courante (date_fin_validite = dateDebut - 1 jour)
+    const geomResp = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/geometrieUP/`, {
+      params: { unite_pastorale: upId },
+    });
+    const features = geomResp.data?.features ?? geomResp.data ?? [];
+    const active = features.find((f) => !f.properties?.date_fin_validite);
+    if (active) {
+      const activeId = active.id ?? active.properties?.id_geometrie_up;
+      await auth.axiosInstance.patch(`${config.API_BASE_URL}/api/geometrieUP/${activeId}/`, {
+        type: "Feature",
+        id: activeId,
+        geometry: active.geometry,
+        properties: { ...active.properties, date_fin_validite: dateFin },
+      });
+    }
+
+    // Créer la nouvelle géométrie
+    await auth.axiosInstance.post(`${config.API_BASE_URL}/api/geometrieUP/`, {
+      type: "Feature",
+      geometry: pendingPayload.geometry,
+      properties: {
+        unite_pastorale: upId,
+        date_debut_validite: dateDebut,
+        date_fin_validite: null,
+      },
+    });
+
+    showGeomChangeDialog.value = false;
+    props.onSubmit(pendingPayload);
+  } catch (e) {
+    geomChangeError.value = "Erreur lors de la mise à jour des géométries.";
+  }
 };
 
 const closeModal = () => props.onClose?.();
@@ -351,8 +488,9 @@ const closeModal = () => props.onClose?.();
   gap: 0.5rem;
   margin-top: 1.5rem;
 }
-.disable-events {
-  pointer-events: none;
+.up-tabs {
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 @media (max-width: 1100px) {

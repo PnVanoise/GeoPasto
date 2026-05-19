@@ -7,6 +7,7 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from alpages.models import Logement, Commodite
 from alpages.models import (
     UnitePastorale,
+    GeometrieUnitePastorale,
     ProprietaireFoncier,
     QuartierPasto,
     ProprietaireUnitePastorale,
@@ -80,15 +81,14 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
 
     class Meta:
         model = UnitePastorale
-        geo_field = "geometry"
+        geo_field = "geom_active"
         auto_bbox = True
-        # fields = '__all__'
         fields = [
             "id_unite_pastorale",
             "code_up",
             "nom_up",
             "annee_version",
-            "geometry",
+            "geom_active",
             "version_active",
             "secteur",
             "proprios",
@@ -96,12 +96,11 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
         ]
 
     def to_representation(self, instance):
-        geom = getattr(instance, "geometry", None)
+        geom = getattr(instance, "geom_active", None)
         if geom is not None:
             try:
                 geom.transform(4326)
             except Exception:
-                # protect against invalid/None geometries that may raise during transform
                 pass
 
         return super().to_representation(instance)
@@ -185,6 +184,30 @@ class UnitePastoraleLSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeria
     class Meta:
         model = UnitePastorale
         fields = ["id_unite_pastorale", "nom_up", "secteur"]
+
+
+class GeometrieUnitePastoraleSerializer(
+    AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
+):
+    class Meta:
+        model = GeometrieUnitePastorale
+        geo_field = "geometry"
+        fields = [
+            "id_geometrie_up",
+            "unite_pastorale",
+            "geometry",
+            "date_debut_validite",
+            "date_fin_validite",
+        ]
+
+    def to_representation(self, instance):
+        geom = getattr(instance, "geometry", None)
+        if geom is not None:
+            try:
+                geom.transform(4326)
+            except Exception:
+                pass
+        return super().to_representation(instance)
 
 
 class ProprietaireFoncierSerializer(

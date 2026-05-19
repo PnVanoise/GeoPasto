@@ -269,23 +269,47 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
     }
     isUpMapLoading.value = true;
     try {
-      const { data } = await auth.axiosInstance.get(
-        `${config.API_BASE_URL}/api/unitePastorale/${form.unite_pastorale}/`
-      );
-      const features = (normalizeUpGeoData(data)?.features || [])
-        .filter((f) => f?.geometry)
+      const [upResp, geomResp] = await Promise.all([
+        auth.axiosInstance.get(
+          `${config.API_BASE_URL}/api/unitePastorale/${form.unite_pastorale}/`
+        ),
+        auth.axiosInstance.get(`${config.API_BASE_URL}/api/geometrieUP/`, {
+          params: { unite_pastorale: form.unite_pastorale },
+        }),
+      ]);
+
+      // Référence temporelle : date_debut de la situation, ou 1er jan de l'année
+      const refDate = form.date_debut || (form.annee ? `${form.annee}-01-01` : null);
+
+      // Chercher la géométrie valide à la date de référence
+      let historicalGeometry = null;
+      if (refDate) {
+        const histFeatures = geomResp.data?.features ?? [];
+        const match = histFeatures.find((f) => {
+          const debut = f.properties?.date_debut_validite;
+          const fin = f.properties?.date_fin_validite;
+          return debut && debut <= refDate && (!fin || fin >= refDate);
+        });
+        if (match) historicalGeometry = match.geometry ?? null;
+      }
+
+      // Construire les features en remplaçant la géométrie si trouvée dans l'historique
+      const upFeatures = (normalizeUpGeoData(upResp.data)?.features || [])
+        .filter((f) => f?.geometry || historicalGeometry)
         .map((f) => {
           const rawId = f?.id ?? f?.properties?.id_unite_pastorale ?? f?.properties?.id;
           return {
             ...f,
             id: rawId != null ? `up:${rawId}` : undefined,
+            geometry: historicalGeometry ?? f.geometry,
             properties: {
               ...(f?.properties || {}),
               id_unite_pastorale: rawId ?? f?.properties?.id_unite_pastorale,
             },
           };
         });
-      unitePastoraleGeoData.value = { type: "FeatureCollection", features };
+
+      unitePastoraleGeoData.value = { type: "FeatureCollection", features: upFeatures };
     } catch {
       unitePastoraleGeoData.value = null;
     } finally {
@@ -567,6 +591,10 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
       }
     }
   );
+
+  watch([() => form.date_debut, () => form.annee], () => {
+    if (form.unite_pastorale) fetchUnitePastoraleGeometry();
+  });
 
   watch(
     eventTypes,

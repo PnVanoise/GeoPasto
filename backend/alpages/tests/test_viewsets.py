@@ -25,14 +25,11 @@ class ViewsetsSmokeTest(APITestCase):
         self.user = User.objects.create_user(username="vtest", password="vtest")
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
-        # create a minimal UnitePastorale required by SituationDExploitation serializer
         UnitePastorale.objects.create(
             id_unite_pastorale=1,
             code_up="UP1",
             nom_up="UP1",
-            annee_version=2025,
-            geometry="MULTIPOLYGON(((0 0,0 1,1 1,1 0,0 0)))",
-            version_active=True,
+            geom_active="MULTIPOLYGON(((0 0,0 1,1 1,1 0,0 0)))",
         )
 
     def test_create_and_list_commodite(self):
@@ -48,40 +45,16 @@ class ViewsetsSmokeTest(APITestCase):
 
     def test_create_situation_and_list(self):
         url = reverse("situationexploitation-list")
-        # send date as ISO string for JSON payload
         payload = {
             "id_situation": 30,
-            "annee": date.today().year,
             "nom_situation": "S30",
-            "situation_active": True,
             "date_debut": date.today().isoformat(),
             "unite_pastorale": 1,
         }
         resp = self.client.post(url, payload, format="json")
-        # If creation fails, include response data in assertion message for easier debugging
         if resp.status_code != status.HTTP_201_CREATED:
             print("DEBUG create situation response:", resp.status_code, resp.content)
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-
-    def test_cannot_create_duplicate_situation_same_up_and_year(self):
-        url = reverse("situationexploitation-list")
-        year = date.today().year
-        payload1 = {
-            "id_situation": 40,
-            "annee": year,
-            "nom_situation": "S40",
-            "situation_active": True,
-            "date_debut": date.today().isoformat(),
-            "unite_pastorale": 1,
-        }
-        resp1 = self.client.post(url, payload1, format="json")
-        self.assertEqual(resp1.status_code, status.HTTP_201_CREATED)
-
-        # attempt to create another situation for same UP and year
-        payload2 = payload1.copy()
-        payload2["id_situation"] = 41
-        resp2 = self.client.post(url, payload2, format="json")
-        self.assertEqual(resp2.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_abri_endpoint_create(self):
         url = reverse("abridurgence-list")
@@ -131,17 +104,14 @@ class SituationUpdateUpActionTest(APITestCase):
             id_unite_pastorale=100,
             code_up="UP-Y",
             nom_up="UP Y",
-            annee_version=2015,
-            geometry="SRID=2154;MULTIPOLYGON(((0 0,0 4,4 4,4 0,0 0)))",
-            version_active=True,
+            geom_active="SRID=2154;MULTIPOLYGON(((0 0,0 4,4 4,4 0,0 0)))",
             secteur="Secteur Test",
         )
 
         self.situation = SituationDExploitation.objects.create(
             id_situation=100,
-            annee=2026,
             nom_situation="Situation X",
-            situation_active=True,
+            date_debut=date(2026, 1, 1),
             unite_pastorale=self.old_up,
         )
 
@@ -154,7 +124,7 @@ class SituationUpdateUpActionTest(APITestCase):
             unite_pastorale=self.old_up,
         )
 
-    def test_mettre_a_jour_up_creates_new_version_and_switches_active(self):
+    def test_mettre_a_jour_up_creates_new_version(self):
         QuartierPasto.objects.create(
             id_quartier=100,
             code_quartier="Q1",
@@ -177,10 +147,8 @@ class SituationUpdateUpActionTest(APITestCase):
         resp = self.client.post(url, {}, format="json")
 
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        self.old_up.refresh_from_db()
         self.situation.refresh_from_db()
 
-        self.assertFalse(self.old_up.version_active)
         self.assertNotEqual(
             self.situation.unite_pastorale_id, self.old_up.id_unite_pastorale
         )
@@ -190,10 +158,8 @@ class SituationUpdateUpActionTest(APITestCase):
         )
         self.assertEqual(new_up.code_up, self.old_up.code_up)
         self.assertEqual(new_up.nom_up, self.old_up.nom_up)
-        self.assertEqual(new_up.annee_version, self.situation.annee)
-        self.assertTrue(new_up.version_active)
-        self.assertEqual(new_up.geometry.geom_type, "MultiPolygon")
-        self.assertEqual(new_up.geometry.srid, 2154)
+        self.assertEqual(new_up.geom_active.geom_type, "MultiPolygon")
+        self.assertEqual(new_up.geom_active.srid, 2154)
 
         self.assertTrue(
             ProprietaireUnitePastorale.objects.filter(
@@ -205,11 +171,10 @@ class SituationUpdateUpActionTest(APITestCase):
         expected_union = GEOSGeometry(
             "SRID=2154;MULTIPOLYGON(((0 0,0 2,2 2,4 2,4 0,2 0,0 0)))"
         )
-        self.assertTrue(new_up.geometry.equals(expected_union))
+        self.assertTrue(new_up.geom_active.equals(expected_union))
 
         self.assertEqual(resp.data["old_up_id"], self.old_up.id_unite_pastorale)
         self.assertEqual(resp.data["new_up_id"], new_up.id_unite_pastorale)
-        self.assertEqual(resp.data["new_up_annee_version"], self.situation.annee)
         self.assertEqual(resp.data["quartiers_count"], 2)
 
     def test_mettre_a_jour_up_returns_400_when_no_quartier_geometry(self):
@@ -237,17 +202,13 @@ class SituationDuplicateActionTest(APITestCase):
             id_unite_pastorale=200,
             code_up="UP-DUP",
             nom_up="UP DUP",
-            annee_version=2026,
-            geometry="SRID=2154;MULTIPOLYGON(((0 0,0 1,1 1,1 0,0 0)))",
-            version_active=True,
+            geom_active="SRID=2154;MULTIPOLYGON(((0 0,0 1,1 1,1 0,0 0)))",
             secteur="S1",
         )
 
         self.situation = SituationDExploitation.objects.create(
             id_situation=200,
-            annee=2026,
             nom_situation="Situation Source",
-            situation_active=True,
             date_debut=date(2026, 1, 1),
             date_fin=date(2026, 12, 31),
             unite_pastorale=self.up,
@@ -297,7 +258,7 @@ class SituationDuplicateActionTest(APITestCase):
         new_situation = SituationDExploitation.objects.get(
             id_situation=resp.data["id_situation"]
         )
-        self.assertEqual(new_situation.annee, 2027)
+        self.assertEqual(new_situation.date_debut, date(2027, 1, 1))
         self.assertEqual(
             new_situation.unite_pastorale_id, self.situation.unite_pastorale_id
         )
@@ -326,19 +287,3 @@ class SituationDuplicateActionTest(APITestCase):
             situation_exploitation=new_situation
         )
         self.assertEqual(new_eq.count(), 1)
-
-    def test_duplicate_returns_400_when_next_year_exists(self):
-        SituationDExploitation.objects.create(
-            id_situation=201,
-            annee=2027,
-            nom_situation="Situation déjà existante",
-            situation_active=True,
-            unite_pastorale=self.up,
-        )
-
-        url = reverse(
-            "situationexploitation-duplicate",
-            kwargs={"pk": self.situation.id_situation},
-        )
-        resp = self.client.post(url, {}, format="json")
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)

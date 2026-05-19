@@ -52,10 +52,9 @@ class UnitePastorale(AuditFieldsMixin, models.Model):
     id_unite_pastorale = models.BigAutoField(primary_key=True)
     code_up = models.CharField(max_length=50, null=False, blank=False)
     nom_up = models.CharField(max_length=50, null=False, blank=False)
-    annee_version = models.BigIntegerField(null=False, blank=False)
     geom_active = models.MultiPolygonField(srid=2154, null=True, blank=True)
-    version_active = models.BooleanField(null=False, blank=False)
     secteur = models.CharField(max_length=50, null=True, blank=True)
+    active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "unité pastorale"
@@ -92,21 +91,59 @@ class GeometrieUnitePastorale(AuditFieldsMixin, models.Model):
 
 def _refresh_geom_active(up):
     today = timezone.now().date()
-    geom_entry = (
+    print(f"\n[_refresh_geom_active] UP id={up.pk} ({up.nom_up}) — today={today}")
+
+    qs = (
         GeometrieUnitePastorale.objects.filter(
             unite_pastorale=up,
             date_debut_validite__lte=today,
         )
         .filter(Q(date_fin_validite__isnull=True) | Q(date_fin_validite__gte=today))
         .order_by("-date_debut_validite")
-        .first()
     )
+    print(f"[_refresh_geom_active] SQL: {qs.query}")
+
+    all_entries = list(
+        qs.values("id_geometrie_up", "date_debut_validite", "date_fin_validite")
+    )
+    print(f"[_refresh_geom_active] Entrées candidates: {all_entries}")
+
+    geom_entry = qs.first()
+    geom_active_courante = geom_entry is not None
+
+    if geom_entry is None:
+        # Aucune géométrie ne couvre aujourd'hui → fallback sur la plus récente avant aujourd'hui
+        geom_entry = (
+            GeometrieUnitePastorale.objects.filter(
+                unite_pastorale=up,
+                date_debut_validite__lte=today,
+            )
+            .order_by("-date_debut_validite")
+            .first()
+        )
+        print(
+            f"[_refresh_geom_active] Fallback entrée: {geom_entry} (id={geom_entry.pk if geom_entry else None})"
+        )
+    else:
+        print(
+            f"[_refresh_geom_active] Entrée retenue: {geom_entry} (id={geom_entry.pk if geom_entry else None})"
+        )
+
     up.geom_active = geom_entry.geometry if geom_entry else None
-    up.save(update_fields=["geom_active"])
+    up.active = geom_active_courante
+    print(
+        f"[_refresh_geom_active] geom_active <- {'geometry trouvée' if geom_entry else 'None'}, active <- {up.active}"
+    )
+
+    up.save(update_fields=["geom_active", "active"])
+    print(f"[_refresh_geom_active] UP sauvegardée.\n")
 
 
 @receiver([post_save, post_delete], sender=GeometrieUnitePastorale)
 def sync_geom_active(sender, instance, **kwargs):
+    print(
+        f"\n[sync_geom_active] signal reçu — GeometrieUnitePastorale id={instance.pk}, UP id={instance.unite_pastorale_id}"
+    )
     _refresh_geom_active(instance.unite_pastorale)
 
 
@@ -406,9 +443,7 @@ class SituationDExploitation(AuditFieldsMixin, models.Model):
     """
 
     id_situation = models.BigAutoField(primary_key=True)
-    annee = models.PositiveSmallIntegerField()
     nom_situation = models.CharField(max_length=150, null=False, blank=False)
-    situation_active = models.BooleanField(null=False, blank=False)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
 
@@ -431,9 +466,6 @@ class SituationDExploitation(AuditFieldsMixin, models.Model):
         verbose_name = "situation d'exploitation"
         verbose_name_plural = "situations d'exploitation"
         constraints = [
-            models.UniqueConstraint(
-                fields=["unite_pastorale", "annee"], name="uniq_situation_up_annee"
-            ),
             models.CheckConstraint(
                 check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
                 name="chk_situation_dates_coherentes",

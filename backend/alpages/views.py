@@ -220,12 +220,6 @@ class UnitePastoraleViewset(BaseModelViewSet):
         if nom_up_filter is not None:
             queryset = queryset.filter(nom_up=nom_up_filter)
 
-        version_active_filter = self.request.GET.get("version_active")
-        if version_active_filter is not None:
-            queryset = queryset.filter(
-                version_active=version_active_filter.lower() == "true"
-            )
-
         return queryset
 
     # /unitePastorale/light/ → Serializer Light
@@ -443,17 +437,16 @@ class SituationDExploitationViewset(BaseModelViewSet):
             new_up = UnitePastorale.objects.create(
                 code_up=old_up.code_up,
                 nom_up=old_up.nom_up,
-                annee_version=situation.annee,
                 geom_active=union_multipolygon,
-                version_active=True,
                 secteur=old_up.secteur,
             )
 
             # enregistrement dans l'historique des géométries
+            debut = situation.date_debut or date.today()
             GeometrieUnitePastorale.objects.create(
                 unite_pastorale=new_up,
                 geometry=union_multipolygon,
-                date_debut_validite=date(situation.annee, 1, 1),
+                date_debut_validite=debut,
                 date_fin_validite=None,
             )
 
@@ -471,18 +464,11 @@ class SituationDExploitationViewset(BaseModelViewSet):
             situation.unite_pastorale = new_up
             situation.save(update_fields=["unite_pastorale"])
 
-            # désactivation ancienne version
-            UnitePastorale.objects.filter(
-                code_up=old_up.code_up,
-                version_active=True,
-            ).exclude(pk=new_up.pk).update(version_active=False)
-
             return Response(
                 {
                     "id_situation": situation.id_situation,
                     "old_up_id": old_up.id_unite_pastorale,
                     "new_up_id": new_up.id_unite_pastorale,
-                    "new_up_annee_version": new_up.annee_version,
                     "quartiers_count": quartier_qs.count(),
                 },
                 status=status.HTTP_201_CREATED,
@@ -503,20 +489,10 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            target_year = source.annee + 1
-            if (
-                source.unite_pastorale_id
-                and SituationDExploitation.objects.filter(
-                    unite_pastorale_id=source.unite_pastorale_id,
-                    annee=target_year,
-                ).exists()
-            ):
-                return Response(
-                    {
-                        "detail": "Une situation existe déjà pour cette UP et l'année suivante."
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            source_year = (
+                source.date_debut.year if source.date_debut else date.today().year
+            )
+            target_year = source_year + 1
 
             nom_up = source.unite_pastorale.nom_up if source.unite_pastorale else ""
             nom_exploitant = (
@@ -527,9 +503,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
             )
 
             new_situation = SituationDExploitation.objects.create(
-                annee=target_year,
                 nom_situation=nom_situation,
-                situation_active=source.situation_active,
                 date_debut=self._replace_year_safe(source.date_debut, target_year),
                 date_fin=self._replace_year_safe(source.date_fin, target_year),
                 unite_pastorale=source.unite_pastorale,

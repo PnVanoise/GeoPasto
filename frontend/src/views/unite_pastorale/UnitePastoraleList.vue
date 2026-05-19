@@ -46,26 +46,10 @@ import CrudListPage from "../../components/crud/CrudListPage.vue";
 
 const columns = [
   { field: "nom_up", label: "UP", sortable: true },
-  { field: "annee_version", label: "Année", sortable: true },
+  { field: "code_up", label: "Code", sortable: true },
 ];
 
-const upFilters = ref([
-  {
-    key: "annee_courante",
-    type: "checkbox",
-    label: `${new Date().getFullYear()}`,
-    default: false,
-    apply: (rows, value) =>
-      !value ? rows : rows.filter((r) => r.annee_version === new Date().getFullYear()),
-  },
-  {
-    key: "version_active",
-    type: "checkbox",
-    label: "Act ?",
-    default: true,
-    apply: (rows, value) => (!value ? rows : rows.filter((r) => r.version_active === value)),
-  },
-]);
+const upFilters = ref([]);
 
 const router = useRouter();
 const { can } = usePermissions("unitepastorale");

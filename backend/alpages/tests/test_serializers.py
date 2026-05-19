@@ -101,7 +101,6 @@ class SerializersSmokeTest(TestCase):
         s = SituationDExploitation.objects.create(
             id_situation=20,
             nom_situation="S20",
-            situation_active=True,
             date_debut=date(2020, 1, 1),
         )
         ser = SituationDExploitationSerializer(s)
@@ -191,7 +190,6 @@ class SituationDExploitationExtendedTest(TestCase):
         sit = SituationDExploitation.objects.create(
             id_situation=100,
             nom_situation="S100",
-            situation_active=True,
             exploitant=exploitant,
         )
         data = SituationDExploitationSerializer(sit).data
@@ -201,7 +199,6 @@ class SituationDExploitationExtendedTest(TestCase):
         sit = SituationDExploitation.objects.create(
             id_situation=101,
             nom_situation="S101",
-            situation_active=True,
         )
         data = SituationDExploitationSerializer(sit).data
         self.assertIsNone(data["exploitant_nom"])
@@ -215,33 +212,24 @@ class SituationDExploitationExtendedTest(TestCase):
 class ExploiterSerializerTest(TestCase):
     """Tests for the situation_nom and quartier_nom source-based fields."""
 
-    def test_situation_nom_and_quartier_nom_populated_when_fks_set(self):
-        up = UnitePastorale.objects.create(
-            id_unite_pastorale=100,
-            code_up="UP100",
-            nom_up="UP Cent",
-            annee_version=2024,
-            geometry=_up_geom(),
-            version_active=True,
+    def test_quartier_nom_populated_when_fk_set(self):
+        sit = SituationDExploitation.objects.create(
+            id_situation=102,
+            nom_situation="Sit102",
         )
         qp = QuartierPasto.objects.create(
             id_quartier=100,
             nom_quartier="Quartier100",
             geometry=_qp_geom(),
-            unite_pastorale=up,
-        )
-        sit = SituationDExploitation.objects.create(
-            id_situation=102,
-            nom_situation="Sit102",
-            situation_active=True,
+            situation_exploitation=sit,
         )
         exp = Exploiter.objects.create(
             id_exploiter=100,
             quartier=qp,
-            situation_exploitation=sit,
+            date_debut=date(2024, 6, 1),
+            date_fin=date(2024, 9, 30),
         )
         data = ExploiterSerializer(exp).data
-        self.assertEqual(data["situation_nom"], "Sit102")
         self.assertEqual(data["quartier_nom"], "Quartier100")
 
 
@@ -251,14 +239,11 @@ class ExploiterNombreAnimauxValidationTest(TestCase):
             id_unite_pastorale=150,
             code_up="UP150",
             nom_up="UP 150",
-            annee_version=2024,
-            geometry=_up_geom(),
-            version_active=True,
+            geom_active=_up_geom(),
         )
         self.situation = SituationDExploitation.objects.create(
             id_situation=150,
             nom_situation="Sit150",
-            situation_active=True,
             unite_pastorale=self.up,
         )
         self.quartier = QuartierPasto.objects.create(
@@ -347,33 +332,31 @@ class QuartierPastoSerializerTest(TestCase):
     Non-geometry fields are nested under data['properties'].
     """
 
-    def test_unitepastorale_nom_in_properties_when_up_set(self):
-        up = UnitePastorale.objects.create(
-            id_unite_pastorale=102,
-            code_up="UP102",
-            nom_up="UP102 Nom",
-            annee_version=2024,
-            geometry=_up_geom(),
-            version_active=True,
+    def test_fields_in_properties(self):
+        sit = SituationDExploitation.objects.create(
+            id_situation=100,
+            nom_situation="Sit QP",
         )
         qp = QuartierPasto.objects.create(
             id_quartier=101,
             nom_quartier="QP101",
             geometry=_qp_geom(),
-            unite_pastorale=up,
+            situation_exploitation=sit,
         )
         data = QuartierPastoSerializer(qp).data
-        self.assertEqual(data["properties"]["unitepastorale_nom"], "UP102 Nom")
+        self.assertEqual(data["type"], "Feature")
+        self.assertEqual(data["properties"]["nom_quartier"], "QP101")
+        self.assertEqual(data["properties"]["situation_exploitation"], sit.id_situation)
 
-    def test_unitepastorale_nom_is_none_when_no_up(self):
+    def test_no_situation_exploitation(self):
         qp = QuartierPasto.objects.create(
             id_quartier=102,
             nom_quartier="QP102",
             geometry=_qp_geom(),
-            unite_pastorale=None,
+            situation_exploitation=None,
         )
         data = QuartierPastoSerializer(qp).data
-        self.assertIsNone(data["properties"]["unitepastorale_nom"])
+        self.assertIsNone(data["properties"]["situation_exploitation"])
 
     def test_geometry_none_returns_empty_polygon_fallback(self):
         """When geometry is None the serializer substitutes an empty Polygon."""
@@ -413,7 +396,6 @@ class GardeSituationSerializerTest(TestCase):
         sit = SituationDExploitation.objects.create(
             id_situation=103,
             nom_situation="Sit103",
-            situation_active=True,
         )
         gs = GardeSituation.objects.create(
             id_garde_situation=100,
@@ -560,9 +542,7 @@ class PlanDeSuiviSerializerTest(TestCase):
             id_unite_pastorale=103,
             code_up="UP103",
             nom_up="UP103 Nom",
-            annee_version=2024,
-            geometry=_up_geom(),
-            version_active=True,
+            geom_active=_up_geom(),
         )
         plan = PlanDeSuivi.objects.create(
             id_plan_suivi=100,
@@ -579,9 +559,7 @@ class PlanDeSuiviSerializerTest(TestCase):
             id_unite_pastorale=104,
             code_up="UP104",
             nom_up="UP104 Nom",
-            annee_version=2024,
-            geometry=_up_geom(),
-            version_active=True,
+            geom_active=_up_geom(),
         )
         plan = PlanDeSuivi.objects.create(
             id_plan_suivi=101,
@@ -614,7 +592,7 @@ class MesureDePlanSerializerTest(TestCase):
             plan_suivi=plan,
         )
         data = MesureDePlanSerializer(mesure).data
-        self.assertIn("description", data["type_mesure_detail"])
+        self.assertIn("description", data["properties"]["type_mesure_detail"])
 
     def test_plan_suivi_detail_contains_description(self):
         plan = self._make_plan()
@@ -624,7 +602,7 @@ class MesureDePlanSerializerTest(TestCase):
             plan_suivi=plan,
         )
         data = MesureDePlanSerializer(mesure).data
-        self.assertIn("description", data["plan_suivi_detail"])
+        self.assertIn("description", data["properties"]["plan_suivi_detail"])
 
 
 # ============================================================================
@@ -750,7 +728,6 @@ class CheptelSerializerFieldsTest(TestCase):
         sit = SituationDExploitation.objects.create(
             id_situation=105,
             nom_situation="SitCheptel",
-            situation_active=True,
         )
         cheptel = Cheptel.objects.create(
             id_cheptel=100,

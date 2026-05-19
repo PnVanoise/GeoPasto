@@ -44,29 +44,6 @@
                 clearable
               />
             </div>
-            <div class="w3-row form-ligne inline-two-fields">
-              <div class="w3-half form-cell">
-                <v-text-field
-                  v-model="form.properties.annee_version"
-                  :disabled="props.mode === 'view' || !can('change')"
-                  label="Année version"
-                  density="compact"
-                  variant="underlined"
-                  hide-details
-                  clearable
-                />
-              </div>
-              <div class="w3-half form-cell inline-switch-cell">
-                <v-switch
-                  v-model="form.properties.version_active"
-                  :disabled="props.mode === 'view' || !can('change')"
-                  label="Version active ?"
-                  color="primary"
-                  density="compact"
-                  hide-details
-                />
-              </div>
-            </div>
             <div class="form-cell">
               <v-select
                 v-model="form.properties.proprios"
@@ -240,9 +217,9 @@ const geomChangeError = ref("");
 let pendingPayload = null;
 
 const situGridColumns = ref([
-  { field: "annee", label: "Année", sortable: true },
+  { field: "date_debut", label: "Début", sortable: true },
+  { field: "date_fin", label: "Fin", sortable: true },
   { field: "exploitant_nom", label: "Exploitant", sortable: true },
-  { field: "situation_active", label: "Active ?", sortable: true },
 ]);
 
 const geomGridColumns = ref([
@@ -257,12 +234,9 @@ const form = reactive({
     code_up: props.initialForm?.properties?.code_up || "",
     nom_up: props.initialForm?.properties?.nom_up || "",
     secteur: props.initialForm?.properties?.secteur || "",
-    annee_version:
-      props.initialForm?.properties?.annee_version || new Date().getFullYear().toString(),
     proprios: Array.isArray(props.initialForm?.properties?.proprios)
       ? [...props.initialForm.properties.proprios]
       : [],
-    version_active: props.initialForm?.properties?.version_active ?? false,
   },
   geometry: props.initialForm?.geometry || null,
 });

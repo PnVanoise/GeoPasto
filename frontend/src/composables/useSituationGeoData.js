@@ -279,7 +279,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
       ]);
 
       // Référence temporelle : date_debut de la situation, ou 1er jan de l'année
-      const refDate = form.date_debut || (form.annee ? `${form.annee}-01-01` : null);
+      const refDate = form.date_debut || null;
 
       // Chercher la géométrie valide à la date de référence
       let historicalGeometry = null;
@@ -592,7 +592,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
     }
   );
 
-  watch([() => form.date_debut, () => form.annee], () => {
+  watch([() => form.date_debut], () => {
     if (form.unite_pastorale) fetchUnitePastoraleGeometry();
   });
 

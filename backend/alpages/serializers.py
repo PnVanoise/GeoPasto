@@ -87,10 +87,9 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
             "id_unite_pastorale",
             "code_up",
             "nom_up",
-            "annee_version",
             "geom_active",
-            "version_active",
             "secteur",
+            "active",
             "proprios",
             "proprios_ids",
         ]
@@ -479,9 +478,7 @@ class SituationDExploitationSerializer(
         model = SituationDExploitation
         fields = [
             "id_situation",
-            "annee",
             "nom_situation",
-            "situation_active",
             "date_debut",
             "date_fin",
             "exploitant",
@@ -489,30 +486,6 @@ class SituationDExploitationSerializer(
             "unite_pastorale",
             "unite_pastorale_detail",
         ]
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-
-        # determine target unite_pastorale and annee (support both create and update)
-        up = attrs.get(
-            "unite_pastorale", getattr(self.instance, "unite_pastorale", None)
-        )
-        annee = attrs.get("annee", getattr(self.instance, "annee", None))
-
-        # only enforce when an UP is provided
-        if up is None or annee is None:
-            return attrs
-
-        qs = SituationDExploitation.objects.filter(unite_pastorale=up, annee=annee)
-        if self.instance is not None:
-            qs = qs.exclude(pk=self.instance.pk)
-
-        if qs.exists():
-            raise serializers.ValidationError(
-                "Une situation existe déjà pour cette unité pastorale et cette année."
-            )
-
-        return attrs
 
 
 class ExploiterSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):

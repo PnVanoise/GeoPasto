@@ -32,6 +32,10 @@ const props = defineProps({
     type: [Number, String],
     default: null,
   },
+  rowClass: {
+    type: Function,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["edit", "delete", "view", "export-all", "row-hover", "row-click"]);
@@ -245,7 +249,10 @@ function performDelete() {
           :key="getItemId(entry)"
           class="data-row"
           :data-row-id="getItemId(entry)"
-          :class="{ 'row-selected': selectedId != null && getItemId(entry) == selectedId }"
+          :class="[
+            { 'row-selected': selectedId != null && getItemId(entry) == selectedId },
+            rowClass ? rowClass(entry) : '',
+          ]"
           @mouseenter="$emit('row-hover', entry)"
           @mouseleave="$emit('row-hover', null)"
           @click="$emit('row-click', entry)"
@@ -311,6 +318,11 @@ function performDelete() {
 </template>
 
 <style scoped>
+.row-inactive {
+  background-color: #f5f5f5;
+  font-style: italic;
+  color: #888;
+}
 .icon-view {
   cursor: pointer;
   margin-right: 10px;

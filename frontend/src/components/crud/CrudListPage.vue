@@ -89,6 +89,7 @@
       :idField="idField"
       :bgColor="bgColor"
       :selectedId="selectedId"
+      :rowClass="rowClass"
       @view="crud.openView"
       @edit="handleEdit"
       @delete="handleDelete"
@@ -125,6 +126,7 @@ const props = defineProps({
   requestParams: { type: Object, default: null },
   addQueryParams: { type: Object, default: () => ({}) },
   selectedId: { type: [Number, String], default: null },
+  rowClass: { type: Function, default: null },
 });
 
 const emit = defineEmits(["update:filteredItems", "row-hover", "row-click"]);

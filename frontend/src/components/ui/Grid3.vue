@@ -36,6 +36,10 @@ const props = defineProps({
     type: Function,
     default: null,
   },
+  defaultSort: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["edit", "delete", "view", "export-all", "row-hover", "row-click"]);
@@ -50,8 +54,8 @@ defineExpose({
 });
 
 // Sorting state (unifié)
-const sortField = ref(null);
-const sortDirection = ref("asc");
+const sortField = ref(props.defaultSort?.field ?? null);
+const sortDirection = ref(props.defaultSort?.direction ?? "asc");
 
 // Computed that applies filter (search) then sorting, used by the template
 const displayedData = computed(() => {

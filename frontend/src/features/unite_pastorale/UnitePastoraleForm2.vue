@@ -106,6 +106,12 @@
               :viewOnly="props.mode === 'view'"
               :requestParams="form.id ? { unite_pastorale: form.id } : null"
               :initialNewItem="form.id ? { properties: { unite_pastorale: form.id } } : null"
+              :defaultSort="{ field: 'date_debut_validite', direction: 'desc' }"
+              @row-hover="
+                (entry) => {
+                  hoveredGeomId = entry ? (entry.id_geometrie_up ?? entry.id) : null;
+                }
+              "
             />
           </v-window-item>
         </v-window>
@@ -113,18 +119,8 @@
 
       <section class="layout-card map-card">
         <OpenLayersGeoJsonMap
-          v-if="props.mode === 'view' && mapLayers.length"
-          :layers="mapLayers"
-        />
-        <QuartierGeometryEditorOl
-          v-else
-          :key="`up-geom-${form.id ?? 'new'}`"
-          v-model="form.geometry"
-          geometryType="MultiPolygon"
-          :contextGeoData="refUPs"
-          :disabled="props.mode === 'view'"
-          :drawOnly="props.mode === 'add'"
-          :editOnly="props.mode === 'change'"
+          :layers="activeTab === 'geometries' ? geomTabLayers : activeMapLayer"
+          :highlightedId="activeTab === 'geometries' ? hoveredGeomId : null"
         />
       </section>
     </div>
@@ -140,53 +136,13 @@
       >
     </div>
   </form>
-
-  <v-dialog v-model="showMissingGeometry" max-width="480">
-    <v-card>
-      <v-card-title class="text-h6">Géométrie manquante</v-card-title>
-      <v-card-text
-        >Veuillez dessiner la géométrie de l'unité pastorale avant d'enregistrer.</v-card-text
-      >
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="primary" text @click="showMissingGeometry = false">OK</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-
-  <v-dialog v-model="showGeomChangeDialog" max-width="480" persistent>
-    <v-card>
-      <v-card-title class="text-h6">Changement de géométrie</v-card-title>
-      <v-card-text>
-        <p class="mb-3">
-          La géométrie a été modifiée. Indiquez la date à partir de laquelle la nouvelle géométrie
-          est valide. L'ancienne sera clôturée la veille.
-        </p>
-        <v-text-field
-          v-model="nouvelleGeomDebut"
-          label="Date de début de la nouvelle géométrie"
-          type="date"
-          density="compact"
-          variant="underlined"
-          hide-details="auto"
-          :error-messages="geomChangeError"
-        />
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn text @click="showGeomChangeDialog = false">Annuler</v-btn>
-        <v-btn color="success" @click="confirmerChangementGeom">Confirmer</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
-import { reactive, ref, watch, onMounted, computed } from "vue";
+import { reactive, ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import auth from "@/services/axios";
 import { usePermissions } from "@/composables/usePermissions";
 import config from "@/../config";
-import QuartierGeometryEditorOl from "@/components/map/QuartierGeometryEditorOl.vue";
 import OpenLayersGeoJsonMap from "@/components/map/OpenLayersGeoJsonMap.vue";
 import CrudListPage from "@/components/crud/CrudListPage.vue";
 import CrudList2 from "@/components/crud/CrudList2.vue";
@@ -210,18 +166,11 @@ const formTitle = computed(() => {
 
 const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"));
 
-const refUPs = ref([]);
 const histGeometries = ref([]);
-const showMissingGeometry = ref(false);
+const hoveredGeomId = ref(null);
 const proprietaires = ref([]);
 const activeTab = ref("fiche");
 const secteurOptions = ["Haute Tarentaise", "Haute Maurienne", "Pralognan"];
-
-const originalGeometry = ref(null);
-const showGeomChangeDialog = ref(false);
-const nouvelleGeomDebut = ref("");
-const geomChangeError = ref("");
-let pendingPayload = null;
 
 const situGridColumns = ref([
   { field: "date_debut", label: "Début", sortable: true },
@@ -248,10 +197,6 @@ const form = reactive({
   geometry: props.initialForm?.geometry || null,
 });
 
-originalGeometry.value = props.initialForm?.geometry
-  ? JSON.stringify(props.initialForm.geometry)
-  : null;
-
 const proprietairesOptions = computed(() =>
   (proprietaires.value || []).map((p) => ({
     ...p,
@@ -259,18 +204,47 @@ const proprietairesOptions = computed(() =>
   }))
 );
 
-const mapLayers = computed(() => {
-  if (!histGeometries.value.length) return [];
-  return histGeometries.value.map((geom) => {
-    const isActive = !geom.properties?.date_fin_validite;
+const activeMapLayer = computed(() => {
+  if (!form.geometry) return [];
+  return [
+    {
+      id: "geom_active",
+      title: "Géométrie active",
+      data: {
+        type: "FeatureCollection",
+        features: [{ type: "Feature", geometry: form.geometry, properties: {} }],
+      },
+      style: { strokeColor: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.2, strokeWidth: 2 },
+    },
+  ];
+});
+
+const geomTabLayers = computed(() => {
+  const layers = [];
+
+  if (form.geometry) {
+    layers.push({
+      id: "geom_active_up",
+      title: "Géométrie active (UP)",
+      data: {
+        type: "FeatureCollection",
+        features: [{ type: "Feature", geometry: form.geometry, properties: {} }],
+      },
+      style: { strokeColor: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.2, strokeWidth: 2 },
+    });
+  }
+
+  for (const geom of histGeometries.value) {
+    const id = geom.id ?? geom.properties?.id_geometrie_up;
     const dateDebut = geom.properties?.date_debut_validite || "?";
-    const dateFin = geom.properties?.date_fin_validite || "en cours";
-    return {
-      id: `geom_${geom.id ?? geom.properties?.id_geometrie_up}`,
-      title: isActive ? `Active (depuis ${dateDebut})` : `${dateDebut} → ${dateFin}`,
+    const dateFin = geom.properties?.date_fin_validite;
+    const isActive = !dateFin;
+    layers.push({
+      id: `geom_${id}`,
+      title: isActive ? `${dateDebut} → en cours` : `${dateDebut} → ${dateFin}`,
       data: { type: "FeatureCollection", features: [geom] },
       style: isActive
-        ? { strokeColor: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.2, strokeWidth: 2 }
+        ? { strokeColor: "#2563eb", fillColor: "#2563eb", fillOpacity: 0.15, strokeWidth: 2 }
         : {
             strokeColor: "#64748b",
             fillColor: "#64748b",
@@ -278,18 +252,23 @@ const mapLayers = computed(() => {
             strokeWidth: 1.5,
             lineDash: [6, 4],
           },
-    };
-  });
+    });
+  }
+
+  return layers;
 });
 
-onMounted(() => {
+const fetchHistGeometries = () => {
+  if (!form.id) return;
   auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/unitePastorale/`)
-    .then((response) => {
-      refUPs.value = response.data;
+    .get(`${config.API_BASE_URL}/api/geometrieUP/`, { params: { unite_pastorale: form.id } })
+    .then((resp) => {
+      histGeometries.value = resp.data?.features ?? resp.data ?? [];
     })
-    .catch((error) => {});
+    .catch(() => {});
+};
 
+onMounted(() => {
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/proprietaireFoncier/`)
     .then((response) => {
@@ -298,16 +277,25 @@ onMounted(() => {
         props.initialForm?.properties?.proprios_ids || props.initialForm?.proprios_ids;
       if (Array.isArray(initIds)) form.properties.proprios = initIds.map((id) => Number(id));
     })
-    .catch((error) => {});
+    .catch(() => {});
 
-  if (form.id) {
-    auth.axiosInstance
-      .get(`${config.API_BASE_URL}/api/geometrieUP/`, { params: { unite_pastorale: form.id } })
-      .then((resp) => {
-        histGeometries.value = resp.data?.features ?? resp.data ?? [];
-      })
-      .catch(() => {});
+  fetchHistGeometries();
+
+  window.addEventListener("geo-data-changed", onGeoDataChanged);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("geo-data-changed", onGeoDataChanged);
+});
+
+const onGeoDataChanged = (event) => {
+  if (event?.detail?.modelName === "geometrieunitepastorale") {
+    fetchHistGeometries();
   }
+};
+
+watch(activeTab, (tab) => {
+  if (tab === "geometries") fetchHistGeometries();
 });
 
 watch(
@@ -349,72 +337,9 @@ const buildPayload = () => {
   return payload;
 };
 
-const geometryChanged = () => {
-  if (!form.geometry) return false;
-  return JSON.stringify(form.geometry) !== originalGeometry.value;
-};
-
 const submitForm = () => {
   if (!props.onSubmit) return;
-  const payload = buildPayload();
-  if (!payload.geometry) {
-    showMissingGeometry.value = true;
-    return;
-  }
-  if (props.mode === "change" && geometryChanged()) {
-    pendingPayload = payload;
-    nouvelleGeomDebut.value = new Date().toISOString().slice(0, 10);
-    geomChangeError.value = "";
-    showGeomChangeDialog.value = true;
-    return;
-  }
-  props.onSubmit(payload);
-};
-
-const confirmerChangementGeom = async () => {
-  if (!nouvelleGeomDebut.value) {
-    geomChangeError.value = "La date de début est obligatoire.";
-    return;
-  }
-  geomChangeError.value = "";
-
-  const upId = form.id;
-  const dateDebut = nouvelleGeomDebut.value;
-  const dateFin = new Date(new Date(dateDebut) - 86400000).toISOString().slice(0, 10);
-
-  try {
-    // Clôturer la géométrie active courante (date_fin_validite = dateDebut - 1 jour)
-    const geomResp = await auth.axiosInstance.get(`${config.API_BASE_URL}/api/geometrieUP/`, {
-      params: { unite_pastorale: upId },
-    });
-    const features = geomResp.data?.features ?? geomResp.data ?? [];
-    const active = features.find((f) => !f.properties?.date_fin_validite);
-    if (active) {
-      const activeId = active.id ?? active.properties?.id_geometrie_up;
-      await auth.axiosInstance.patch(`${config.API_BASE_URL}/api/geometrieUP/${activeId}/`, {
-        type: "Feature",
-        id: activeId,
-        geometry: active.geometry,
-        properties: { ...active.properties, date_fin_validite: dateFin },
-      });
-    }
-
-    // Créer la nouvelle géométrie
-    await auth.axiosInstance.post(`${config.API_BASE_URL}/api/geometrieUP/`, {
-      type: "Feature",
-      geometry: pendingPayload.geometry,
-      properties: {
-        unite_pastorale: upId,
-        date_debut_validite: dateDebut,
-        date_fin_validite: null,
-      },
-    });
-
-    showGeomChangeDialog.value = false;
-    props.onSubmit(pendingPayload);
-  } catch (e) {
-    geomChangeError.value = "Erreur lors de la mise à jour des géométries.";
-  }
+  props.onSubmit(buildPayload());
 };
 
 const closeModal = () => props.onClose?.();
@@ -486,13 +411,6 @@ const closeModal = () => props.onClose?.();
 .info-panel {
   padding: 12px;
   border: 1px solid #ddd;
-}
-.inline-two-fields {
-  margin: 0;
-}
-.inline-switch-cell {
-  display: flex;
-  align-items: center;
 }
 .form-actions {
   display: flex;

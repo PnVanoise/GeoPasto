@@ -90,9 +90,11 @@
       :actions="computedActions"
       :idField="idField"
       :bgColor="bgColor"
+      :defaultSort="defaultSort"
       @view="crud.openView"
       @edit="handleEdit"
       @delete="handleDelete"
+      @row-hover="(entry) => emit('row-hover', entry)"
     />
 
     <Modal :show="crud.showModal.value" @close="crud.closeModal" :close-on-overlay="false">
@@ -144,7 +146,10 @@ const props = defineProps({
   initialNewItem: { type: Object, default: null },
   viewOnly: { type: Boolean, default: false },
   requestParams: { type: Object, default: null },
+  defaultSort: { type: Object, default: null },
 });
+
+const emit = defineEmits(["row-hover"]);
 const crud = useCrud(props.modelName, props.apiRouteName, props.idField, {
   geojson: props.geojsonMode,
 });

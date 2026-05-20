@@ -38,6 +38,46 @@
           :editOnly="props.mode === 'change'"
         />
       </div>
+
+      <div v-if="props.mode !== 'view'" class="import-section">
+        <button type="button" class="import-toggle" @click="showImport = !showImport">
+          <v-icon size="16">{{ showImport ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
+          Importer depuis QGIS
+        </button>
+
+        <div v-if="showImport" class="import-panel">
+          <div class="import-row">
+            <v-select
+              v-model="importCrs"
+              :items="crsOptions"
+              item-value="value"
+              item-title="label"
+              label="Projection source"
+              density="compact"
+              variant="underlined"
+              hide-details
+              class="import-crs-select"
+            />
+            <span class="import-hint">WKT ou GeoJSON</span>
+          </div>
+          <v-textarea
+            v-model="importText"
+            label="Coller la géométrie copiée depuis QGIS"
+            density="compact"
+            variant="outlined"
+            hide-details
+            rows="4"
+            auto-grow
+            class="import-textarea"
+          />
+          <div class="import-actions">
+            <span v-if="importError" class="import-error">{{ importError }}</span>
+            <v-btn color="primary" size="small" prepend-icon="mdi-import" @click="importerGeometrie"
+              >Importer</v-btn
+            >
+          </div>
+        </div>
+      </div>
     </section>
 
     <div class="form-actions">
@@ -54,8 +94,18 @@
 </template>
 
 <script setup>
-import { reactive, computed } from "vue";
+import { reactive, ref, computed } from "vue";
+import proj4 from "proj4";
+import { register } from "ol/proj/proj4";
+import WKT from "ol/format/WKT";
+import GeoJSON from "ol/format/GeoJSON";
 import QuartierGeometryEditorOl from "@/components/map/QuartierGeometryEditorOl.vue";
+
+proj4.defs(
+  "EPSG:2154",
+  "+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+);
+register(proj4);
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -81,6 +131,54 @@ const form = reactive({
   },
   geometry: props.initialForm?.geometry || null,
 });
+
+const showImport = ref(false);
+const importText = ref("");
+const importCrs = ref("EPSG:2154");
+const importError = ref("");
+
+const crsOptions = [
+  { value: "EPSG:2154", label: "Lambert 93 (EPSG:2154)" },
+  { value: "EPSG:4326", label: "WGS84 (EPSG:4326)" },
+];
+
+const importerGeometrie = () => {
+  importError.value = "";
+  const text = importText.value.trim();
+  if (!text) {
+    importError.value = "Collez une géométrie WKT ou GeoJSON.";
+    return;
+  }
+
+  try {
+    let geometry;
+
+    if (text.startsWith("{")) {
+      const parsed = JSON.parse(text);
+      if (parsed.type === "FeatureCollection") {
+        geometry = parsed.features?.[0]?.geometry ?? null;
+      } else if (parsed.type === "Feature") {
+        geometry = parsed.geometry;
+      } else {
+        geometry = parsed;
+      }
+      if (!geometry?.type) throw new Error("GeoJSON invalide.");
+    } else {
+      const olFeature = new WKT().readFeature(text, {
+        dataProjection: importCrs.value,
+        featureProjection: "EPSG:4326",
+      });
+      if (!olFeature) throw new Error("WKT invalide.");
+      geometry = new GeoJSON().writeGeometryObject(olFeature.getGeometry());
+    }
+
+    form.geometry = geometry;
+    showImport.value = false;
+    importText.value = "";
+  } catch (e) {
+    importError.value = e.message || "Format non reconnu (WKT ou GeoJSON attendu).";
+  }
+};
 
 const submitForm = () => {
   const payload = JSON.parse(JSON.stringify(form));
@@ -128,5 +226,57 @@ const submitForm = () => {
   align-items: center;
   gap: 0.5rem;
   margin-top: 1.5rem;
+}
+
+.import-section {
+  margin-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.5rem;
+}
+.import-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+.import-toggle:hover {
+  color: #1e40af;
+}
+.import-panel {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.import-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.import-crs-select {
+  max-width: 220px;
+}
+.import-hint {
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+.import-textarea :deep(.v-field__input) {
+  font-size: 0.78rem;
+  font-family: monospace;
+}
+.import-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.import-error {
+  font-size: 0.78rem;
+  color: #dc2626;
 }
 </style>

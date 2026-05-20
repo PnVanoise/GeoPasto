@@ -112,7 +112,12 @@
       </section>
 
       <section class="layout-card map-card">
+        <OpenLayersGeoJsonMap
+          v-if="props.mode === 'view' && mapLayers.length"
+          :layers="mapLayers"
+        />
         <QuartierGeometryEditorOl
+          v-else
           :key="`up-geom-${form.id ?? 'new'}`"
           v-model="form.geometry"
           geometryType="MultiPolygon"
@@ -182,6 +187,7 @@ import auth from "@/services/axios";
 import { usePermissions } from "@/composables/usePermissions";
 import config from "@/../config";
 import QuartierGeometryEditorOl from "@/components/map/QuartierGeometryEditorOl.vue";
+import OpenLayersGeoJsonMap from "@/components/map/OpenLayersGeoJsonMap.vue";
 import CrudListPage from "@/components/crud/CrudListPage.vue";
 import CrudList2 from "@/components/crud/CrudList2.vue";
 import GeometrieUPForm from "./GeometrieUPForm.vue";
@@ -205,6 +211,7 @@ const formTitle = computed(() => {
 const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"));
 
 const refUPs = ref([]);
+const histGeometries = ref([]);
 const showMissingGeometry = ref(false);
 const proprietaires = ref([]);
 const activeTab = ref("fiche");
@@ -252,6 +259,29 @@ const proprietairesOptions = computed(() =>
   }))
 );
 
+const mapLayers = computed(() => {
+  if (!histGeometries.value.length) return [];
+  return histGeometries.value.map((geom) => {
+    const isActive = !geom.properties?.date_fin_validite;
+    const dateDebut = geom.properties?.date_debut_validite || "?";
+    const dateFin = geom.properties?.date_fin_validite || "en cours";
+    return {
+      id: `geom_${geom.id ?? geom.properties?.id_geometrie_up}`,
+      title: isActive ? `Active (depuis ${dateDebut})` : `${dateDebut} → ${dateFin}`,
+      data: { type: "FeatureCollection", features: [geom] },
+      style: isActive
+        ? { strokeColor: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.2, strokeWidth: 2 }
+        : {
+            strokeColor: "#64748b",
+            fillColor: "#64748b",
+            fillOpacity: 0.08,
+            strokeWidth: 1.5,
+            lineDash: [6, 4],
+          },
+    };
+  });
+});
+
 onMounted(() => {
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/unitePastorale/`)
@@ -269,6 +299,15 @@ onMounted(() => {
       if (Array.isArray(initIds)) form.properties.proprios = initIds.map((id) => Number(id));
     })
     .catch((error) => {});
+
+  if (form.id) {
+    auth.axiosInstance
+      .get(`${config.API_BASE_URL}/api/geometrieUP/`, { params: { unite_pastorale: form.id } })
+      .then((resp) => {
+        histGeometries.value = resp.data?.features ?? resp.data ?? [];
+      })
+      .catch(() => {});
+  }
 });
 
 watch(

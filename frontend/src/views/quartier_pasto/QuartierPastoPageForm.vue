@@ -11,6 +11,7 @@
         itemLabel="un quartier pastoral"
         :onSubmit="handleSubmit"
         :onClose="() => router.back()"
+        :onSplitSuccess="onSplitSuccess"
       />
     </template>
   </div>
@@ -29,6 +30,14 @@ const router = useRouter();
 
 const crud = useCrudPage("quartierpasto", "quartierPasto", "id_quartier", { geojson: true });
 const { pageMode, handleSubmit } = crud;
+
+const onSplitSuccess = (newId) => {
+  if (newId) {
+    router.push({ name: "quartierpasto-edit", params: { id: newId } });
+  } else {
+    router.push({ name: "quartierpasto-list" });
+  }
+};
 
 const itemData = ref(null);
 const isLoading = ref(!!route.params.id);

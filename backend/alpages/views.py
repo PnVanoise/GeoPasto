@@ -1,8 +1,9 @@
+import json
 import logging
 from calendar import monthrange
 from datetime import date
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Q
 from django.utils import timezone
 
@@ -877,6 +878,106 @@ class QuartierPastoViewset(BaseModelViewSet):
             queryset = queryset.filter(situation_exploitation_id=id_situation)
 
         return queryset
+
+    @action(detail=True, methods=["post"], url_path="split")
+    def split(self, request, pk=None):
+        quartier = self.get_object()
+
+        line_geojson = request.data.get("line")
+        if not line_geojson:
+            return Response(
+                {"detail": "Le paramètre 'line' (GeoJSON LineString) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not quartier.geometry:
+            return Response(
+                {"detail": "Ce quartier n'a pas de géométrie à découper."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        line_geojson_str = (
+            json.dumps(line_geojson) if isinstance(line_geojson, dict) else line_geojson
+        )
+
+        sql = """
+            WITH
+            q AS (
+                SELECT geometry AS geom FROM alpages_quartierpasto WHERE id_quartier = %(id)s
+            ),
+            blade AS (
+                SELECT ST_Transform(ST_GeomFromGeoJSON(%(line)s), 2154) AS geom
+            ),
+            parts AS (
+                SELECT
+                    (ST_Dump(
+                        ST_CollectionExtract(
+                            ST_Split(
+                                ST_Snap(q.geom, blade.geom, 0.001),
+                                blade.geom
+                            ),
+                            3
+                        )
+                    )).geom AS part_geom
+                FROM q, blade
+            )
+            SELECT ST_AsGeoJSON(ST_Transform(part_geom, 4326)) AS geojson
+            FROM parts
+            ORDER BY ST_Area(part_geom) DESC
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql, {"id": quartier.pk, "line": line_geojson_str})
+            rows = cursor.fetchall()
+
+        if len(rows) < 2:
+            return Response(
+                {
+                    "detail": "La ligne ne traverse pas entièrement le quartier. Assurez-vous qu'elle entre et sort du polygone."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        geom1_4326 = json.loads(rows[0][0])
+        geom2_4326 = json.loads(rows[1][0])
+
+        # Convert back to SRID 2154 for storage via GeoJSON round-trip through PostGIS
+        def geojson_4326_to_2154(geojson_dict):
+            sql_convert = "SELECT ST_AsText(ST_Transform(ST_GeomFromGeoJSON(%s), 2154))"
+            with connection.cursor() as cur:
+                cur.execute(sql_convert, [json.dumps(geojson_dict)])
+                return cur.fetchone()[0]
+
+        wkt1 = geojson_4326_to_2154(geom1_4326)
+        wkt2 = geojson_4326_to_2154(geom2_4326)
+
+        from django.contrib.gis.geos import GEOSGeometry
+
+        with transaction.atomic():
+            quartier.geometry = GEOSGeometry(wkt1, srid=2154)
+            quartier.save(update_fields=["geometry", "modified_by", "modified_on"])
+
+            new_quartier = QuartierPasto.objects.create(
+                code_quartier=(
+                    f"{quartier.code_quartier}_2" if quartier.code_quartier else None
+                ),
+                nom_quartier=(
+                    f"{quartier.nom_quartier} (2)" if quartier.nom_quartier else None
+                ),
+                geometry=GEOSGeometry(wkt2, srid=2154),
+                situation_exploitation=quartier.situation_exploitation,
+            )
+
+        q1 = QuartierPasto.objects.get(pk=quartier.pk)
+        q2 = QuartierPasto.objects.get(pk=new_quartier.pk)
+
+        return Response(
+            {
+                "quartier1": self.get_serializer(q1).data,
+                "quartier2": self.get_serializer(q2).data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class PlanDeSuiviViewset(BaseModelViewSet):

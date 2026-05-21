@@ -44,6 +44,24 @@
           Dessinez d'abord la géométrie du quartier (double-clic pour terminer le polygone), puis
           enregistrez.
         </v-alert>
+        <v-alert
+          v-if="splitError"
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="geometry-alert"
+        >
+          {{ splitError }}
+        </v-alert>
+        <v-alert
+          v-if="splitSuccess"
+          type="success"
+          variant="tonal"
+          density="compact"
+          class="geometry-alert"
+        >
+          Quartier découpé avec succès. Redirection en cours…
+        </v-alert>
         <QuartierGeometryEditorOl
           ref="geometryEditorRef"
           v-model="form.geometry"
@@ -51,6 +69,8 @@
           :contextLayers="contextLayers"
           :drawOnly="!props.isEdit"
           :editOnly="props.isEdit"
+          :allowSplit="props.isEdit"
+          @split-line="handleSplitLine"
         />
       </section>
     </div>
@@ -90,6 +110,7 @@ const props = defineProps({
   isEdit: Boolean,
   onSubmit: Function,
   onClose: Function,
+  onSplitSuccess: Function,
   itemLabel: { type: String, default: "un quartier pastoral" },
 });
 
@@ -199,6 +220,8 @@ const normalizeContextQuartiers = (payload) => {
 const form = ref(normalizeForm(props.initialForm));
 const geometryEditorRef = ref(null);
 const geometryError = ref(false);
+const splitError = ref(null);
+const splitSuccess = ref(false);
 
 const normalizeQuartiersGeoData = (payload) => {
   if (!payload) return null;
@@ -322,6 +345,28 @@ const fetchContextQuartiersForSituation = async (situationId) => {
     };
   } catch (error) {
     contextQuartiersGeoData.value = null;
+  }
+};
+
+const handleSplitLine = async (lineGeojson) => {
+  const quartierId =
+    form.value?.id ?? form.value?.id_quartier ?? form.value?.properties?.id_quartier ?? null;
+
+  if (!quartierId) return;
+
+  splitError.value = null;
+  splitSuccess.value = false;
+
+  try {
+    const { data } = await auth.axiosInstance.post(
+      `${config.API_BASE_URL}/api/quartierPasto/${quartierId}/split/`,
+      { line: lineGeojson }
+    );
+    splitSuccess.value = true;
+    const newQuartierId = data?.quartier2?.id ?? data?.quartier2?.properties?.id_quartier;
+    props.onSplitSuccess?.(newQuartierId ?? null);
+  } catch (err) {
+    splitError.value = err?.response?.data?.detail || "Erreur lors du découpage du quartier.";
   }
 };
 

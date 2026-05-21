@@ -418,24 +418,24 @@ onMounted(() => {
     .get(`${config.API_BASE_URL}/api/situationExploitation/`)
     .then((response) => {
       situations.value = response.data || [];
+      fetchUpGeometry(getUpIdForSituation(form.value?.properties?.situation_exploitation));
     })
     .catch((error) => {});
 
   fetchContextQuartiersForSituation(form.value?.properties?.situation_exploitation);
-  fetchUpGeometry(form.value?.properties?.unite_pastorale);
 });
+
+const getUpIdForSituation = (situationId) => {
+  if (!situationId || !situations.value.length) return null;
+  const situation = situations.value.find((s) => s.id_situation === situationId);
+  return situation?.unite_pastorale ?? null;
+};
 
 watch(
   () => form.value?.properties?.situation_exploitation,
   (newSituationId) => {
     fetchContextQuartiersForSituation(newSituationId);
-  }
-);
-
-watch(
-  () => form.value?.properties?.unite_pastorale,
-  (newUpId) => {
-    fetchUpGeometry(newUpId);
+    fetchUpGeometry(getUpIdForSituation(newSituationId));
   }
 );
 

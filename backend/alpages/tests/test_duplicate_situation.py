@@ -25,7 +25,6 @@ class DuplicateSituationTest(APITestCase):
         self.orig = SituationDExploitation.objects.create(
             id_situation=1,
             nom_situation="Origine",
-            situation_active=True,
             date_debut=date(2020, 1, 1),
             date_fin=None,
         )

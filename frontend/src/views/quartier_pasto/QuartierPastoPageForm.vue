@@ -11,13 +11,14 @@
         itemLabel="un quartier pastoral"
         :onSubmit="handleSubmit"
         :onClose="() => router.back()"
+        :onSplitSuccess="onSplitSuccess"
       />
     </template>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
 import QuartierPastoForm from "../../features/quartier_pasto/QuartierPastoForm.vue";
@@ -30,14 +31,23 @@ const router = useRouter();
 const crud = useCrudPage("quartierpasto", "quartierPasto", "id_quartier", { geojson: true });
 const { pageMode, handleSubmit } = crud;
 
+const onSplitSuccess = (newId) => {
+  if (newId) {
+    router.push({ name: "quartierpasto-edit", params: { id: newId } });
+  } else {
+    router.push({ name: "quartierpasto-list" });
+  }
+};
+
 const itemData = ref(null);
 const isLoading = ref(!!route.params.id);
 
-onMounted(async () => {
-  if (route.params.id) {
+const loadItem = async (id) => {
+  if (id) {
+    isLoading.value = true;
     try {
       const response = await auth.axiosInstance.get(
-        `${config.API_BASE_URL}/api/quartierPasto/${route.params.id}/`
+        `${config.API_BASE_URL}/api/quartierPasto/${id}/`
       );
       itemData.value = response.data ?? {};
     } catch (e) {
@@ -52,7 +62,14 @@ onMounted(async () => {
       },
     };
   }
-});
+};
+
+onMounted(() => loadItem(route.params.id));
+
+watch(
+  () => route.params.id,
+  (newId) => loadItem(newId)
+);
 </script>
 
 <style scoped>

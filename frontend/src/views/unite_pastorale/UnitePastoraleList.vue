@@ -13,6 +13,7 @@
         :filters="upFilters"
         :bgColor="'#808080'"
         :selectedId="selectedId"
+        :rowClass="(item) => (item.active === false ? 'row-inactive' : '')"
         @update:filtered-items="onFilteredItems"
         @row-hover="onRowHover"
         @row-click="onRowClick"
@@ -46,26 +47,10 @@ import CrudListPage from "../../components/crud/CrudListPage.vue";
 
 const columns = [
   { field: "nom_up", label: "UP", sortable: true },
-  { field: "annee_version", label: "Année", sortable: true },
+  { field: "code_up", label: "Code", sortable: true },
 ];
 
-const upFilters = ref([
-  {
-    key: "annee_courante",
-    type: "checkbox",
-    label: `${new Date().getFullYear()}`,
-    default: false,
-    apply: (rows, value) =>
-      !value ? rows : rows.filter((r) => r.annee_version === new Date().getFullYear()),
-  },
-  {
-    key: "version_active",
-    type: "checkbox",
-    label: "Act ?",
-    default: true,
-    apply: (rows, value) => (!value ? rows : rows.filter((r) => r.version_active === value)),
-  },
-]);
+const upFilters = ref([]);
 
 const router = useRouter();
 const { can } = usePermissions("unitepastorale");
@@ -77,25 +62,54 @@ const mapItems = ref([]);
 const hoveredId = ref(null);
 const selectedId = ref(null);
 
-const mapFeatureCollection = computed(() => {
-  const features = mapItems.value
+const toFeatureCollection = (items) => {
+  const features = items
     .filter((item) => item.geometry)
     .map((item) => {
       const { geometry, id, ...properties } = toRaw(item);
       return { type: "Feature", id, geometry: toRaw(geometry), properties };
     });
   return markRaw({ type: "FeatureCollection", features });
-});
+};
+
+const activeFeatureCollection = computed(() =>
+  toFeatureCollection(mapItems.value.filter((item) => item.active !== false))
+);
+const inactiveFeatureCollection = computed(() =>
+  toFeatureCollection(mapItems.value.filter((item) => item.active === false))
+);
 
 const openLayersLayers = computed(() => [
   {
-    id: "unitepastorale",
+    id: "unitepastorale-active",
+    title: "UP actives",
     visible: true,
-    data: mapFeatureCollection.value,
+    data: activeFeatureCollection.value,
     style: {
       strokeColor: "#008000",
       strokeWidth: 2,
       fillOpacity: 0.3,
+      zIndex: 10,
+    },
+    popup: {
+      typeLabel: "UP",
+      attribute: "nom_up",
+      idAttribute: "id_unite_pastorale",
+      route: "/unite-pastorale/edit",
+      viewRoute: "/unite-pastorale/view",
+      canEdit: can("change"),
+    },
+  },
+  {
+    id: "unitepastorale-inactive",
+    title: "UP inactives",
+    visible: true,
+    data: inactiveFeatureCollection.value,
+    style: {
+      strokeColor: "#dc2626",
+      strokeWidth: 2,
+      fillColor: "#9ca3af",
+      fillOpacity: 0.35,
       zIndex: 10,
     },
     popup: {

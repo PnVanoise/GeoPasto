@@ -89,6 +89,7 @@ const buildStyle = () => {
       : isHovered
         ? Math.min(baseFillOpacity + 0.15, 0.55)
         : baseFillOpacity;
+    const fillBaseColor = layerStyle.fillColor || strokeColor;
 
     const radius = layerStyle.pointRadius ?? (isEventMarker ? 8 : isEvent ? 6 : 6);
     const pointShape = layerStyle.pointShape || "circle";
@@ -140,7 +141,7 @@ const buildStyle = () => {
 
     return new Style({
       stroke: new Stroke({ color: strokeColor, width: strokeWidth, lineDash }),
-      fill: new Fill({ color: hexToRgba(strokeColor, fillOpacity) }),
+      fill: new Fill({ color: hexToRgba(fillBaseColor, fillOpacity) }),
       image: imageStyle,
       zIndex,
     });
@@ -257,7 +258,10 @@ const syncDataLayers = () => {
 
     layerFeatures.forEach((f) => {
       if (!f.get("__layer")) f.set("__layer", layerDef.id);
-      f.set("__layerStyle", layerDef.style || {});
+      const featureStyleOverride = layerDef.featureStyleFn
+        ? layerDef.featureStyleFn(f.getProperties())
+        : {};
+      f.set("__layerStyle", { ...(layerDef.style || {}), ...featureStyleOverride });
       f.set("__popupConfig", layerDef.popup || {});
     });
 

@@ -3,8 +3,6 @@ export function emptyUnitePastorale() {
     properties: {
       code_up: "",
       nom_up: "",
-      annee_version: new Date().getFullYear(),
-      version_active: false,
       secteur: "",
       proprios: [],
     },

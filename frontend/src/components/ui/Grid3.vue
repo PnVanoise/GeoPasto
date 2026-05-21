@@ -32,6 +32,14 @@ const props = defineProps({
     type: [Number, String],
     default: null,
   },
+  rowClass: {
+    type: Function,
+    default: null,
+  },
+  defaultSort: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["edit", "delete", "view", "export-all", "row-hover", "row-click"]);
@@ -46,8 +54,8 @@ defineExpose({
 });
 
 // Sorting state (unifié)
-const sortField = ref(null);
-const sortDirection = ref("asc");
+const sortField = ref(props.defaultSort?.field ?? null);
+const sortDirection = ref(props.defaultSort?.direction ?? "asc");
 
 // Computed that applies filter (search) then sorting, used by the template
 const displayedData = computed(() => {
@@ -245,7 +253,10 @@ function performDelete() {
           :key="getItemId(entry)"
           class="data-row"
           :data-row-id="getItemId(entry)"
-          :class="{ 'row-selected': selectedId != null && getItemId(entry) == selectedId }"
+          :class="[
+            { 'row-selected': selectedId != null && getItemId(entry) == selectedId },
+            rowClass ? rowClass(entry) : '',
+          ]"
           @mouseenter="$emit('row-hover', entry)"
           @mouseleave="$emit('row-hover', null)"
           @click="$emit('row-click', entry)"
@@ -311,6 +322,11 @@ function performDelete() {
 </template>
 
 <style scoped>
+.row-inactive {
+  background-color: #f5f5f5;
+  font-style: italic;
+  color: #888;
+}
 .icon-view {
   cursor: pointer;
   margin-right: 10px;

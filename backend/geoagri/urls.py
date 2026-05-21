@@ -10,6 +10,7 @@ from rest_framework import routers
 from alpages.views import LogementViewset, get_choices_logement, CommoditeViewset
 from alpages.views import (
     UnitePastoraleViewset,
+    GeometrieUnitePastoraleViewset,
     ProprietaireFoncierViewset,
     QuartierPastoViewset,
     ProprietaireUnitePastoraleViewset,
@@ -71,6 +72,9 @@ router.register(
 
 # Bloc administratif
 router.register("unitePastorale", UnitePastoraleViewset, basename="unitepastorale")
+router.register(
+    "geometrieUP", GeometrieUnitePastoraleViewset, basename="geometrieunitepastorale"
+)
 router.register(
     "proprietaireFoncier", ProprietaireFoncierViewset, basename="proprietairefoncier"
 )

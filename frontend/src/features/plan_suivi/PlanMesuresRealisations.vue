@@ -7,7 +7,7 @@
         size="small"
         prepend-icon="mdi-plus"
         @click="goAddPlan"
-        >Ajouter un plan</v-btn
+        >Ajouter un suivi</v-btn
       >
     </div>
 

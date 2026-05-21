@@ -1,8 +1,9 @@
+import json
 import logging
 from calendar import monthrange
 from datetime import date
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Q
 from django.utils import timezone
 
@@ -20,6 +21,7 @@ from .viewsets_base import BaseModelViewSet
 from alpages.models import Logement, Commodite
 from alpages.models import (
     UnitePastorale,
+    GeometrieUnitePastorale,
     ProprietaireFoncier,
     QuartierPasto,
     ProprietaireUnitePastorale,
@@ -76,6 +78,7 @@ from alpages.serializers import LogementSerializer, CommoditeSerializer
 from alpages.serializers import (
     UnitePastoraleSerializer,
     UnitePastoraleLSerializer,
+    GeometrieUnitePastoraleSerializer,
     ProprietaireFoncierSerializer,
     QuartierPastoSerializer,
     ProprietaireUnitePastoraleSerializer,
@@ -218,12 +221,6 @@ class UnitePastoraleViewset(BaseModelViewSet):
         if nom_up_filter is not None:
             queryset = queryset.filter(nom_up=nom_up_filter)
 
-        version_active_filter = self.request.GET.get("version_active")
-        if version_active_filter is not None:
-            queryset = queryset.filter(
-                version_active=version_active_filter.lower() == "true"
-            )
-
         return queryset
 
     # /unitePastorale/light/ → Serializer Light
@@ -236,6 +233,17 @@ class UnitePastoraleViewset(BaseModelViewSet):
         return self.conditional_list(
             request, serializer_class=UnitePastoraleLSerializer
         )
+
+
+class GeometrieUnitePastoraleViewset(BaseModelViewSet):
+    serializer_class = GeometrieUnitePastoraleSerializer
+
+    def get_queryset(self):
+        queryset = GeometrieUnitePastorale.objects.all()
+        id_up = self.request.GET.get("unite_pastorale")
+        if id_up is not None:
+            queryset = queryset.filter(unite_pastorale_id=id_up)
+        return queryset
 
 
 class ProprietaireFoncierViewset(BaseModelViewSet):
@@ -430,10 +438,17 @@ class SituationDExploitationViewset(BaseModelViewSet):
             new_up = UnitePastorale.objects.create(
                 code_up=old_up.code_up,
                 nom_up=old_up.nom_up,
-                annee_version=situation.annee,
-                geometry=union_multipolygon,
-                version_active=True,
+                geom_active=union_multipolygon,
                 secteur=old_up.secteur,
+            )
+
+            # enregistrement dans l'historique des géométries
+            debut = situation.date_debut or date.today()
+            GeometrieUnitePastorale.objects.create(
+                unite_pastorale=new_up,
+                geometry=union_multipolygon,
+                date_debut_validite=debut,
+                date_fin_validite=None,
             )
 
             # duplication des propriétaires
@@ -450,18 +465,11 @@ class SituationDExploitationViewset(BaseModelViewSet):
             situation.unite_pastorale = new_up
             situation.save(update_fields=["unite_pastorale"])
 
-            # désactivation ancienne version
-            UnitePastorale.objects.filter(
-                code_up=old_up.code_up,
-                version_active=True,
-            ).exclude(pk=new_up.pk).update(version_active=False)
-
             return Response(
                 {
                     "id_situation": situation.id_situation,
                     "old_up_id": old_up.id_unite_pastorale,
                     "new_up_id": new_up.id_unite_pastorale,
-                    "new_up_annee_version": new_up.annee_version,
                     "quartiers_count": quartier_qs.count(),
                 },
                 status=status.HTTP_201_CREATED,
@@ -482,20 +490,10 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            target_year = source.annee + 1
-            if (
-                source.unite_pastorale_id
-                and SituationDExploitation.objects.filter(
-                    unite_pastorale_id=source.unite_pastorale_id,
-                    annee=target_year,
-                ).exists()
-            ):
-                return Response(
-                    {
-                        "detail": "Une situation existe déjà pour cette UP et l'année suivante."
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            source_year = (
+                source.date_debut.year if source.date_debut else date.today().year
+            )
+            target_year = source_year + 1
 
             nom_up = source.unite_pastorale.nom_up if source.unite_pastorale else ""
             nom_exploitant = (
@@ -506,9 +504,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
             )
 
             new_situation = SituationDExploitation.objects.create(
-                annee=target_year,
                 nom_situation=nom_situation,
-                situation_active=source.situation_active,
                 date_debut=self._replace_year_safe(source.date_debut, target_year),
                 date_fin=self._replace_year_safe(source.date_fin, target_year),
                 unite_pastorale=source.unite_pastorale,
@@ -882,6 +878,106 @@ class QuartierPastoViewset(BaseModelViewSet):
             queryset = queryset.filter(situation_exploitation_id=id_situation)
 
         return queryset
+
+    @action(detail=True, methods=["post"], url_path="split")
+    def split(self, request, pk=None):
+        quartier = self.get_object()
+
+        line_geojson = request.data.get("line")
+        if not line_geojson:
+            return Response(
+                {"detail": "Le paramètre 'line' (GeoJSON LineString) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not quartier.geometry:
+            return Response(
+                {"detail": "Ce quartier n'a pas de géométrie à découper."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        line_geojson_str = (
+            json.dumps(line_geojson) if isinstance(line_geojson, dict) else line_geojson
+        )
+
+        sql = """
+            WITH
+            q AS (
+                SELECT geometry AS geom FROM alpages_quartierpasto WHERE id_quartier = %(id)s
+            ),
+            blade AS (
+                SELECT ST_Transform(ST_GeomFromGeoJSON(%(line)s), 2154) AS geom
+            ),
+            parts AS (
+                SELECT
+                    (ST_Dump(
+                        ST_CollectionExtract(
+                            ST_Split(
+                                ST_Snap(q.geom, blade.geom, 0.001),
+                                blade.geom
+                            ),
+                            3
+                        )
+                    )).geom AS part_geom
+                FROM q, blade
+            )
+            SELECT ST_AsGeoJSON(ST_Transform(part_geom, 4326)) AS geojson
+            FROM parts
+            ORDER BY ST_Area(part_geom) DESC
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql, {"id": quartier.pk, "line": line_geojson_str})
+            rows = cursor.fetchall()
+
+        if len(rows) < 2:
+            return Response(
+                {
+                    "detail": "La ligne ne traverse pas entièrement le quartier. Assurez-vous qu'elle entre et sort du polygone."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        geom1_4326 = json.loads(rows[0][0])
+        geom2_4326 = json.loads(rows[1][0])
+
+        # Convert back to SRID 2154 for storage via GeoJSON round-trip through PostGIS
+        def geojson_4326_to_2154(geojson_dict):
+            sql_convert = "SELECT ST_AsText(ST_Transform(ST_GeomFromGeoJSON(%s), 2154))"
+            with connection.cursor() as cur:
+                cur.execute(sql_convert, [json.dumps(geojson_dict)])
+                return cur.fetchone()[0]
+
+        wkt1 = geojson_4326_to_2154(geom1_4326)
+        wkt2 = geojson_4326_to_2154(geom2_4326)
+
+        from django.contrib.gis.geos import GEOSGeometry
+
+        with transaction.atomic():
+            quartier.geometry = GEOSGeometry(wkt1, srid=2154)
+            quartier.save(update_fields=["geometry", "modified_by", "modified_on"])
+
+            new_quartier = QuartierPasto.objects.create(
+                code_quartier=(
+                    f"{quartier.code_quartier}_2" if quartier.code_quartier else None
+                ),
+                nom_quartier=(
+                    f"{quartier.nom_quartier} (2)" if quartier.nom_quartier else None
+                ),
+                geometry=GEOSGeometry(wkt2, srid=2154),
+                situation_exploitation=quartier.situation_exploitation,
+            )
+
+        q1 = QuartierPasto.objects.get(pk=quartier.pk)
+        q2 = QuartierPasto.objects.get(pk=new_quartier.pk)
+
+        return Response(
+            {
+                "quartier1": self.get_serializer(q1).data,
+                "quartier2": self.get_serializer(q2).data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class PlanDeSuiviViewset(BaseModelViewSet):

@@ -3,46 +3,87 @@
     <div ref="mapElement" class="geometry-map"></div>
 
     <div v-if="!props.disabled" class="geometry-toolbar">
-      <v-btn
-        v-if="!props.editOnly && !isDrawing && !isModifying"
-        size="small"
-        color="primary"
-        variant="tonal"
-        prepend-icon="mdi-pencil"
-        @click="enableDraw"
-      >
-        Dessiner
-      </v-btn>
-      <v-btn
-        v-if="!isDrawing && !isModifying && (!props.drawOnly || hasDrawn)"
-        size="small"
-        color="primary"
-        variant="tonal"
-        prepend-icon="mdi-vector-polyline-edit"
-        @click="enableModify"
-      >
-        Modifier
-      </v-btn>
-      <v-btn
-        v-if="isDrawing || isModifying"
-        size="small"
-        color="success"
-        variant="tonal"
-        prepend-icon="mdi-check"
-        @click="handleValider"
-      >
-        Valider
-      </v-btn>
-      <v-btn
-        v-if="!props.drawOnly && !props.editOnly"
-        size="small"
-        color="error"
-        variant="tonal"
-        prepend-icon="mdi-delete"
-        @click="clearGeometry"
-      >
-        Effacer
-      </v-btn>
+      <template v-if="!isSplitting">
+        <v-btn
+          v-if="!props.editOnly && !isDrawing && !isModifying"
+          size="small"
+          color="primary"
+          variant="tonal"
+          prepend-icon="mdi-pencil"
+          @click="enableDraw"
+        >
+          Dessiner
+        </v-btn>
+        <v-btn
+          v-if="!isDrawing && !isModifying && (!props.drawOnly || hasDrawn)"
+          size="small"
+          color="primary"
+          variant="tonal"
+          prepend-icon="mdi-vector-polyline-edit"
+          @click="enableModify"
+        >
+          Modifier
+        </v-btn>
+        <v-btn
+          v-if="isDrawing || isModifying"
+          size="small"
+          color="success"
+          variant="tonal"
+          prepend-icon="mdi-check"
+          @click="handleValider"
+        >
+          Valider
+        </v-btn>
+        <v-btn
+          v-if="!props.drawOnly && !props.editOnly"
+          size="small"
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-delete"
+          @click="clearGeometry"
+        >
+          Effacer
+        </v-btn>
+        <v-btn
+          v-if="props.allowSplit && !isDrawing && !isModifying"
+          size="small"
+          color="warning"
+          variant="tonal"
+          prepend-icon="mdi-scissors-cutting"
+          @click="enableSplit"
+        >
+          Découper
+        </v-btn>
+      </template>
+
+      <template v-else>
+        <span class="split-hint">
+          {{
+            splitLineDrawn
+              ? "Ligne tracée — validez ou annulez"
+              : "Tracez la ligne de découpe (double-clic pour finir)"
+          }}
+        </span>
+        <v-btn
+          v-if="splitLineDrawn"
+          size="small"
+          color="success"
+          variant="tonal"
+          prepend-icon="mdi-check"
+          @click="validateSplit"
+        >
+          Valider le découpage
+        </v-btn>
+        <v-btn
+          size="small"
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-close"
+          @click="cancelSplit"
+        >
+          Annuler
+        </v-btn>
+      </template>
     </div>
   </div>
 </template>
@@ -97,16 +138,24 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  allowSplit: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["update:modelValue", "geometry-validity-change"]);
+const emit = defineEmits(["update:modelValue", "geometry-validity-change", "split-line"]);
 const mapElement = ref(null);
 const isDrawing = ref(false);
 const isModifying = ref(false);
 const hasDrawn = ref(false);
+const isSplitting = ref(false);
+const splitLineDrawn = ref(false);
 
 let map = null;
 let source = null;
+let splitSource = null;
+let splitLayer = null;
 let vectorLayer = null;
 let contextSource = null;
 let contextLayer = null;
@@ -602,6 +651,69 @@ const applyInteractionMode = () => {
   }
 };
 
+const splitLineStyle = new Style({
+  stroke: new Stroke({ color: "#ef4444", width: 2.5, lineDash: [8, 5] }),
+  image: new CircleStyle({
+    radius: 5,
+    fill: new Fill({ color: "#ef4444" }),
+    stroke: new Stroke({ color: "#fff", width: 1.5 }),
+  }),
+});
+
+const enableSplit = () => {
+  if (!map || !splitSource) return;
+  removeInteractions();
+  isSplitting.value = true;
+  splitLineDrawn.value = false;
+  splitSource.clear();
+  isDrawing.value = false;
+  isModifying.value = false;
+
+  drawInteraction = new Draw({ source: splitSource, type: "LineString" });
+
+  drawInteraction.on("drawend", () => {
+    splitLineDrawn.value = true;
+    removeInteractions();
+  });
+
+  map.addInteraction(drawInteraction);
+  if (source) {
+    snapInteraction = new Snap({ source, pixelTolerance: 20 });
+    map.addInteraction(snapInteraction);
+  }
+  if (contextSource) {
+    contextSnapInteraction = new Snap({ source: contextSource, pixelTolerance: 20 });
+    map.addInteraction(contextSnapInteraction);
+  }
+};
+
+const cancelSplit = () => {
+  removeInteractions();
+  splitSource.clear();
+  isSplitting.value = false;
+  splitLineDrawn.value = false;
+  applyInteractionMode();
+};
+
+const validateSplit = () => {
+  if (!splitSource) return;
+  const features = splitSource.getFeatures();
+  if (!features.length) return;
+
+  const feature = features[0].clone();
+  const geom = feature.getGeometry();
+  if (!geom) return;
+
+  geom.transform("EPSG:3857", "EPSG:4326");
+  const lineGeojson = new GeoJSON().writeGeometryObject(geom);
+
+  emit("split-line", lineGeojson);
+
+  splitSource.clear();
+  isSplitting.value = false;
+  splitLineDrawn.value = false;
+};
+
 defineExpose({
   getGeometry: () => toOutputGeometry(),
   hasGeometry: () => {
@@ -617,8 +729,12 @@ onMounted(async () => {
 
   source = new VectorSource();
   contextSource = new VectorSource();
+  splitSource = new VectorSource();
 
   vectorLayer = new VectorLayer({ source });
+  splitLayer = new VectorLayer({ source: splitSource, style: splitLineStyle, zIndex: 20 });
+  splitLayer.set("displayInLayerSwitcher", false);
+
   contextLayer = new VectorLayer({
     source: contextSource,
     zIndex: 8,
@@ -681,7 +797,14 @@ onMounted(async () => {
 
   map = new Map({
     target: mapElement.value,
-    layers: [baseMapsGroup, overlaysGroup, contextLayer, vectorLayer, contextPointOverlayLayer],
+    layers: [
+      baseMapsGroup,
+      overlaysGroup,
+      contextLayer,
+      vectorLayer,
+      contextPointOverlayLayer,
+      splitLayer,
+    ],
     view: new View({
       center: [751000, 5721000],
       zoom: 10,
@@ -793,6 +916,8 @@ onBeforeUnmount(() => {
   contextSource = null;
   contextLayer = null;
   contextPointOverlayLayer = null;
+  splitSource = null;
+  splitLayer = null;
 });
 </script>
 
@@ -816,6 +941,13 @@ onBeforeUnmount(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
+}
+
+.split-hint {
+  font-size: 0.82rem;
+  color: #92400e;
+  font-style: italic;
 }
 
 :deep(.layer-switcher) {

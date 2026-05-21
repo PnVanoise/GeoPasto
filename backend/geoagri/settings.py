@@ -87,6 +87,11 @@ INSTALLED_APPS = [
     "leaflet",
     "alpages",
     "accounts",
+    "django_crontab",
+]
+
+CRONJOBS = [
+    ("0 2 * * *", "django.core.management.call_command", ["refresh_geom_active"]),
 ]
 
 MIDDLEWARE = [

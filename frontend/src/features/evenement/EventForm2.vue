@@ -282,7 +282,8 @@ const showQuartiersLayer = ref(true);
 const showEvenementsLayer = ref(true);
 
 const situationLabel = (item) => {
-  const parts = [item.annee];
+  const parts = [];
+  if (item.date_debut) parts.push(String(new Date(item.date_debut).getFullYear()));
   if (item.exploitant_nom) parts.push(item.exploitant_nom);
   if (item.unite_pastorale_detail?.nom_up) parts.push(item.unite_pastorale_detail.nom_up);
   return parts.join(" — ");

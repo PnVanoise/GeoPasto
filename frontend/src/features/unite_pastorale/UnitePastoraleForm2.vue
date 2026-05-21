@@ -3,117 +3,124 @@
   <form class="up-form" @submit.prevent="submitForm">
     <div class="up-form-layout">
       <section class="layout-card">
-        <div class="form-cell">
-          <v-text-field
-            v-model="form.properties.code_up"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Code UP"
-            density="compact"
-            variant="underlined"
-            hide-details
-            clearable
-          />
-        </div>
-        <div class="form-cell">
-          <v-text-field
-            v-model="form.properties.nom_up"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Nom UP"
-            density="compact"
-            variant="underlined"
-            hide-details
-            clearable
-          />
-        </div>
-        <div class="form-cell">
-          <v-select
-            v-model="form.properties.secteur"
-            :items="secteurOptions"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Secteur"
-            density="compact"
-            variant="underlined"
-            hide-details
-            clearable
-          />
-        </div>
-        <div class="w3-row form-ligne inline-two-fields">
-          <div class="w3-half form-cell">
-            <v-text-field
-              v-model="form.properties.annee_version"
-              :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-              label="Année version"
-              density="compact"
-              variant="underlined"
-              hide-details
-              clearable
-            />
-          </div>
-          <div class="w3-half form-cell inline-switch-cell">
-            <v-switch
-              v-model="form.properties.version_active"
-              :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-              label="Version active ?"
-              color="primary"
-              density="compact"
-              hide-details
-            />
-          </div>
-        </div>
-        <div class="form-cell">
-          <v-select
-            v-model="form.properties.proprios"
-            :items="proprietairesOptions"
-            item-value="id_proprietaire"
-            item-title="full_name"
-            multiple
-            chips
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Propriétaires"
-            density="compact"
-            variant="underlined"
-            :menu-props="{ maxHeight: '300px' }"
-          />
-        </div>
+        <v-tabs v-model="activeTab" density="compact" color="primary" class="up-tabs">
+          <v-tab value="fiche">Fiche</v-tab>
+          <v-tab value="geometries" :disabled="props.mode === 'add'">Géométries</v-tab>
+        </v-tabs>
 
-        <div class="up-section-gap">
-          <h4 class="section-title">Situations d'exploitation</h4>
-          <template v-if="props.mode === 'add'">
-            <div class="w3-panel w3-pale-yellow info-panel">
-              Enregistrez l'unité pastorale pour pouvoir ajouter des situations d'exploitation.
+        <v-window v-model="activeTab">
+          <v-window-item value="fiche">
+            <div class="form-cell">
+              <v-text-field
+                v-model="form.properties.code_up"
+                :disabled="props.mode === 'view' || !can('change')"
+                label="Code UP"
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
+              />
             </div>
-          </template>
-          <template v-else-if="form.id">
-            <CrudListPage
-              modelName="situationdexploitation"
-              apiRouteName="situationExploitation"
-              itemLabel="une situation"
-              idField="id_situation"
-              :columns="situGridColumns"
-              :bgColor="'#154889'"
+            <div class="form-cell">
+              <v-text-field
+                v-model="form.properties.nom_up"
+                :disabled="props.mode === 'view' || !can('change')"
+                label="Nom UP"
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
+              />
+            </div>
+            <div class="form-cell">
+              <v-select
+                v-model="form.properties.secteur"
+                :items="secteurOptions"
+                :disabled="props.mode === 'view' || !can('change')"
+                label="Secteur"
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
+              />
+            </div>
+            <div class="form-cell">
+              <v-select
+                v-model="form.properties.proprios"
+                :items="proprietairesOptions"
+                item-value="id_proprietaire"
+                item-title="full_name"
+                multiple
+                chips
+                :disabled="props.mode === 'view' || !can('change')"
+                label="Propriétaires"
+                density="compact"
+                variant="underlined"
+                :menu-props="{ maxHeight: '300px' }"
+              />
+            </div>
+
+            <div class="up-section-gap">
+              <h4 class="section-title">Situations d'exploitation</h4>
+              <template v-if="props.mode === 'add'">
+                <div class="w3-panel w3-pale-yellow info-panel">
+                  Enregistrez l'unité pastorale pour pouvoir ajouter des situations d'exploitation.
+                </div>
+              </template>
+              <template v-else-if="form.id">
+                <CrudListPage
+                  modelName="situationdexploitation"
+                  apiRouteName="situationExploitation"
+                  itemLabel="une situation"
+                  idField="id_situation"
+                  :columns="situGridColumns"
+                  :bgColor="'#154889'"
+                  :showTitle="false"
+                  :showHeader="true"
+                  :showSearch="true"
+                  :showFilters="false"
+                  :filters="[]"
+                  :forceAdd="false"
+                  :viewOnly="props.mode === 'view'"
+                  :requestParams="form.id ? { id_up: form.id } : null"
+                  :addQueryParams="form.id ? { unite_pastorale: form.id } : {}"
+                />
+              </template>
+            </div>
+          </v-window-item>
+
+          <v-window-item value="geometries">
+            <CrudList2
+              modelName="geometrieunitepastorale"
+              apiRouteName="geometrieUP"
+              itemLabel="une géométrie"
+              idField="id_geometrie_up"
+              :geojsonMode="true"
+              :formComponent="GeometrieUPForm"
+              :columns="geomGridColumns"
               :showTitle="false"
               :showHeader="true"
-              :showSearch="true"
+              :showSearch="false"
               :showFilters="false"
               :filters="[]"
-              :forceAdd="false"
               :viewOnly="props.mode === 'view'"
-              :requestParams="form.id ? { id_up: form.id } : null"
-              :addQueryParams="form.id ? { unite_pastorale: form.id } : {}"
+              :requestParams="form.id ? { unite_pastorale: form.id } : null"
+              :initialNewItem="form.id ? { properties: { unite_pastorale: form.id } } : null"
+              :defaultSort="{ field: 'date_debut_validite', direction: 'desc' }"
+              @row-hover="
+                (entry) => {
+                  hoveredGeomId = entry ? (entry.id_geometrie_up ?? entry.id) : null;
+                }
+              "
             />
-          </template>
-        </div>
+          </v-window-item>
+        </v-window>
       </section>
 
       <section class="layout-card map-card">
-        <QuartierGeometryEditorOl
-          :key="`up-geom-${form.id ?? 'new'}`"
-          v-model="form.geometry"
-          geometryType="MultiPolygon"
-          :contextGeoData="refUPs"
-          :disabled="props.mode === 'view'"
-          :drawOnly="props.mode === 'add'"
-          :editOnly="props.mode === 'change'"
+        <OpenLayersGeoJsonMap
+          :layers="activeTab === 'geometries' ? geomTabLayers : activeMapLayer"
+          :highlightedId="activeTab === 'geometries' ? hoveredGeomId : null"
         />
       </section>
     </div>
@@ -129,28 +136,17 @@
       >
     </div>
   </form>
-
-  <v-dialog v-model="showMissingGeometry" max-width="480">
-    <v-card>
-      <v-card-title class="text-h6">Géométrie manquante</v-card-title>
-      <v-card-text
-        >Veuillez dessiner la géométrie de l'unité pastorale avant d'enregistrer.</v-card-text
-      >
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="primary" text @click="showMissingGeometry = false">OK</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
-import { reactive, ref, watch, onMounted, computed } from "vue";
+import { reactive, ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import auth from "@/services/axios";
 import { usePermissions } from "@/composables/usePermissions";
 import config from "@/../config";
-import QuartierGeometryEditorOl from "@/components/map/QuartierGeometryEditorOl.vue";
+import OpenLayersGeoJsonMap from "@/components/map/OpenLayersGeoJsonMap.vue";
 import CrudListPage from "@/components/crud/CrudListPage.vue";
+import CrudList2 from "@/components/crud/CrudList2.vue";
+import GeometrieUPForm from "./GeometrieUPForm.vue";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -170,15 +166,21 @@ const formTitle = computed(() => {
 
 const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"));
 
-const refUPs = ref([]);
-const showMissingGeometry = ref(false);
+const histGeometries = ref([]);
+const hoveredGeomId = ref(null);
 const proprietaires = ref([]);
+const activeTab = ref("fiche");
 const secteurOptions = ["Haute Tarentaise", "Haute Maurienne", "Pralognan"];
 
 const situGridColumns = ref([
-  { field: "annee", label: "Année", sortable: true },
+  { field: "date_debut", label: "Début", sortable: true },
+  { field: "date_fin", label: "Fin", sortable: true },
   { field: "exploitant_nom", label: "Exploitant", sortable: true },
-  { field: "situation_active", label: "Active ?", sortable: true },
+]);
+
+const geomGridColumns = ref([
+  { field: "date_debut_validite", label: "Début validité", sortable: true },
+  { field: "date_fin_validite", label: "Fin validité", sortable: true },
 ]);
 
 const form = reactive({
@@ -188,12 +190,9 @@ const form = reactive({
     code_up: props.initialForm?.properties?.code_up || "",
     nom_up: props.initialForm?.properties?.nom_up || "",
     secteur: props.initialForm?.properties?.secteur || "",
-    annee_version:
-      props.initialForm?.properties?.annee_version || new Date().getFullYear().toString(),
     proprios: Array.isArray(props.initialForm?.properties?.proprios)
       ? [...props.initialForm.properties.proprios]
       : [],
-    version_active: props.initialForm?.properties?.version_active ?? false,
   },
   geometry: props.initialForm?.geometry || null,
 });
@@ -205,14 +204,71 @@ const proprietairesOptions = computed(() =>
   }))
 );
 
-onMounted(() => {
-  auth.axiosInstance
-    .get(`${config.API_BASE_URL}/api/unitePastorale/`)
-    .then((response) => {
-      refUPs.value = response.data;
-    })
-    .catch((error) => {});
+const activeMapLayer = computed(() => {
+  if (!form.geometry) return [];
+  return [
+    {
+      id: "geom_active",
+      title: "Géométrie active",
+      data: {
+        type: "FeatureCollection",
+        features: [{ type: "Feature", geometry: form.geometry, properties: {} }],
+      },
+      style: { strokeColor: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.2, strokeWidth: 2 },
+    },
+  ];
+});
 
+const geomTabLayers = computed(() => {
+  const layers = [];
+
+  if (form.geometry) {
+    layers.push({
+      id: "geom_active_up",
+      title: "Géométrie active (UP)",
+      data: {
+        type: "FeatureCollection",
+        features: [{ type: "Feature", geometry: form.geometry, properties: {} }],
+      },
+      style: { strokeColor: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.2, strokeWidth: 2 },
+    });
+  }
+
+  for (const geom of histGeometries.value) {
+    const id = geom.id ?? geom.properties?.id_geometrie_up;
+    const dateDebut = geom.properties?.date_debut_validite || "?";
+    const dateFin = geom.properties?.date_fin_validite;
+    const isActive = !dateFin;
+    layers.push({
+      id: `geom_${id}`,
+      title: isActive ? `${dateDebut} → en cours` : `${dateDebut} → ${dateFin}`,
+      data: { type: "FeatureCollection", features: [geom] },
+      style: isActive
+        ? { strokeColor: "#2563eb", fillColor: "#2563eb", fillOpacity: 0.15, strokeWidth: 2 }
+        : {
+            strokeColor: "#64748b",
+            fillColor: "#64748b",
+            fillOpacity: 0.08,
+            strokeWidth: 1.5,
+            lineDash: [6, 4],
+          },
+    });
+  }
+
+  return layers;
+});
+
+const fetchHistGeometries = () => {
+  if (!form.id) return;
+  auth.axiosInstance
+    .get(`${config.API_BASE_URL}/api/geometrieUP/`, { params: { unite_pastorale: form.id } })
+    .then((resp) => {
+      histGeometries.value = resp.data?.features ?? resp.data ?? [];
+    })
+    .catch(() => {});
+};
+
+onMounted(() => {
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/proprietaireFoncier/`)
     .then((response) => {
@@ -221,7 +277,25 @@ onMounted(() => {
         props.initialForm?.properties?.proprios_ids || props.initialForm?.proprios_ids;
       if (Array.isArray(initIds)) form.properties.proprios = initIds.map((id) => Number(id));
     })
-    .catch((error) => {});
+    .catch(() => {});
+
+  fetchHistGeometries();
+
+  window.addEventListener("geo-data-changed", onGeoDataChanged);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("geo-data-changed", onGeoDataChanged);
+});
+
+const onGeoDataChanged = (event) => {
+  if (event?.detail?.modelName === "geometrieunitepastorale") {
+    fetchHistGeometries();
+  }
+};
+
+watch(activeTab, (tab) => {
+  if (tab === "geometries") fetchHistGeometries();
 });
 
 watch(
@@ -252,19 +326,20 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {
-  if (!props.onSubmit) return;
+const buildPayload = () => {
   const payload = JSON.parse(JSON.stringify(form));
-  if (!payload.geometry) {
-    showMissingGeometry.value = true;
-    return;
-  }
   const propsObj = payload.properties || {};
   if (Array.isArray(propsObj.proprios) && propsObj.proprios.length > 0) {
     propsObj.proprios_ids = Array.from(propsObj.proprios);
   }
   payload.properties = propsObj;
   if (props.mode === "add") delete payload.id;
+  return payload;
+};
+
+const submitForm = () => {
+  if (!props.onSubmit) return;
+  props.onSubmit(buildPayload());
 };
 
 const closeModal = () => props.onClose?.();
@@ -337,13 +412,6 @@ const closeModal = () => props.onClose?.();
   padding: 12px;
   border: 1px solid #ddd;
 }
-.inline-two-fields {
-  margin: 0;
-}
-.inline-switch-cell {
-  display: flex;
-  align-items: center;
-}
 .form-actions {
   display: flex;
   justify-content: center;
@@ -351,8 +419,9 @@ const closeModal = () => props.onClose?.();
   gap: 0.5rem;
   margin-top: 1.5rem;
 }
-.disable-events {
-  pointer-events: none;
+.up-tabs {
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 @media (max-width: 1100px) {

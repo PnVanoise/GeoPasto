@@ -30,7 +30,9 @@
                 :title="situ.nom_situation"
               >
                 <div class="situ-header">
-                  <span class="situ-annee">{{ situ.annee }}</span>
+                  <span class="situ-annee">{{
+                    situ.date_debut ? new Date(situ.date_debut).getFullYear() : ""
+                  }}</span>
                   <span v-if="situ.exploitant_nom" class="situ-exploitant">
                     {{ situ.exploitant_nom }}
                   </span>
@@ -229,7 +231,11 @@ const fetchAll = async () => {
         `${config.API_BASE_URL}/api/situationExploitation/?id_up=${props.unitePastoraleId}`
       );
       const raw = Array.isArray(situRes.data) ? situRes.data : (situRes.data?.results ?? []);
-      situations.value = [...raw].sort((a, b) => (a.annee ?? 0) - (b.annee ?? 0));
+      situations.value = [...raw].sort((a, b) => {
+        const ya = a.date_debut ? new Date(a.date_debut).getFullYear() : 0;
+        const yb = b.date_debut ? new Date(b.date_debut).getFullYear() : 0;
+        return ya - yb;
+      });
     }
   } catch {
     mesures.value = [];

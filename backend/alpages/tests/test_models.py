@@ -4,7 +4,6 @@ from django.test import TestCase
 from alpages.models import (
     QuartierPasto,
     SituationDExploitation,
-    Exploiter,
     Ruche,
     Eleveur,
     AbriDUrgence,
@@ -16,22 +15,15 @@ from alpages.models import (
 class ModelsSmokeTest(TestCase):
 
     def test_create_basic_models_and_relations(self):
-        quartier = QuartierPasto.objects.create(
+        QuartierPasto.objects.create(
             id_quartier=10, code_quartier="Q10", nom_quartier="Q10"
         )
         orig = SituationDExploitation.objects.create(
             id_situation=10,
             nom_situation="S10",
-            situation_active=True,
             date_debut=date(2020, 1, 1),
         )
 
-        Exploiter.objects.create(
-            id_exploiter=10,
-            quartier=quartier,
-            situation_exploitation=orig,
-            date_debut=date(2020, 1, 1),
-        )
         ruche = Ruche.objects.create(
             id_ruche=10,
             description="R10",
@@ -53,5 +45,4 @@ class ModelsSmokeTest(TestCase):
         self.assertEqual(QuartierPasto.objects.count(), 1)
         self.assertEqual(SituationDExploitation.objects.count(), 1)
         self.assertEqual(orig.ruches.count(), 1)
-        self.assertEqual(orig.exploitations.count(), 1)
         self.assertEqual(abri.commodites.count(), 1)

@@ -11,7 +11,8 @@
             type="date"
             density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
+            :rules="rulesDateDebut"
           />
         </div>
         <div class="w3-half form-cell">
@@ -22,8 +23,9 @@
             type="date"
             density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
             clearable
+            :rules="rulesDateFin"
           />
         </div>
       </div>
@@ -87,6 +89,7 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="!isFormValid"
         >{{ props.mode === "add" ? "Ajouter" : "Enregistrer" }}</v-btn
       >
     </div>
@@ -130,6 +133,22 @@ const form = reactive({
     unite_pastorale: props.initialForm?.properties?.unite_pastorale || null,
   },
   geometry: props.initialForm?.geometry || null,
+});
+
+const rulesDateDebut = [(v) => !!v || "La date de début est obligatoire."];
+
+const rulesDateFin = computed(() => [
+  (v) =>
+    !v ||
+    !form.properties.date_debut_validite ||
+    v >= form.properties.date_debut_validite ||
+    "La date de fin doit être postérieure à la date de début.",
+]);
+
+const isFormValid = computed(() => {
+  const debut = form.properties.date_debut_validite;
+  const fin = form.properties.date_fin_validite;
+  return !!debut && (!fin || fin >= debut);
 });
 
 const showImport = ref(false);

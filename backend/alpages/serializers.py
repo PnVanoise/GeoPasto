@@ -199,6 +199,22 @@ class GeometrieUnitePastoraleSerializer(
             "date_fin_validite",
         ]
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        date_debut = attrs.get(
+            "date_debut_validite", getattr(self.instance, "date_debut_validite", None)
+        )
+        date_fin = attrs.get(
+            "date_fin_validite", getattr(self.instance, "date_fin_validite", None)
+        )
+        if date_debut and date_fin and date_debut > date_fin:
+            raise serializers.ValidationError(
+                {
+                    "date_fin_validite": "La date de fin doit être postérieure à la date de début."
+                }
+            )
+        return attrs
+
     def to_representation(self, instance):
         geom = getattr(instance, "geometry", None)
         if geom is not None:

@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from django.db.models import Q
+from django.db.models import F, Q
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -47,6 +47,13 @@ class GeometrieUnitePastorale(AuditFieldsMixin, models.Model):
         verbose_name = "géométrie d'unité pastorale"
         verbose_name_plural = "géométries d'unités pastorales"
         ordering = ["-date_debut_validite"]
+        constraints = [
+            models.CheckConstraint(
+                check=Q(date_fin_validite__isnull=True)
+                | Q(date_debut_validite__lte=F("date_fin_validite")),
+                name="chk_geometrie_up_dates_coherentes",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.unite_pastorale} — {self.date_debut_validite}"

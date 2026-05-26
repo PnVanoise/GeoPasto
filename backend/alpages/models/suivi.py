@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.db.models import F, Q
 
 from .mixins import AuditFieldsMixin
 
@@ -38,6 +39,12 @@ class PlanDeSuivi(AuditFieldsMixin, models.Model):
     class Meta:
         verbose_name = "plan de suivi"
         verbose_name_plural = "plans de suivi"
+        constraints = [
+            models.CheckConstraint(
+                check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
+                name="chk_plan_suivi_dates_coherentes",
+            ),
+        ]
 
     def __str__(self):
         return str(self.description)
@@ -80,6 +87,13 @@ class MesureDePlan(AuditFieldsMixin, models.Model):
     class Meta:
         verbose_name = "mesure de plan"
         verbose_name_plural = "mesures de plan"
+        constraints = [
+            models.CheckConstraint(
+                check=Q(fin_periode__isnull=True)
+                | Q(debut_periode__lte=F("fin_periode")),
+                name="chk_mesure_plan_periodes_coherentes",
+            ),
+        ]
 
     def __str__(self):
         return str(self.description)

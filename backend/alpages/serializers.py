@@ -331,6 +331,16 @@ class PlanDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerialize
     )
     type_suivi_detail = TypeDeSuiviSerializer(source="type_suivi", read_only=True)
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        date_debut = attrs.get("date_debut", getattr(self.instance, "date_debut", None))
+        date_fin = attrs.get("date_fin", getattr(self.instance, "date_fin", None))
+        if date_debut and date_fin and date_debut > date_fin:
+            raise serializers.ValidationError(
+                {"date_fin": "La date de fin doit être postérieure à la date de début."}
+            )
+        return attrs
+
     class Meta:
         model = PlanDeSuivi
         fields = [
@@ -377,6 +387,20 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
             "plan_suivi_detail",
             "geometry",
         ]
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        debut = attrs.get(
+            "debut_periode", getattr(self.instance, "debut_periode", None)
+        )
+        fin = attrs.get("fin_periode", getattr(self.instance, "fin_periode", None))
+        if debut and fin and debut > fin:
+            raise serializers.ValidationError(
+                {
+                    "fin_periode": "La fin de période doit être postérieure au début de période."
+                }
+            )
+        return attrs
 
     def to_representation(self, instance):
         if instance.geometry is not None:
@@ -490,6 +514,16 @@ class SituationDExploitationSerializer(
             data["id_situation"] = data["id"]
         return super().to_internal_value(data)
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        date_debut = attrs.get("date_debut", getattr(self.instance, "date_debut", None))
+        date_fin = attrs.get("date_fin", getattr(self.instance, "date_fin", None))
+        if date_debut and date_fin and date_debut > date_fin:
+            raise serializers.ValidationError(
+                {"date_fin": "La date de fin doit être postérieure à la date de début."}
+            )
+        return attrs
+
     class Meta:
         model = SituationDExploitation
         fields = [
@@ -541,6 +575,13 @@ class ExploiterSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer)
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
+
+        date_debut = attrs.get("date_debut", getattr(self.instance, "date_debut", None))
+        date_fin = attrs.get("date_fin", getattr(self.instance, "date_fin", None))
+        if date_debut and date_fin and date_debut > date_fin:
+            raise serializers.ValidationError(
+                {"date_fin": "La date de fin doit être postérieure à la date de début."}
+            )
 
         if "nombre_animaux" not in attrs and self.instance is not None:
             return attrs
@@ -843,23 +884,28 @@ class BeneficierDeSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
         ]
 
     def to_internal_value(self, data):
-        # Intercepter les données de géométrie avant la validation
         geometry = data.get("geometry", None)
-
-        # Vérifier si les coordonnées sont vides et définir geometry sur None si c'est le cas
         if (
             geometry
             and geometry.get("type") == "Point"
             and not geometry.get("coordinates")
         ):
             data["geometry"] = None
-
         return super().to_internal_value(data)
 
-    def to_representation(self, instance):
-        if instance.geometry != None:
-            instance.geometry.transform(4326)
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        date_debut = attrs.get("date_debut", getattr(self.instance, "date_debut", None))
+        date_fin = attrs.get("date_fin", getattr(self.instance, "date_fin", None))
+        if date_debut and date_fin and date_debut > date_fin:
+            raise serializers.ValidationError(
+                {"date_fin": "La date de fin doit être postérieure à la date de début."}
+            )
+        return attrs
 
+    def to_representation(self, instance):
+        if instance.geometry is not None:
+            instance.geometry.transform(4326)
         return super().to_representation(instance)
 
 
@@ -900,6 +946,16 @@ class GardeSituationSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerial
     situation_nom = serializers.CharField(
         source="situation_exploitation.nom_situation", read_only=True
     )
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        date_debut = attrs.get("date_debut", getattr(self.instance, "date_debut", None))
+        date_fin = attrs.get("date_fin", getattr(self.instance, "date_fin", None))
+        if date_debut and date_fin and date_debut > date_fin:
+            raise serializers.ValidationError(
+                {"date_fin": "La date de fin doit être postérieure à la date de début."}
+            )
+        return attrs
 
     class Meta:
         model = GardeSituation
@@ -1063,6 +1119,16 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
             "categorie_animaux",
             "categorie_animaux_detail",
         ]
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        date_debut = attrs.get("date_debut", getattr(self.instance, "date_debut", None))
+        date_fin = attrs.get("date_fin", getattr(self.instance, "date_fin", None))
+        if date_debut and date_fin and date_debut > date_fin:
+            raise serializers.ValidationError(
+                {"date_fin": "La date de fin doit être postérieure à la date de début."}
+            )
+        return attrs
 
     def get_annee(self, obj):
         if obj.date_debut:

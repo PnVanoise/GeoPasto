@@ -36,8 +36,9 @@
             :disabled="props.mode === 'view'"
             density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
             clearable
+            :rules="rulesDateFin"
           />
         </div>
       </div>
@@ -120,6 +121,7 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="!isFormValid"
         >{{ btTitle }}</v-btn
       >
     </div>
@@ -202,6 +204,20 @@ onMounted(() => {
       ups.value = data;
     })
     .catch(() => {});
+});
+
+const rulesDateFin = computed(() => [
+  (v) =>
+    !v ||
+    !form.date_debut ||
+    v >= form.date_debut ||
+    "La date de fin doit être postérieure à la date de début.",
+]);
+
+const isFormValid = computed(() => {
+  const debut = form.date_debut;
+  const fin = form.date_fin;
+  return !fin || !debut || fin >= debut;
 });
 
 const submitForm = () => {

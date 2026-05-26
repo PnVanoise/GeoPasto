@@ -199,14 +199,17 @@ const props = defineProps({
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
+  initialTab: { type: String, default: "fiche" },
+  onTabChange: Function,
 });
 
 const { can } = usePermissions("unitepastorale");
 
 const formTitle = computed(() => {
+  const nom = form.properties?.nom_up;
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
-  if (props.mode === "change") return `Modifier ${props.itemLabel}`;
-  return `Voir les détails d'${props.itemLabel}`;
+  if (props.mode === "change") return `Modifier l'unité pastorale - ${nom ?? ""}`;
+  return `Unité pastorale - ${nom ?? ""}`;
 });
 
 const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"));
@@ -214,7 +217,7 @@ const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"
 const histGeometries = ref([]);
 const hoveredGeomId = ref(null);
 const proprietaires = ref([]);
-const activeTab = ref("fiche");
+const activeTab = ref(props.initialTab || "fiche");
 const secteurOptions = ["Haute Tarentaise", "Haute Maurienne", "Pralognan"];
 
 const selectedConventionId = ref(null);
@@ -395,6 +398,7 @@ const onGeoDataChanged = (event) => {
 watch(activeTab, (tab) => {
   if (tab === "geometries") fetchHistGeometries();
   if (tab === "conventions") fetchConventions();
+  props.onTabChange?.(tab);
 });
 
 watch(

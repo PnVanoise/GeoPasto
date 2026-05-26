@@ -54,17 +54,21 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
       }
 
       if (payload && payload.type === "FeatureCollection" && Array.isArray(payload.features)) {
-        items.value = payload.features.map((f) => ({
-          ...(f.properties || {}),
-          id: f.id || f.properties?.id,
-          geometry: f.geometry,
-        }));
+        items.value = payload.features.map((f) => {
+          const rawId = f.id ?? f.properties?.[idField] ?? f.properties?.id;
+          return {
+            ...(f.properties || {}),
+            id: rawId,
+            [idField]: rawId,
+            geometry: f.geometry,
+          };
+        });
       } else if (geojsonMode && Array.isArray(payload)) {
-        items.value = payload.map((f) =>
-          f && f.type === "Feature"
-            ? { ...(f.properties || {}), id: f.id || f.properties?.id, geometry: f.geometry }
-            : f
-        );
+        items.value = payload.map((f) => {
+          if (!f || f.type !== "Feature") return f;
+          const rawId = f.id ?? f.properties?.[idField] ?? f.properties?.id;
+          return { ...(f.properties || {}), id: rawId, [idField]: rawId, geometry: f.geometry };
+        });
       } else if (Array.isArray(payload)) {
         items.value = payload;
       } else {

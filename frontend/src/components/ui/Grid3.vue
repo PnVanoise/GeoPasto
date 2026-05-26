@@ -48,8 +48,16 @@ const tbodyEl = ref(null);
 
 defineExpose({
   scrollToId(id) {
-    const row = tbodyEl.value?.querySelector(`[data-row-id="${id}"]`);
-    row?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const attempt = () => {
+      const row = tbodyEl.value?.querySelector(`[data-row-id="${id}"]`);
+      if (row) row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return !!row;
+    };
+    if (!attempt()) {
+      setTimeout(() => {
+        if (!attempt()) setTimeout(attempt, 800);
+      }, 400);
+    }
   },
 });
 
@@ -397,10 +405,12 @@ function performDelete() {
 }
 
 .data-row.row-selected td {
-  background-color: #fef2f2;
+  background-color: #fde8e8;
 }
-/* box-shadow: inset 3px 0 0 #DC2626;
-} */
+
+.data-row.row-selected td:first-child {
+  box-shadow: inset 3px 0 0 #dc2626;
+}
 
 .table-with-fixed-header td.actions-col {
   padding-right: 0;

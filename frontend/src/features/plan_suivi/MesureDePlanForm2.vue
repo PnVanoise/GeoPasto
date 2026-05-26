@@ -48,8 +48,9 @@
               :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
-              hide-details
+              hide-details="auto"
               clearable
+              :rules="rulesFinPeriode"
             />
           </div>
         </div>
@@ -137,6 +138,7 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="!isFormValid"
         >{{ btTitle }}</v-btn
       >
     </div>
@@ -314,6 +316,20 @@ const submitForm = () => {
     });
   }
 };
+
+const rulesFinPeriode = computed(() => [
+  (v) =>
+    !v ||
+    !form.debut_periode ||
+    v >= form.debut_periode ||
+    "La fin de période doit être postérieure au début de période.",
+]);
+
+const isFormValid = computed(() => {
+  const debut = form.debut_periode;
+  const fin = form.fin_periode;
+  return !fin || !debut || fin >= debut;
+});
 
 const closeModal = () => {
   props.onClose?.();

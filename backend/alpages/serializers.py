@@ -482,10 +482,34 @@ class ConventionDExploitationSerializer(
         auto_bbox = True
         fields = "__all__"
 
-    def to_representation(self, instance):
-        if instance.geometry != None:
-            instance.geometry.transform(4326)
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
 
+        date_debut = attrs.get("date_debut", getattr(self.instance, "date_debut", None))
+        date_fin = attrs.get("date_fin", getattr(self.instance, "date_fin", None))
+        if date_debut and date_fin and date_debut > date_fin:
+            raise serializers.ValidationError(
+                {"date_fin": "La date de fin doit être postérieure à la date de début."}
+            )
+
+        debut_expl = attrs.get(
+            "debut_periode_expl", getattr(self.instance, "debut_periode_expl", None)
+        )
+        fin_expl = attrs.get(
+            "fin_periode_expl", getattr(self.instance, "fin_periode_expl", None)
+        )
+        if debut_expl and fin_expl and debut_expl > fin_expl:
+            raise serializers.ValidationError(
+                {
+                    "fin_periode_expl": "La fin de période doit être postérieure au début de période."
+                }
+            )
+
+        return attrs
+
+    def to_representation(self, instance):
+        if instance.geometry is not None:
+            instance.geometry.transform(4326)
         return super().to_representation(instance)
 
 

@@ -10,6 +10,8 @@
       itemLabel="une unité pastorale"
       :onSubmit="handleSubmit"
       :onClose="() => router.back()"
+      :initialTab="route.query.tab || 'fiche'"
+      :onTabChange="(tab) => router.replace({ query: { ...route.query, tab } })"
     />
   </div>
 </template>

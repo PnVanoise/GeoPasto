@@ -6,6 +6,7 @@
         <v-tabs v-model="activeTab" density="compact" color="primary" class="up-tabs">
           <v-tab value="fiche">Fiche</v-tab>
           <v-tab value="geometries" :disabled="props.mode === 'add'">Géométries</v-tab>
+          <v-tab value="conventions" :disabled="props.mode === 'add'">Conventions</v-tab>
         </v-tabs>
 
         <v-window v-model="activeTab">
@@ -114,13 +115,57 @@
               "
             />
           </v-window-item>
+
+          <v-window-item value="conventions">
+            <template v-if="props.mode === 'add'">
+              <div class="w3-panel w3-pale-yellow info-panel">
+                Enregistrez l'unité pastorale pour pouvoir voir les conventions.
+              </div>
+            </template>
+            <template v-else-if="form.id">
+              <CrudListPage
+                modelName="conventiondexploitation"
+                apiRouteName="conventionExploitation"
+                itemLabel="une convention"
+                idField="id_convention"
+                :geojsonMode="true"
+                :columns="conventionGridColumns"
+                :bgColor="'#154889'"
+                :showTitle="false"
+                :showHeader="true"
+                :showSearch="false"
+                :showFilters="false"
+                :filters="[]"
+                :viewOnly="props.mode === 'view'"
+                :requestParams="form.id ? { unite_pastorale: form.id } : null"
+                :addQueryParams="form.id ? { unite_pastorale: form.id } : {}"
+                :selectedId="selectedConventionId"
+                @row-click="(row) => (selectedConventionId = row?.id_convention ?? row?.id ?? null)"
+              />
+            </template>
+          </v-window-item>
         </v-window>
       </section>
 
       <section class="layout-card map-card">
         <OpenLayersGeoJsonMap
-          :layers="activeTab === 'geometries' ? geomTabLayers : activeMapLayer"
-          :highlightedId="activeTab === 'geometries' ? hoveredGeomId : null"
+          :layers="
+            activeTab === 'geometries'
+              ? geomTabLayers
+              : activeTab === 'conventions'
+                ? conventionTabLayers
+                : activeMapLayer
+          "
+          :highlightedId="
+            activeTab === 'geometries'
+              ? hoveredGeomId
+              : activeTab === 'conventions'
+                ? selectedConventionId
+                : null
+          "
+          @feature-click="
+            (f) => activeTab === 'conventions' && (selectedConventionId = f?.id ?? null)
+          "
         />
       </section>
     </div>
@@ -154,14 +199,17 @@ const props = defineProps({
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
+  initialTab: { type: String, default: "fiche" },
+  onTabChange: Function,
 });
 
 const { can } = usePermissions("unitepastorale");
 
 const formTitle = computed(() => {
+  const nom = form.properties?.nom_up;
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
-  if (props.mode === "change") return `Modifier ${props.itemLabel}`;
-  return `Voir les détails d'${props.itemLabel}`;
+  if (props.mode === "change") return `Modifier l'unité pastorale - ${nom ?? ""}`;
+  return `Unité pastorale - ${nom ?? ""}`;
 });
 
 const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"));
@@ -169,8 +217,11 @@ const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"
 const histGeometries = ref([]);
 const hoveredGeomId = ref(null);
 const proprietaires = ref([]);
-const activeTab = ref("fiche");
+const activeTab = ref(props.initialTab || "fiche");
 const secteurOptions = ["Haute Tarentaise", "Haute Maurienne", "Pralognan"];
+
+const selectedConventionId = ref(null);
+const conventionsGeoData = ref(null);
 
 const situGridColumns = ref([
   { field: "date_debut", label: "Début", sortable: true },
@@ -181,6 +232,12 @@ const situGridColumns = ref([
 const geomGridColumns = ref([
   { field: "date_debut_validite", label: "Début validité", sortable: true },
   { field: "date_fin_validite", label: "Fin validité", sortable: true },
+]);
+
+const conventionGridColumns = ref([
+  { field: "exploitant_nom", label: "Exploitant", sortable: true },
+  { field: "date_debut", label: "Début", sortable: true },
+  { field: "date_fin", label: "Fin", sortable: true },
 ]);
 
 const form = reactive({
@@ -268,6 +325,47 @@ const fetchHistGeometries = () => {
     .catch(() => {});
 };
 
+const fetchConventions = () => {
+  if (!form.id) return;
+  auth.axiosInstance
+    .get(`${config.API_BASE_URL}/api/conventionExploitation/`, {
+      params: { unite_pastorale: form.id },
+    })
+    .then((resp) => {
+      conventionsGeoData.value = resp.data?.type === "FeatureCollection" ? resp.data : null;
+    })
+    .catch(() => {});
+};
+
+const conventionTabLayers = computed(() => {
+  const layers = [];
+  if (form.geometry) {
+    layers.push({
+      id: "up_outline",
+      title: "UP",
+      data: {
+        type: "FeatureCollection",
+        features: [{ type: "Feature", geometry: form.geometry, properties: {} }],
+      },
+      style: { strokeColor: "#b23a2a", strokeWidth: 3, fillOpacity: 0, lineDash: [10, 7] },
+    });
+  }
+  if (selectedConventionId.value && conventionsGeoData.value) {
+    const feature = conventionsGeoData.value.features?.find(
+      (f) => (f.id ?? f.properties?.id_convention) === selectedConventionId.value
+    );
+    if (feature) {
+      layers.push({
+        id: "convention_selected",
+        title: "Convention",
+        data: { type: "FeatureCollection", features: [feature] },
+        style: { strokeColor: "#2563eb", fillColor: "#2563eb", fillOpacity: 0.2, strokeWidth: 2 },
+      });
+    }
+  }
+  return layers;
+});
+
 onMounted(() => {
   auth.axiosInstance
     .get(`${config.API_BASE_URL}/api/proprietaireFoncier/`)
@@ -292,10 +390,15 @@ const onGeoDataChanged = (event) => {
   if (event?.detail?.modelName === "geometrieunitepastorale") {
     fetchHistGeometries();
   }
+  if (event?.detail?.modelName === "conventiondexploitation") {
+    fetchConventions();
+  }
 };
 
 watch(activeTab, (tab) => {
   if (tab === "geometries") fetchHistGeometries();
+  if (tab === "conventions") fetchConventions();
+  props.onTabChange?.(tab);
 });
 
 watch(

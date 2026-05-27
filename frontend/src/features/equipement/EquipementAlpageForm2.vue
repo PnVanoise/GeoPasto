@@ -1,5 +1,5 @@
 <template>
-  <h3 class="w3-center w3-margin">{{ formTitle }}</h3>
+  <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
 
   <form class="eqpt-form" @submit.prevent="submitForm">
     <div class="eqpt-layout">
@@ -11,7 +11,7 @@
               label="Description"
               :disabled="props.mode === 'view'"
               density="compact"
-              variant="outlined"
+              variant="underlined"
               hide-details
               required
             />
@@ -22,7 +22,7 @@
               label="État"
               :disabled="props.mode === 'view'"
               density="compact"
-              variant="outlined"
+              variant="underlined"
               hide-details
               required
             />
@@ -40,7 +40,7 @@
               :menu-props="selectMenuProps"
               :disabled="props.mode === 'view'"
               density="compact"
-              variant="outlined"
+              variant="underlined"
               hide-details
               clearable
             />
@@ -55,7 +55,7 @@
               :menu-props="selectMenuProps"
               :disabled="props.mode === 'view'"
               density="compact"
-              variant="outlined"
+              variant="underlined"
               hide-details
               clearable
             />

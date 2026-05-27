@@ -320,6 +320,9 @@ class ConventionDExploitationViewset(BaseModelViewSet):
             .select_related("type_convention")
             .order_by("id_convention")
         )
+        up_id = self.request.GET.get("unite_pastorale")
+        if up_id is not None:
+            queryset = queryset.filter(unite_pastorale_id=up_id)
         return queryset
 
 

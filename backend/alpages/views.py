@@ -349,7 +349,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
                 for i in range(poly.num_interior_rings)
                 if GEOSPolygon(poly[i + 1]).area >= area_threshold
             ]
-            return GEOSPolygon(poly[0], *kept)
+            return GEOSPolygon(poly[0], *kept, srid=poly.srid)
 
         if geom.geom_type == "Polygon":
             return clean_polygon(geom)
@@ -419,6 +419,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
 
             if union_geometry:
                 union_geometry = union_geometry.buffer(0)
+                union_geometry.srid = 2154
                 union_geometry = self._remove_small_holes(
                     union_geometry, area_threshold=1.0
                 )
@@ -438,41 +439,27 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            new_up = UnitePastorale.objects.create(
-                code_up=old_up.code_up,
-                nom_up=old_up.nom_up,
-                geom_active=union_multipolygon,
-                secteur=old_up.secteur,
-            )
-
-            # enregistrement dans l'historique des géométries
             debut = situation.date_debut or date.today()
-            GeometrieUnitePastorale.objects.create(
-                unite_pastorale=new_up,
+
+            # fermeture de la géométrie courante si elle est ouverte
+            GeometrieUnitePastorale.objects.filter(
+                unite_pastorale=old_up,
+                date_fin_validite__isnull=True,
+            ).update(date_fin_validite=debut - timezone.timedelta(days=1))
+
+            # nouvelle entrée dans l'historique des géométries de l'UP existante
+            new_geom = GeometrieUnitePastorale.objects.create(
+                unite_pastorale=old_up,
                 geometry=union_multipolygon,
                 date_debut_validite=debut,
                 date_fin_validite=None,
             )
 
-            # duplication des propriétaires
-            old_links = ProprietaireUnitePastorale.objects.filter(
-                unite_pastorale=old_up
-            )
-            for old_link in old_links:
-                ProprietaireUnitePastorale.objects.create(
-                    proprietaire=old_link.proprietaire,
-                    unite_pastorale=new_up,
-                )
-
-            # mise à jour situation
-            situation.unite_pastorale = new_up
-            situation.save(update_fields=["unite_pastorale"])
-
             return Response(
                 {
                     "id_situation": situation.id_situation,
-                    "old_up_id": old_up.id_unite_pastorale,
-                    "new_up_id": new_up.id_unite_pastorale,
+                    "up_id": old_up.id_unite_pastorale,
+                    "id_geometrie_up": new_geom.id_geometrie_up,
                     "quartiers_count": quartier_qs.count(),
                 },
                 status=status.HTTP_201_CREATED,

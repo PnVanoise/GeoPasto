@@ -3,7 +3,7 @@
     <div ref="mapElement" class="geometry-map"></div>
 
     <div v-if="!props.disabled" class="geometry-toolbar">
-      <template v-if="!isSplitting">
+      <template v-if="!isSplitting && !isDeletingPart">
         <v-btn
           v-if="!props.editOnly && !isDrawing && !isModifying"
           size="small"
@@ -45,6 +45,18 @@
           Effacer
         </v-btn>
         <v-btn
+          v-if="
+            props.geometryType === 'MultiPolygon' && !props.drawOnly && !isDrawing && !isModifying
+          "
+          size="small"
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-vector-polygon-remove"
+          @click="enableDeletePart"
+        >
+          Supprimer une partie
+        </v-btn>
+        <v-btn
           v-if="props.allowSplit && !isDrawing && !isModifying"
           size="small"
           color="warning"
@@ -53,6 +65,19 @@
           @click="enableSplit"
         >
           Découper
+        </v-btn>
+      </template>
+
+      <template v-else-if="isDeletingPart">
+        <span class="split-hint">Cliquez sur la partie à supprimer</span>
+        <v-btn
+          size="small"
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-close"
+          @click="cancelDeletePart"
+        >
+          Annuler
         </v-btn>
       </template>
 
@@ -96,6 +121,9 @@ import "ol/ol.css";
 import GeoJSON from "ol/format/GeoJSON";
 import Map from "ol/Map";
 import View from "ol/View";
+import Feature from "ol/Feature";
+import { unByKey } from "ol/Observable";
+import OlMultiPolygon from "ol/geom/MultiPolygon";
 import Draw from "ol/interaction/Draw";
 import Modify from "ol/interaction/Modify";
 import Snap from "ol/interaction/Snap";
@@ -151,11 +179,14 @@ const isModifying = ref(false);
 const hasDrawn = ref(false);
 const isSplitting = ref(false);
 const splitLineDrawn = ref(false);
+const isDeletingPart = ref(false);
 
 let map = null;
 let source = null;
 let splitSource = null;
 let splitLayer = null;
+let highlightSource = null;
+let highlightLayer = null;
 let vectorLayer = null;
 let contextSource = null;
 let contextLayer = null;
@@ -164,6 +195,8 @@ let drawInteraction = null;
 let modifyInteraction = null;
 let snapInteraction = null;
 let contextSnapInteraction = null;
+let deleteClickListener = null;
+let deleteHoverListener = null;
 let resizeObserver = null;
 
 const buildXyzSource = (url) => {
@@ -508,12 +541,18 @@ const syncFromModel = () => {
 
   const geometry = props.modelValue;
   if (!geometry || !geometry.coordinates) return;
-  if (!geometryMatchesType(geometry.type)) return;
 
-  const normalizedGeometry =
-    props.geometryType === "MultiPolygon" && geometry.type === "Polygon"
-      ? { type: "MultiPolygon", coordinates: [geometry.coordinates] }
-      : geometry;
+  let normalizedGeometry;
+  if (props.geometryType === "MultiPolygon" && geometry.type === "Polygon") {
+    normalizedGeometry = { type: "MultiPolygon", coordinates: [geometry.coordinates] };
+  } else if (props.geometryType === "Polygon" && geometry.type === "MultiPolygon") {
+    if (!geometry.coordinates?.length) return;
+    normalizedGeometry = { type: "Polygon", coordinates: geometry.coordinates[0] };
+  } else if (geometryMatchesType(geometry.type)) {
+    normalizedGeometry = geometry;
+  } else {
+    return;
+  }
 
   const feature = new GeoJSON().readFeature(
     {
@@ -548,6 +587,18 @@ const removeInteractions = () => {
   modifyInteraction = null;
   snapInteraction = null;
   contextSnapInteraction = null;
+  if (deleteClickListener) {
+    unByKey(deleteClickListener);
+    deleteClickListener = null;
+  }
+  if (deleteHoverListener) {
+    unByKey(deleteHoverListener);
+    deleteHoverListener = null;
+  }
+  if (highlightSource) highlightSource.clear();
+  const el = map.getTargetElement();
+  if (el) el.style.cursor = "";
+  isDeletingPart.value = false;
 };
 
 const enableDraw = () => {
@@ -660,6 +711,66 @@ const splitLineStyle = new Style({
   }),
 });
 
+const highlightDeleteStyle = new Style({
+  fill: new Fill({ color: "rgba(239, 68, 68, 0.35)" }),
+  stroke: new Stroke({ color: "#ef4444", width: 2.5 }),
+});
+
+const enableDeletePart = () => {
+  if (!map || !source) return;
+  removeInteractions();
+  isDeletingPart.value = true;
+
+  const el = map.getTargetElement();
+  if (el) el.style.cursor = "crosshair";
+
+  deleteHoverListener = map.on("pointermove", (evt) => {
+    if (!highlightSource) return;
+    highlightSource.clear();
+    const features = source.getFeatures();
+    if (!features.length) return;
+    const geometry = features[0].getGeometry();
+    if (!geometry || geometry.getType() !== "MultiPolygon") return;
+    const hovered = geometry
+      .getPolygons()
+      .find((p) => p.containsXY(evt.coordinate[0], evt.coordinate[1]));
+    if (!hovered) return;
+    const hlFeature = new Feature();
+    hlFeature.setGeometry(hovered);
+    highlightSource.addFeature(hlFeature);
+  });
+
+  deleteClickListener = map.on("click", (evt) => {
+    const features = source.getFeatures();
+    if (!features.length) return;
+    const feature = features[0];
+    const geometry = feature.getGeometry();
+    if (!geometry || geometry.getType() !== "MultiPolygon") return;
+
+    const polygons = geometry.getPolygons();
+    const idx = polygons.findIndex((p) => p.containsXY(evt.coordinate[0], evt.coordinate[1]));
+    if (idx === -1) return;
+
+    const remaining = polygons.filter((_, i) => i !== idx);
+    if (remaining.length === 0) {
+      source.clear();
+      emit("update:modelValue", null);
+      emitGeometryValidity(null);
+    } else {
+      feature.setGeometry(new OlMultiPolygon(remaining.map((p) => p.getCoordinates())));
+      const outputGeometry = toOutputGeometry();
+      emit("update:modelValue", outputGeometry);
+      emitGeometryValidity(outputGeometry);
+    }
+    cancelDeletePart();
+  });
+};
+
+const cancelDeletePart = () => {
+  removeInteractions();
+  applyInteractionMode();
+};
+
 const enableSplit = () => {
   if (!map || !splitSource) return;
   removeInteractions();
@@ -730,10 +841,17 @@ onMounted(async () => {
   source = new VectorSource();
   contextSource = new VectorSource();
   splitSource = new VectorSource();
+  highlightSource = new VectorSource();
 
   vectorLayer = new VectorLayer({ source });
   splitLayer = new VectorLayer({ source: splitSource, style: splitLineStyle, zIndex: 20 });
   splitLayer.set("displayInLayerSwitcher", false);
+  highlightLayer = new VectorLayer({
+    source: highlightSource,
+    style: highlightDeleteStyle,
+    zIndex: 22,
+  });
+  highlightLayer.set("displayInLayerSwitcher", false);
 
   contextLayer = new VectorLayer({
     source: contextSource,
@@ -804,6 +922,7 @@ onMounted(async () => {
       vectorLayer,
       contextPointOverlayLayer,
       splitLayer,
+      highlightLayer,
     ],
     view: new View({
       center: [751000, 5721000],
@@ -918,6 +1037,8 @@ onBeforeUnmount(() => {
   contextPointOverlayLayer = null;
   splitSource = null;
   splitLayer = null;
+  highlightSource = null;
+  highlightLayer = null;
 });
 </script>
 

@@ -386,6 +386,7 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
             "plan_suivi",
             "plan_suivi_detail",
             "geometry",
+            "obligation",
         ]
 
     def validate(self, attrs):
@@ -424,6 +425,7 @@ class MesureDePlanSimpleSerializer(
             "type_mesure",
             "type_mesure_detail",
             "plan_suivi",
+            "obligation",
         ]
 
 

@@ -83,6 +83,7 @@ class MesureDePlan(AuditFieldsMixin, models.Model):
         related_name="mesures_de_plan",
     )
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
+    obligation = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "mesure de plan"

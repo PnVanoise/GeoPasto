@@ -204,7 +204,10 @@ const buildFitControl = () => {
   return new Control({ element: div });
 };
 
-const buildXyzSource = (url) => new XYZ({ url, crossOrigin: "anonymous" });
+const IGN_ATTRIBUTION = '© <a href="https://www.ign.fr" target="_blank">IGN</a> - Géoportail';
+
+const buildXyzSource = (url, attributions) =>
+  new XYZ({ url, crossOrigin: "anonymous", ...(attributions ? { attributions } : {}) });
 
 // ── Sync des couches de données ───────────────────────────────────────────────
 
@@ -556,7 +559,8 @@ const initMap = () => {
     title: "IGN Scan25",
     type: "base",
     source: buildXyzSource(
-      "https://data.geopf.fr/private/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&FORMAT=image/jpeg&STYLE=normal&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&apikey=ign_scan_ws"
+      "https://data.geopf.fr/private/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&FORMAT=image/jpeg&STYLE=normal&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&apikey=ign_scan_ws",
+      IGN_ATTRIBUTION
     ),
     visible: false,
   });
@@ -565,7 +569,8 @@ const initMap = () => {
     title: "IGN Orthophoto",
     type: "base",
     source: buildXyzSource(
-      "https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"
+      "https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}",
+      IGN_ATTRIBUTION
     ),
     visible: false,
   });
@@ -573,7 +578,8 @@ const initMap = () => {
   const cadastreLayer = new TileLayer({
     title: "Parcelles cadastrales",
     source: buildXyzSource(
-      "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"
+      "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}",
+      IGN_ATTRIBUTION
     ),
     visible: false,
   });
@@ -743,6 +749,12 @@ function escapeHtml(value) {
 <style scoped>
 .ol-map-wrapper {
   position: relative;
+}
+
+:deep(.ol-scale-line) {
+  left: auto;
+  right: 8px;
+  bottom: 30px;
 }
 
 :deep(.layer-switcher) {

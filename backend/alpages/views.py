@@ -378,8 +378,8 @@ class SituationDExploitationViewset(BaseModelViewSet):
         max_day = monthrange(new_year, value.month)[1]
         return value.replace(year=new_year, day=min(value.day, max_day))
 
-    @action(detail=True, methods=["post"], url_path="mettre-a-jour-up")
-    def mettre_a_jour_up(self, request, pk=None):
+    @action(detail=True, methods=["post"], url_path="mettre-a-jour-geometrie")
+    def mettre_a_jour_geometrie(self, request, pk=None):
         with transaction.atomic():
             situation = (
                 SituationDExploitation.objects.select_for_update().filter(pk=pk).first()
@@ -439,20 +439,51 @@ class SituationDExploitationViewset(BaseModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            debut = situation.date_debut or date.today()
+            default_debut = situation.date_debut or date.today()
+            debut_str = request.data.get("date_debut_validite")
+            fin_str = request.data.get("date_fin_validite")
+            fermer = request.data.get("fermer_geometrie_en_cours", True)
 
-            # fermeture de la géométrie courante si elle est ouverte
-            GeometrieUnitePastorale.objects.filter(
-                unite_pastorale=old_up,
-                date_fin_validite__isnull=True,
-            ).update(date_fin_validite=debut - timezone.timedelta(days=1))
+            try:
+                debut = date.fromisoformat(debut_str) if debut_str else default_debut
+            except ValueError:
+                return Response(
+                    {
+                        "detail": "Format de date de début invalide (attendu AAAA-MM-JJ)."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            # nouvelle entrée dans l'historique des géométries de l'UP existante
+            fin = None
+            if fin_str:
+                try:
+                    fin = date.fromisoformat(fin_str)
+                except ValueError:
+                    return Response(
+                        {
+                            "detail": "Format de date de fin invalide (attendu AAAA-MM-JJ)."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                if fin < debut:
+                    return Response(
+                        {
+                            "detail": "La date de fin doit être postérieure ou égale à la date de début."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            if fermer:
+                GeometrieUnitePastorale.objects.filter(
+                    unite_pastorale=old_up,
+                    date_fin_validite__isnull=True,
+                ).update(date_fin_validite=debut - timezone.timedelta(days=1))
+
             new_geom = GeometrieUnitePastorale.objects.create(
                 unite_pastorale=old_up,
                 geometry=union_multipolygon,
                 date_debut_validite=debut,
-                date_fin_validite=None,
+                date_fin_validite=fin,
             )
 
             return Response(

@@ -202,6 +202,7 @@ const importerGeometrie = () => {
 const submitForm = () => {
   const payload = JSON.parse(JSON.stringify(form));
   if (props.mode === "add") delete payload.id;
+  if (payload.properties.date_fin_validite === "") payload.properties.date_fin_validite = null;
   emit("submit", payload);
 };
 </script>

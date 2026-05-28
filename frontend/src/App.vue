@@ -283,7 +283,7 @@ watch(
                 { active: route.path.startsWith('/type-exploitant') },
               ]"
             >
-              <RouterLink to="/type-exploitant">Types d'Exploitants</RouterLink>
+              <RouterLink to="/type-exploitant">Types d'Alpagistes</RouterLink>
             </div>
             <div
               :class="[
@@ -389,7 +389,7 @@ watch(
                 { active: route.path.startsWith('/exploitant') },
               ]"
             >
-              <RouterLink to="/exploitant">Exploitants</RouterLink>
+              <RouterLink to="/exploitant">Alpagistes</RouterLink>
             </div>
 
             <div

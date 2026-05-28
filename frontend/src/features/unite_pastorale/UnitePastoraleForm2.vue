@@ -226,7 +226,7 @@ const conventionsGeoData = ref(null);
 const situGridColumns = ref([
   { field: "date_debut", label: "Début", sortable: true },
   { field: "date_fin", label: "Fin", sortable: true },
-  { field: "exploitant_nom", label: "Exploitant", sortable: true },
+  { field: "exploitant_nom", label: "Alpagiste", sortable: true },
 ]);
 
 const geomGridColumns = ref([
@@ -235,7 +235,7 @@ const geomGridColumns = ref([
 ]);
 
 const conventionGridColumns = ref([
-  { field: "exploitant_nom", label: "Exploitant", sortable: true },
+  { field: "exploitant_nom", label: "Alpagiste", sortable: true },
   { field: "date_debut", label: "Début", sortable: true },
   { field: "date_fin", label: "Fin", sortable: true },
 ]);

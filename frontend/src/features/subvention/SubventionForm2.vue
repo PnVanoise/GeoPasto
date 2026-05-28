@@ -62,7 +62,7 @@
             item-title="nom_exploitant"
             item-value="id_exploitant"
             :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Exploitant"
+            label="Alpagiste"
             dense
             variant="underlined"
             hide-details

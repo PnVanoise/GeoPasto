@@ -141,7 +141,7 @@ class SituationUpdateUpActionTest(APITestCase):
         )
 
         url = reverse(
-            "situationexploitation-mettre-a-jour-up",
+            "situationexploitation-mettre-a-jour-geometrie",
             kwargs={"pk": self.situation.id_situation},
         )
         resp = self.client.post(url, {}, format="json")
@@ -179,7 +179,7 @@ class SituationUpdateUpActionTest(APITestCase):
 
     def test_mettre_a_jour_up_returns_400_when_no_quartier_geometry(self):
         url = reverse(
-            "situationexploitation-mettre-a-jour-up",
+            "situationexploitation-mettre-a-jour-geometrie",
             kwargs={"pk": self.situation.id_situation},
         )
         resp = self.client.post(url, {}, format="json")

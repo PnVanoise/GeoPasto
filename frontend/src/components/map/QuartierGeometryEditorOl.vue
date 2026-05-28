@@ -120,6 +120,7 @@ import "ol/ol.css";
 
 import GeoJSON from "ol/format/GeoJSON";
 import Map from "ol/Map";
+import { defaults as defaultControls, ScaleLine } from "ol/control";
 import View from "ol/View";
 import Feature from "ol/Feature";
 import { unByKey } from "ol/Observable";
@@ -199,10 +200,13 @@ let deleteClickListener = null;
 let deleteHoverListener = null;
 let resizeObserver = null;
 
-const buildXyzSource = (url) => {
+const IGN_ATTRIBUTION = '© <a href="https://www.ign.fr" target="_blank">IGN</a> - Géoportail';
+
+const buildXyzSource = (url, attributions) => {
   return new XYZ({
     url,
     crossOrigin: "anonymous",
+    ...(attributions ? { attributions } : {}),
   });
 };
 
@@ -881,7 +885,8 @@ onMounted(async () => {
     title: "IGN Scan25",
     type: "base",
     source: buildXyzSource(
-      "https://data.geopf.fr/private/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&FORMAT=image/jpeg&STYLE=normal&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&apikey=ign_scan_ws"
+      "https://data.geopf.fr/private/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&FORMAT=image/jpeg&STYLE=normal&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&apikey=ign_scan_ws",
+      IGN_ATTRIBUTION
     ),
     visible: false,
   });
@@ -890,7 +895,8 @@ onMounted(async () => {
     title: "IGN Orthophoto",
     type: "base",
     source: buildXyzSource(
-      "https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"
+      "https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}",
+      IGN_ATTRIBUTION
     ),
     visible: false,
   });
@@ -898,7 +904,8 @@ onMounted(async () => {
   const cadastreLayer = new TileLayer({
     title: "Parcelles cadastrales",
     source: buildXyzSource(
-      "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"
+      "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}",
+      IGN_ATTRIBUTION
     ),
     visible: false,
   });
@@ -924,6 +931,7 @@ onMounted(async () => {
       splitLayer,
       highlightLayer,
     ],
+    controls: defaultControls().extend([new ScaleLine()]),
     view: new View({
       center: [751000, 5721000],
       zoom: 10,
@@ -1069,6 +1077,12 @@ onBeforeUnmount(() => {
   font-size: 0.82rem;
   color: #92400e;
   font-style: italic;
+}
+
+:deep(.ol-scale-line) {
+  left: auto;
+  right: 8px;
+  bottom: 30px;
 }
 
 :deep(.layer-switcher) {

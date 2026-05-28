@@ -86,6 +86,18 @@
         </div>
         <div class="w3-row form-ligne">
           <div class="w3-half form-cell">
+            <v-radio-group
+              v-model="form.obligation"
+              :disabled="props.mode === 'view'"
+              inline
+              density="compact"
+              hide-details
+            >
+              <v-radio label="Préconisation" :value="false" />
+              <v-radio label="Obligation" :value="true" />
+            </v-radio-group>
+          </div>
+          <div class="w3-half form-cell">
             <v-select
               v-model="geometryType"
               :items="geometryTypeOptions"
@@ -184,6 +196,7 @@ const form = reactive({
   type_mesure: null,
   plan_suivi: null,
   geometry: null,
+  obligation: false,
 });
 
 const geometryType = ref("Polygon");
@@ -263,6 +276,7 @@ watch(
     form.type_mesure = src.type_mesure ?? null;
     form.plan_suivi = src.plan_suivi ?? null;
     form.geometry = newVal.geometry ?? src.geometry ?? null;
+    form.obligation = src.obligation ?? false;
     if (form.geometry?.type) {
       geometryType.value = form.geometry.type;
     }
@@ -313,6 +327,7 @@ const submitForm = () => {
       type_mesure: form.type_mesure || null,
       plan_suivi: form.plan_suivi || null,
       geometry: form.geometry ?? null,
+      obligation: form.obligation,
     });
   }
 };

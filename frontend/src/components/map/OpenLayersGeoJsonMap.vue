@@ -530,7 +530,8 @@ const pickFeatureForPopup = (event) => {
     if (layerName === "evenement") return 4;
     if (layerName === "equipement_up") return 5;
     if (layerName === "equipement_situation") return 6;
-    if (layerName === "mesure_plan") return 8;
+    if (layerName === "mesure_plan_obligation" || layerName === "mesure_plan_preconisation")
+      return 8;
     if (layerName === "quartier") return 10;
     if (layerName === "up_outline") return 20;
 

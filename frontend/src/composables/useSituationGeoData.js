@@ -13,7 +13,8 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
   const equipementsUpGeoData = ref(null);
   const equipementsSituationGeoData = ref(null);
   const unitePastoraleGeoData = ref(null);
-  const mesuresDePlanGeoData = ref(null);
+  const mesuresDePlanObligationsGeoData = ref(null);
+  const mesuresDePlanPreconisationsGeoData = ref(null);
   const isQuartiersMapLoading = ref(false);
   const isEvenementsMapLoading = ref(false);
   const isEquipementsUpMapLoading = ref(false);
@@ -144,9 +145,9 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
       },
     },
     {
-      id: "mesure_plan",
-      title: "Mesures de plan",
-      data: mesuresDePlanGeoData.value,
+      id: "mesure_plan_obligation",
+      title: "Obligations",
+      data: mesuresDePlanObligationsGeoData.value,
       style: {
         strokeColor: "#7c3aed",
         strokeWidth: 2,
@@ -157,7 +158,27 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
         zIndex: 13,
       },
       popup: {
-        typeLabel: "Mesure",
+        typeLabel: "Obligation",
+        attribute: "popup_label",
+        idAttribute: "id_mesure_plan",
+        route: "",
+      },
+    },
+    {
+      id: "mesure_plan_preconisation",
+      title: "Préconisations",
+      data: mesuresDePlanPreconisationsGeoData.value,
+      style: {
+        strokeColor: "#c4b5fd",
+        strokeWidth: 2,
+        fillOpacity: 0.1,
+        pointRadius: 5.5,
+        pointStrokeColor: "#ffffff",
+        pointStrokeWidth: 1,
+        zIndex: 12,
+      },
+      popup: {
+        typeLabel: "Préconisation",
         attribute: "popup_label",
         idAttribute: "id_mesure_plan",
         route: "",
@@ -457,7 +478,8 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
 
   const fetchMesuresDePlanForUp = async () => {
     if (!form.unite_pastorale) {
-      mesuresDePlanGeoData.value = null;
+      mesuresDePlanObligationsGeoData.value = null;
+      mesuresDePlanPreconisationsGeoData.value = null;
       return;
     }
     isMesuresDePlanMapLoading.value = true;
@@ -483,9 +505,17 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
             },
           };
         });
-      mesuresDePlanGeoData.value = { type: "FeatureCollection", features };
+      mesuresDePlanObligationsGeoData.value = {
+        type: "FeatureCollection",
+        features: features.filter((f) => f.properties?.obligation === true),
+      };
+      mesuresDePlanPreconisationsGeoData.value = {
+        type: "FeatureCollection",
+        features: features.filter((f) => f.properties?.obligation !== true),
+      };
     } catch {
-      mesuresDePlanGeoData.value = null;
+      mesuresDePlanObligationsGeoData.value = null;
+      mesuresDePlanPreconisationsGeoData.value = null;
     } finally {
       isMesuresDePlanMapLoading.value = false;
     }
@@ -587,7 +617,8 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
         unitePastoraleGeoData.value = null;
         evenementsGeoData.value = null;
         equipementsUpGeoData.value = null;
-        mesuresDePlanGeoData.value = null;
+        mesuresDePlanObligationsGeoData.value = null;
+        mesuresDePlanPreconisationsGeoData.value = null;
       }
     }
   );

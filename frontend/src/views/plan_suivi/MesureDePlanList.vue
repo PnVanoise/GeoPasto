@@ -19,6 +19,7 @@ const columns = [
   { field: "description", label: "Description", sortable: true },
   { field: "type_mesure_detail.description", label: "Type de mesure", sortable: true },
   { field: "unite_pastorale_detail.nom_up", label: "UP", sortable: true },
+  { field: "obligation", label: "Obligation", sortable: true },
   { field: "debut_periode", label: "Début", sortable: true },
   { field: "fin_periode", label: "Fin", sortable: true },
 ];

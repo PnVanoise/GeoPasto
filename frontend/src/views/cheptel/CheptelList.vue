@@ -18,7 +18,7 @@ import CrudListPage from "../../components/crud/CrudListPage.vue";
 import auth from "@/services/axios";
 
 const columns = [
-  { field: "eleveur_detail.nom_complet", label: "Éleveur", sortable: true },
+  { field: "proprietaire_label", label: "Propriétaire", sortable: true },
   { field: "situation_detail.unite_pastorale_detail.nom_up", label: "UP", sortable: true },
   { field: "annee", label: "Année", sortable: true },
   { field: "description", label: "Description", sortable: true },
@@ -26,7 +26,7 @@ const columns = [
 ];
 
 const searchFields = [
-  "eleveur_detail.nom_complet",
+  "proprietaire_label",
   "situation_detail.unite_pastorale_detail.nom_up",
   "description",
   "nombre_animaux",

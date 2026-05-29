@@ -65,6 +65,7 @@ class EtreCompose(AuditFieldsMixin, models.Model):
         on_delete=models.PROTECT,
         blank=True,
         null=True,
+        related_name="compositions",
     )
     eleveur = models.ForeignKey(
         Eleveur,
@@ -72,14 +73,48 @@ class EtreCompose(AuditFieldsMixin, models.Model):
         blank=True,
         null=True,
     )
+    exploitant_membre = models.ForeignKey(
+        Exploitant,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="memberships",
+        db_column="id_exploitant_membre",
+    )
 
     class Meta:
-        unique_together = ("exploitant", "eleveur")
         verbose_name = "composition d'exploitant"
         verbose_name_plural = "compositions d'exploitant"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["exploitant", "eleveur"],
+                condition=models.Q(eleveur__isnull=False),
+                name="uq_etrecompose_exploitant_eleveur",
+            ),
+            models.UniqueConstraint(
+                fields=["exploitant", "exploitant_membre"],
+                condition=models.Q(exploitant_membre__isnull=False),
+                name="uq_etrecompose_exploitant_exploitant_membre",
+            ),
+            models.CheckConstraint(
+                check=(
+                    models.Q(eleveur__isnull=False, exploitant_membre__isnull=True)
+                    | models.Q(eleveur__isnull=True, exploitant_membre__isnull=False)
+                ),
+                name="chk_etrecompose_exactement_un_membre",
+            ),
+            models.CheckConstraint(
+                check=(
+                    models.Q(exploitant_membre__isnull=True)
+                    | ~models.Q(exploitant_membre=models.F("exploitant"))
+                ),
+                name="chk_etrecompose_pas_autoreference",
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.eleveur} est membre de {self.exploitant}"
+        membre = self.eleveur if self.eleveur_id else self.exploitant_membre
+        return f"{membre} est membre de {self.exploitant}"
 
 
 class Berger(AuditFieldsMixin, models.Model):

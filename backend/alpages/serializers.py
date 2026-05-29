@@ -697,8 +697,14 @@ class TypeDExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeria
 
 
 class ExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    membres = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+    membres = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
     membres_ids = serializers.SerializerMethodField(read_only=True)
+    membres_exploitants = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
+    membres_exploitants_ids = serializers.SerializerMethodField(read_only=True)
 
     type_exploitant = serializers.PrimaryKeyRelatedField(
         queryset=TypeDExploitant.objects.all(), allow_null=True
@@ -720,34 +726,110 @@ class ExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer
             "president",
             "membres",
             "membres_ids",
+            "membres_exploitants",
+            "membres_exploitants_ids",
             "type_exploitant",
             "type_exploitant_detail",
         ]
 
     def get_membres_ids(self, obj):
-        # Récupérer uniquement les IDs des éleveurs associés via la table `EtreCompose`
-        membres = EtreCompose.objects.filter(exploitant=obj).values_list(
-            "eleveur_id", flat=True
+        return list(
+            EtreCompose.objects.filter(
+                exploitant=obj, eleveur__isnull=False
+            ).values_list("eleveur_id", flat=True)
         )
-        return list(membres)
+
+    def get_membres_exploitants_ids(self, obj):
+        return list(
+            EtreCompose.objects.filter(
+                exploitant=obj, exploitant_membre__isnull=False
+            ).values_list("exploitant_membre_id", flat=True)
+        )
+
+    def validate(self, attrs):
+        membres_exploitants = attrs.get("membres_exploitants", [])
+        instance_id = self.instance.id_exploitant if self.instance else None
+
+        if instance_id and instance_id in membres_exploitants:
+            raise serializers.ValidationError(
+                {
+                    "membres_exploitants": "Un alpagiste ne peut pas être membre de lui-même."
+                }
+            )
+
+        if instance_id and membres_exploitants:
+            # Détection de cycle : vérifier que self n'apparaît pas dans la
+            # fermeture transitive des ancêtres des membres-exploitants proposés.
+            ancetres = set()
+            a_visiter = list(membres_exploitants)
+            while a_visiter:
+                courant = a_visiter.pop()
+                if courant in ancetres:
+                    continue
+                ancetres.add(courant)
+                parents = EtreCompose.objects.filter(
+                    exploitant_membre_id=courant
+                ).values_list("exploitant_id", flat=True)
+                for parent_id in parents:
+                    if parent_id and parent_id not in ancetres:
+                        a_visiter.append(parent_id)
+            if instance_id in ancetres:
+                raise serializers.ValidationError(
+                    {
+                        "membres_exploitants": (
+                            "Cycle détecté : cet alpagiste est déjà (directement ou "
+                            "indirectement) membre de l'un des alpagistes sélectionnés."
+                        )
+                    }
+                )
+
+        return attrs
+
+    def _sync_membres(self, exploitant, membres_eleveurs, membres_exploitants):
+        actuels_eleveurs = set(
+            EtreCompose.objects.filter(
+                exploitant=exploitant, eleveur__isnull=False
+            ).values_list("eleveur_id", flat=True)
+        )
+        nouveaux_eleveurs = set(membres_eleveurs)
+        a_supprimer = actuels_eleveurs - nouveaux_eleveurs
+        if a_supprimer:
+            EtreCompose.objects.filter(
+                exploitant=exploitant, eleveur_id__in=a_supprimer
+            ).delete()
+        for eleveur_id in nouveaux_eleveurs - actuels_eleveurs:
+            EtreCompose.objects.create(exploitant=exploitant, eleveur_id=eleveur_id)
+
+        actuels_expl = set(
+            EtreCompose.objects.filter(
+                exploitant=exploitant, exploitant_membre__isnull=False
+            ).values_list("exploitant_membre_id", flat=True)
+        )
+        nouveaux_expl = set(membres_exploitants)
+        a_supprimer_expl = actuels_expl - nouveaux_expl
+        if a_supprimer_expl:
+            EtreCompose.objects.filter(
+                exploitant=exploitant, exploitant_membre_id__in=a_supprimer_expl
+            ).delete()
+        for expl_id in nouveaux_expl - actuels_expl:
+            EtreCompose.objects.create(
+                exploitant=exploitant, exploitant_membre_id=expl_id
+            )
 
     def create(self, validated_data):
-        membres_data = validated_data.pop("membres", [])
-        exploitant = Exploitant.objects.create(**validated_data)
-
-        # Ajout des membres dans la table EtreCompose
-        for eleveur_id in membres_data:
-            eleveur = Eleveur.objects.get(id_eleveur=eleveur_id)
-            EtreCompose.objects.create(exploitant=exploitant, eleveur=eleveur)
-
+        membres_eleveurs = validated_data.pop("membres", [])
+        membres_exploitants = validated_data.pop("membres_exploitants", [])
+        with transaction.atomic():
+            exploitant = Exploitant.objects.create(**validated_data)
+            self._sync_membres(exploitant, membres_eleveurs, membres_exploitants)
         return exploitant
 
     def update(self, instance, validated_data):
-        membres_data = validated_data.pop("membres", [])
+        membres_eleveurs = validated_data.pop("membres", None)
+        membres_exploitants = validated_data.pop("membres_exploitants", None)
         instance.nom_exploitant = validated_data.get(
             "nom_exploitant", instance.nom_exploitant
         )
-        # instance.type = validated_data.get('type', instance.type)
         instance.president = validated_data.get("president", instance.president)
         instance.type_exploitant = validated_data.get(
             "type_exploitant", instance.type_exploitant
@@ -755,27 +837,27 @@ class ExploitantSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer
 
         with transaction.atomic():
             instance.save()
-
-            # Récupérer les IDs actuels des membres de l'exploitant
-            membres_actuels = set(
-                EtreCompose.objects.filter(exploitant=instance).values_list(
-                    "eleveur_id", flat=True
+            if membres_eleveurs is None and membres_exploitants is None:
+                return instance
+            current_eleveurs = (
+                membres_eleveurs
+                if membres_eleveurs is not None
+                else list(
+                    EtreCompose.objects.filter(
+                        exploitant=instance, eleveur__isnull=False
+                    ).values_list("eleveur_id", flat=True)
                 )
             )
-            nouveaux_membres = set(membres_data)
-
-            # Supprimer les membres qui ne sont plus associés
-            membres_a_supprimer = membres_actuels - nouveaux_membres
-            if membres_a_supprimer:
-                EtreCompose.objects.filter(
-                    exploitant=instance, eleveur_id__in=membres_a_supprimer
-                ).delete()
-
-            # Ajouter les nouveaux membres
-            membres_a_ajouter = nouveaux_membres - membres_actuels
-            for eleveur_id in membres_a_ajouter:
-                eleveur = Eleveur.objects.get(id_eleveur=eleveur_id)
-                EtreCompose.objects.create(exploitant=instance, eleveur=eleveur)
+            current_exploitants = (
+                membres_exploitants
+                if membres_exploitants is not None
+                else list(
+                    EtreCompose.objects.filter(
+                        exploitant=instance, exploitant_membre__isnull=False
+                    ).values_list("exploitant_membre_id", flat=True)
+                )
+            )
+            self._sync_membres(instance, current_eleveurs, current_exploitants)
 
         return instance
 
@@ -784,7 +866,7 @@ class EtreComposeSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerialize
 
     class Meta:
         model = EtreCompose
-        fields = ["exploitant", "eleveur"]
+        fields = ["id_etre_compose", "exploitant", "eleveur", "exploitant_membre"]
 
 
 class SubventionPNVSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
@@ -1077,11 +1159,21 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
     eleveur = serializers.PrimaryKeyRelatedField(
         queryset=Eleveur.objects.all(),
         allow_null=True,
+        required=False,
     )
     eleveur_detail = EleveurSerializer(
         source="eleveur",
         read_only=True,
     )
+
+    # Exploitant propriétaire (alternative à eleveur)
+    exploitant_proprietaire = serializers.PrimaryKeyRelatedField(
+        queryset=Exploitant.objects.all(),
+        allow_null=True,
+        required=False,
+    )
+    exploitant_proprietaire_detail = serializers.SerializerMethodField(read_only=True)
+    proprietaire_label = serializers.SerializerMethodField(read_only=True)
 
     # Situation d'exploitation
     situation_exploitation = serializers.PrimaryKeyRelatedField(
@@ -1132,6 +1224,9 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
             "nombre_animaux",
             "eleveur",
             "eleveur_detail",
+            "exploitant_proprietaire",
+            "exploitant_proprietaire_detail",
+            "proprietaire_label",
             "situation_exploitation",
             "situation_detail",
             "description",
@@ -1154,12 +1249,55 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"date_fin": "La date de fin doit être postérieure à la date de début."}
             )
+        eleveur = attrs.get(
+            "eleveur",
+            getattr(self.instance, "eleveur", None) if self.instance else None,
+        )
+        exploitant_proprietaire = attrs.get(
+            "exploitant_proprietaire",
+            (
+                getattr(self.instance, "exploitant_proprietaire", None)
+                if self.instance
+                else None
+            ),
+        )
+        if eleveur and exploitant_proprietaire:
+            raise serializers.ValidationError(
+                {
+                    "exploitant_proprietaire": (
+                        "Le propriétaire doit être soit un éleveur, soit un alpagiste, "
+                        "mais pas les deux."
+                    )
+                }
+            )
+        if not eleveur and not exploitant_proprietaire:
+            raise serializers.ValidationError(
+                {"eleveur": "Un propriétaire (éleveur ou alpagiste) est obligatoire."}
+            )
         return attrs
 
     def get_annee(self, obj):
         if obj.date_debut:
             return obj.date_debut.year
         return None
+
+    def get_exploitant_proprietaire_detail(self, obj):
+        if not obj.exploitant_proprietaire_id:
+            return None
+        expl = obj.exploitant_proprietaire
+        return {
+            "id_exploitant": expl.id_exploitant,
+            "nom_exploitant": expl.nom_exploitant,
+        }
+
+    def get_proprietaire_label(self, obj):
+        if obj.eleveur_id:
+            nom = (obj.eleveur.nom_eleveur or "").upper()
+            prenom = obj.eleveur.prenom_eleveur or ""
+            return f"{nom} {prenom}".strip()
+        if obj.exploitant_proprietaire_id:
+            return obj.exploitant_proprietaire.nom_exploitant or ""
+        return ""
 
 
 # FIN Mise à jour Cheptels / types de cheptel

@@ -215,7 +215,11 @@ class UnitePastoraleViewset(BaseModelViewSet):
     serializer_class = UnitePastoraleSerializer
 
     def get_queryset(self):
-        queryset = UnitePastorale.objects.all().order_by("nom_up")
+        queryset = (
+            UnitePastorale.objects.prefetch_related("proprietaires_unite_pastorale")
+            .annotate(geom_4326=Transform("geom_active", 4326))
+            .order_by("nom_up")
+        )
 
         nom_up_filter = self.request.GET.get("nom_up")
         if nom_up_filter is not None:

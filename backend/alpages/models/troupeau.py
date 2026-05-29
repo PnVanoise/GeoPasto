@@ -100,6 +100,14 @@ class Cheptel(AuditFieldsMixin, models.Model):
         null=True,
         related_name="cheptels",
     )
+    exploitant_proprietaire = models.ForeignKey(
+        "alpages.Exploitant",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="cheptels_proprietaire",
+        db_column="id_exploitant_proprietaire",
+    )
     situation_exploitation = models.ForeignKey(
         "alpages.SituationDExploitation",
         on_delete=models.PROTECT,
@@ -156,7 +164,16 @@ class Cheptel(AuditFieldsMixin, models.Model):
                 check=Q(date_fin__isnull=True) | Q(date_debut__lte=F("date_fin")),
                 name="chk_cheptel_dates_coherentes",
             ),
+            models.CheckConstraint(
+                check=(
+                    Q(eleveur__isnull=False, exploitant_proprietaire__isnull=True)
+                    | Q(eleveur__isnull=True, exploitant_proprietaire__isnull=False)
+                    | Q(eleveur__isnull=True, exploitant_proprietaire__isnull=True)
+                ),
+                name="chk_cheptel_proprietaire_unique",
+            ),
         ]
 
     def __str__(self):
-        return f"{self.eleveur} élève {self.description} dans la situation {self.situation_exploitation}"
+        proprietaire = self.eleveur if self.eleveur_id else self.exploitant_proprietaire
+        return f"{proprietaire} élève {self.description} dans la situation {self.situation_exploitation}"

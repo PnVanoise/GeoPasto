@@ -22,13 +22,13 @@
         </div>
         <div class="w3-half form-cell">
           <v-select
-            id="eleveur"
-            v-model="form.eleveur"
-            :items="eleveurs"
-            item-title="nom_complet"
-            item-value="id_eleveur"
+            id="proprietaire"
+            v-model="proprietaireKey"
+            :items="proprietaires"
+            item-title="label"
+            item-value="key"
             :disabled="props.mode === 'view' || !can('change')"
-            label="Eleveur"
+            label="Propriétaire"
             density="compact"
             variant="underlined"
             hide-details
@@ -241,7 +241,8 @@ const btTitle = computed(() => {
 
 const form = reactive({
   id_cheptel: null,
-  eleveur: "",
+  eleveur: null,
+  exploitant_proprietaire: null,
   situation_exploitation: "",
   nombre_animaux: "",
   description: "",
@@ -255,7 +256,10 @@ const form = reactive({
 });
 
 const situations = ref([]);
-const eleveurs = ref([]);
+const proprietaires = ref([]);
+const proprietaireKey = ref(null);
+
+const makeKey = (type, id) => (id ? `${type}-${id}` : null);
 const productions = ref([]);
 const pensions = ref([]);
 const especes = ref([]);
@@ -279,21 +283,67 @@ const categoriesFiltrees = computed(() =>
 
 const situLocked = computed(() => !!props.initialForm?.situation_exploitation);
 
-const loadEleveurs = (explId) => {
+const loadProprietaires = (explId) => {
   const useExpl = explId ?? props.explId ?? props.initialForm?.exploitant ?? null;
-  const url = useExpl
-    ? `${config.API_BASE_URL}/api/eleveur/by-exploitant/${useExpl}/`
-    : `${config.API_BASE_URL}/api/eleveur/`;
+  if (!useExpl) {
+    auth.axiosInstance
+      .get(`${config.API_BASE_URL}/api/eleveur/`)
+      .then((response) => {
+        const data = response.data || [];
+        proprietaires.value = data.map((e) => ({
+          key: makeKey("eleveur", e.id_eleveur),
+          type: "eleveur",
+          id: e.id_eleveur,
+          label:
+            e.nom_complet ??
+            `${(e.nom_eleveur || "").toUpperCase()} ${e.prenom_eleveur || ""}`.trim(),
+        }));
+        ensureProprietaireOption();
+      })
+      .catch(() => {});
+    return;
+  }
   auth.axiosInstance
-    .get(url)
+    .get(`${config.API_BASE_URL}/api/exploitant/${useExpl}/proprietaires/`)
     .then((response) => {
       const data = response.data || [];
-      eleveurs.value = data.map((e) => ({
-        ...e,
-        nom_complet: e.nom_complet ?? `${e.nom_eleveur || ""} ${e.prenom_eleveur || ""}`.trim(),
+      proprietaires.value = data.map((p) => ({
+        key: makeKey(p.type, p.id),
+        type: p.type,
+        id: p.id,
+        label: p.label,
       }));
+      ensureProprietaireOption();
     })
     .catch(() => {});
+};
+
+// Si la valeur sélectionnée (en mode edit/view) ne fait pas partie de la liste
+// renvoyée par l'API (cas d'un propriétaire qui n'est plus membre), l'ajouter
+// pour préserver l'affichage.
+const ensureProprietaireOption = () => {
+  if (!proprietaireKey.value) return;
+  if (proprietaires.value.some((p) => p.key === proprietaireKey.value)) return;
+  const [type, idStr] = proprietaireKey.value.split("-");
+  const id = Number(idStr);
+  if (type === "eleveur" && props.initialForm?.eleveur_detail) {
+    const d = props.initialForm.eleveur_detail;
+    proprietaires.value.push({
+      key: proprietaireKey.value,
+      type: "eleveur",
+      id,
+      label:
+        d.nom_complet || `${(d.nom_eleveur || "").toUpperCase()} ${d.prenom_eleveur || ""}`.trim(),
+    });
+  } else if (type === "exploitant" && props.initialForm?.exploitant_proprietaire_detail) {
+    const d = props.initialForm.exploitant_proprietaire_detail;
+    proprietaires.value.push({
+      key: proprietaireKey.value,
+      type: "exploitant",
+      id,
+      label: d.nom_exploitant,
+    });
+  }
 };
 
 watch(
@@ -306,10 +356,17 @@ watch(
     const especeId = newVal.race_detail?.espece ?? newVal.categorie_animaux_detail?.espece ?? null;
     selectedEspece.value = especeId;
 
+    // Initialise la clé propriétaire depuis les champs reçus
+    if (newVal.eleveur) {
+      proprietaireKey.value = makeKey("eleveur", newVal.eleveur);
+    } else if (newVal.exploitant_proprietaire) {
+      proprietaireKey.value = makeKey("exploitant", newVal.exploitant_proprietaire);
+    }
+
     if (newVal.exploitant) {
-      loadEleveurs(newVal.exploitant);
+      loadProprietaires(newVal.exploitant);
     } else if (newVal.situation_detail?.exploitant) {
-      loadEleveurs(newVal.situation_detail.exploitant);
+      loadProprietaires(newVal.situation_detail.exploitant);
     }
 
     const initialSitu = newVal.situation_exploitation || newVal.situation || newVal.id_situation;
@@ -340,8 +397,10 @@ watch(
   (newSituId, oldSituId) => {
     if (newSituId === oldSituId) return;
     const situ = situations.value.find((s) => s.id_situation === newSituId || s.id === newSituId);
+    proprietaireKey.value = null;
     form.eleveur = null;
-    loadEleveurs(situ?.exploitant ?? null);
+    form.exploitant_proprietaire = null;
+    loadProprietaires(situ?.exploitant ?? null);
   }
 );
 
@@ -399,7 +458,7 @@ onMounted(() => {
 
   const explId =
     props.initialForm?.exploitant ?? props.initialForm?.situation_detail?.exploitant ?? null;
-  loadEleveurs(explId);
+  loadProprietaires(explId);
 
   auth.axiosInstance.get(`${config.API_BASE_URL}/api/espece/`).then((r) => {
     especes.value = r.data;
@@ -423,14 +482,20 @@ onMounted(() => {
 });
 
 const submitForm = () => {
-  if (props.onSubmit) {
-    if (!form.description) {
-      const ev = eleveurs.value.find((e) => e.id_eleveur === form.eleveur) || {};
-      form.description =
-        `${ev.nom_complet || (ev.nom_eleveur ? `${ev.nom_eleveur} ${ev.prenom_eleveur}` : "")}`.trim();
-    }
-    props.onSubmit(form);
+  if (!props.onSubmit) return;
+
+  form.eleveur = null;
+  form.exploitant_proprietaire = null;
+  const selected = proprietaires.value.find((p) => p.key === proprietaireKey.value);
+  if (selected) {
+    if (selected.type === "eleveur") form.eleveur = selected.id;
+    else if (selected.type === "exploitant") form.exploitant_proprietaire = selected.id;
   }
+
+  if (!form.description && selected) {
+    form.description = selected.label || "";
+  }
+  props.onSubmit(form);
 };
 
 const rulesDateFin = computed(() => [

@@ -549,6 +549,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
                 new_cheptel = Cheptel.objects.create(
                     description=old_cheptel.description,
                     eleveur=old_cheptel.eleveur,
+                    exploitant_proprietaire=old_cheptel.exploitant_proprietaire,
                     situation_exploitation=new_situation,
                     nombre_animaux=old_cheptel.nombre_animaux,
                     coefficient_UGB=old_cheptel.coefficient_UGB,
@@ -1080,13 +1081,43 @@ class ExploitantViewset(BaseModelViewSet):
         )
         return queryset
 
+    @action(detail=True, methods=["get"], url_path="proprietaires")
+    def proprietaires(self, request, pk=None):
+        compositions = EtreCompose.objects.filter(exploitant_id=pk).select_related(
+            "eleveur", "exploitant_membre"
+        )
+        data = []
+        for c in compositions:
+            if c.eleveur_id:
+                nom = (c.eleveur.nom_eleveur or "").upper()
+                prenom = c.eleveur.prenom_eleveur or ""
+                label = f"{nom} {prenom}".strip()
+                data.append(
+                    {
+                        "type": "eleveur",
+                        "id": c.eleveur_id,
+                        "label": label,
+                    }
+                )
+            elif c.exploitant_membre_id:
+                data.append(
+                    {
+                        "type": "exploitant",
+                        "id": c.exploitant_membre_id,
+                        "label": c.exploitant_membre.nom_exploitant,
+                    }
+                )
+        data.sort(key=lambda x: x["label"].lower())
+        return Response(data)
+
 
 class EtreComposeViewset(BaseModelViewSet):
     serializer_class = EtreComposeSerializer
 
     def get_queryset(self):
-        queryset = EtreCompose.objects.all()
-        return queryset
+        return EtreCompose.objects.select_related(
+            "exploitant", "eleveur", "exploitant_membre"
+        ).order_by("id_etre_compose")
 
 
 class SubventionPNVViewset(BaseModelViewSet):

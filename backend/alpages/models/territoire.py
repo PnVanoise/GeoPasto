@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.gis.db import models
 from django.db.models import F, Q
 from django.db.models.signals import post_delete, post_save
@@ -5,6 +7,8 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from .mixins import AuditFieldsMixin
+
+logger = logging.getLogger(__name__)
 
 
 class UnitePastorale(AuditFieldsMixin, models.Model):
@@ -61,7 +65,6 @@ class GeometrieUnitePastorale(AuditFieldsMixin, models.Model):
 
 def _refresh_geom_active(up):
     today = timezone.now().date()
-    print(f"\n[_refresh_geom_active] UP id={up.pk} ({up.nom_up}) — today={today}")
 
     qs = (
         GeometrieUnitePastorale.objects.filter(
@@ -71,18 +74,11 @@ def _refresh_geom_active(up):
         .filter(Q(date_fin_validite__isnull=True) | Q(date_fin_validite__gte=today))
         .order_by("-date_debut_validite")
     )
-    print(f"[_refresh_geom_active] SQL: {qs.query}")
-
-    all_entries = list(
-        qs.values("id_geometrie_up", "date_debut_validite", "date_fin_validite")
-    )
-    print(f"[_refresh_geom_active] Entrées candidates: {all_entries}")
 
     geom_entry = qs.first()
     geom_active_courante = geom_entry is not None
 
     if geom_entry is None:
-        # Aucune géométrie ne couvre aujourd'hui → fallback sur la plus récente avant aujourd'hui
         geom_entry = (
             GeometrieUnitePastorale.objects.filter(
                 unite_pastorale=up,
@@ -91,22 +87,17 @@ def _refresh_geom_active(up):
             .order_by("-date_debut_validite")
             .first()
         )
-        print(
-            f"[_refresh_geom_active] Fallback entrée: {geom_entry} (id={geom_entry.pk if geom_entry else None})"
-        )
-    else:
-        print(
-            f"[_refresh_geom_active] Entrée retenue: {geom_entry} (id={geom_entry.pk if geom_entry else None})"
-        )
 
     up.geom_active = geom_entry.geometry if geom_entry else None
     up.active = geom_active_courante
-    print(
-        f"[_refresh_geom_active] geom_active <- {'geometry trouvée' if geom_entry else 'None'}, active <- {up.active}"
-    )
-
     up.save(update_fields=["geom_active", "active"])
-    print(f"[_refresh_geom_active] UP sauvegardée.\n")
+    logger.debug(
+        "UP %s (%s) — geom_active=%s active=%s",
+        up.pk,
+        up.nom_up,
+        "set" if up.geom_active else "None",
+        up.active,
+    )
 
 
 @receiver([post_save, post_delete], sender=GeometrieUnitePastorale)

@@ -82,7 +82,6 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
     class Meta:
         model = UnitePastorale
         geo_field = "geom_active"
-        auto_bbox = True
         fields = [
             "id_unite_pastorale",
             "code_up",
@@ -95,12 +94,15 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
         ]
 
     def to_representation(self, instance):
-        geom = getattr(instance, "geom_active", None)
-        if geom is not None:
-            try:
-                geom.transform(4326)
-            except Exception:
-                pass
+        if hasattr(instance, "geom_4326") and instance.geom_4326 is not None:
+            instance.geom_active = instance.geom_4326
+        else:
+            geom = getattr(instance, "geom_active", None)
+            if geom is not None:
+                try:
+                    geom.transform(4326)
+                except Exception:
+                    pass
 
         return super().to_representation(instance)
 
@@ -122,11 +124,7 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
         return super().to_internal_value(data)
 
     def get_proprios_ids(self, obj):
-        # Récupérer uniquement les IDs des propriétaires associés via ProprietaireUnitePastorale
-        proprios = ProprietaireUnitePastorale.objects.filter(
-            unite_pastorale=obj
-        ).values_list("proprietaire_id", flat=True)
-        return list(proprios)
+        return [p.proprietaire_id for p in obj.proprietaires_unite_pastorale.all()]
 
     def create(self, validated_data):
         proprios_data = validated_data.pop("proprios", [])

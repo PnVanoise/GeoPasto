@@ -25,6 +25,7 @@ from alpages.models import (
     ProprietaireFoncier,
     QuartierPasto,
     ProprietaireUnitePastorale,
+    _refresh_geom_active,
 )
 from alpages.models import (
     TypeDeSuivi,
@@ -215,7 +216,11 @@ class UnitePastoraleViewset(BaseModelViewSet):
     serializer_class = UnitePastoraleSerializer
 
     def get_queryset(self):
-        queryset = UnitePastorale.objects.all().order_by("nom_up")
+        queryset = (
+            UnitePastorale.objects.prefetch_related("proprietaires_unite_pastorale")
+            .annotate(geom_4326=Transform("geom_active", 4326))
+            .order_by("nom_up")
+        )
 
         nom_up_filter = self.request.GET.get("nom_up")
         if nom_up_filter is not None:
@@ -244,6 +249,12 @@ class GeometrieUnitePastoraleViewset(BaseModelViewSet):
         if id_up is not None:
             queryset = queryset.filter(unite_pastorale_id=id_up)
         return queryset
+
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        up = instance.unite_pastorale
+        instance.delete()
+        _refresh_geom_active(up)
 
 
 class ProprietaireFoncierViewset(BaseModelViewSet):

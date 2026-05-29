@@ -5,6 +5,7 @@ from .territoire import (
     ProprietaireFoncier,
     ProprietaireUnitePastorale,
     QuartierPasto,
+    _refresh_geom_active,
 )
 from .acteurs import (
     Eleveur,

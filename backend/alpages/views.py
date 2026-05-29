@@ -25,6 +25,7 @@ from alpages.models import (
     ProprietaireFoncier,
     QuartierPasto,
     ProprietaireUnitePastorale,
+    _refresh_geom_active,
 )
 from alpages.models import (
     TypeDeSuivi,
@@ -248,6 +249,12 @@ class GeometrieUnitePastoraleViewset(BaseModelViewSet):
         if id_up is not None:
             queryset = queryset.filter(unite_pastorale_id=id_up)
         return queryset
+
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        up = instance.unite_pastorale
+        instance.delete()
+        _refresh_geom_active(up)
 
 
 class ProprietaireFoncierViewset(BaseModelViewSet):

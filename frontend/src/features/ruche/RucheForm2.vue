@@ -110,7 +110,9 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {};
+const submitForm = () => {
+  if (props.onSubmit) props.onSubmit({ ...form });
+};
 
 const closeModal = () => props.onClose?.();
 

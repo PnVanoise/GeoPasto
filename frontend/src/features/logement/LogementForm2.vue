@@ -412,6 +412,7 @@ const CHOICE_FIELDS = [
 ];
 
 const form = reactive({
+  id: null,
   logement_code: "",
   nom_logement: "",
   unite_pastorale: null,
@@ -424,6 +425,7 @@ watch(
   (newVal) => {
     const base = newVal || {};
     const src = base.properties ? { ...base.properties } : base;
+    form.id = base.id ?? src.id ?? null;
     form.logement_code = src.logement_code ?? "";
     form.nom_logement = src.nom_logement ?? "";
     form.unite_pastorale = src.unite_pastorale ?? null;
@@ -435,7 +437,9 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {};
+const submitForm = () => {
+  if (props.onSubmit) props.onSubmit({ ...form });
+};
 
 const closeModal = () => props.onClose?.();
 

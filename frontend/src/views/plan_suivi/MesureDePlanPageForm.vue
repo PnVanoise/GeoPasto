@@ -15,9 +15,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCrud } from "@/composables/useCrud";
+import { useCrudPage } from "@/composables/useCrudPage";
 import MesureDePlanForm2 from "../../features/plan_suivi/MesureDePlanForm2.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
@@ -25,12 +25,8 @@ import config from "@/../config";
 const route = useRoute();
 const router = useRouter();
 
-const crud = useCrud("mesuredeplan", "mesurePlan", "id_mesure_plan", { geojson: true });
-
-const pageMode = computed(() => {
-  if (route.name === "mesuredeplan-add") return "add";
-  if (route.name === "mesuredeplan-edit") return "change";
-  return "view";
+const { pageMode, handleSubmit } = useCrudPage("mesuredeplan", "mesurePlan", "id_mesure_plan", {
+  geojson: true,
 });
 
 const itemData = ref({});
@@ -53,15 +49,6 @@ onMounted(async () => {
     itemData.value = prefill;
   }
 });
-
-async function handleSubmit(formData) {
-  if (pageMode.value === "add") {
-    await crud.createItem(formData);
-  } else {
-    await crud.updateItem({ ...formData, id_mesure_plan: Number(route.params.id) });
-  }
-  router.back();
-}
 </script>
 
 <style scoped>

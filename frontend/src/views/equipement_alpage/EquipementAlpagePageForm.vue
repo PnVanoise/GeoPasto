@@ -15,9 +15,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCrud } from "@/composables/useCrud";
+import { useCrudPage } from "@/composables/useCrudPage";
 import EquipementAlpageForm2 from "../../features/equipement/EquipementAlpageForm2.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
@@ -25,15 +25,12 @@ import config from "@/../config";
 const route = useRoute();
 const router = useRouter();
 
-const crud = useCrud("equipementalpage", "equipementAlpage", "id_equipement_alpage", {
-  geojson: true,
-});
-
-const pageMode = computed(() => {
-  if (route.name === "equipementalpage-add") return "add";
-  if (route.name === "equipementalpage-edit") return "change";
-  return "view";
-});
+const { pageMode, handleSubmit } = useCrudPage(
+  "equipementalpage",
+  "equipementAlpage",
+  "id_equipement_alpage",
+  { geojson: true }
+);
 
 const itemData = ref({});
 const isLoading = ref(!!route.params.id);
@@ -53,15 +50,6 @@ onMounted(async () => {
     itemData.value = { unite_pastorale: Number(route.query.unite_pastorale) };
   }
 });
-
-async function handleSubmit(formData) {
-  if (pageMode.value === "add") {
-    await crud.createItem(formData);
-  } else {
-    await crud.updateItem({ ...formData, id_equipement_alpage: Number(route.params.id) });
-  }
-  router.back();
-}
 </script>
 
 <style scoped>

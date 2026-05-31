@@ -82,7 +82,9 @@ export function useCrudPage(modelName, apiRouteName, idField = "id", options = {
     if (pageMode.value === "add") {
       await createItem(formData);
     } else {
-      await updateItem(formData);
+      const hasId = resolveId(formData) != null;
+      const payload = hasId ? formData : { ...formData, [idField]: Number(route.params.id) };
+      await updateItem(payload);
     }
   };
 

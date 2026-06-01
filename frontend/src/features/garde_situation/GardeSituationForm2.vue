@@ -168,7 +168,25 @@ onMounted(() => {
     .catch((error) => {});
 });
 
-const rulesDateDebut = [(v) => !!v || "La date de début est obligatoire."];
+const selectedSituation = computed(
+  () => situations.value.find((s) => s.id_situation === form.situation_exploitation) ?? null
+);
+const situDateDebut = computed(() => selectedSituation.value?.date_debut ?? null);
+const situDateFin = computed(() => selectedSituation.value?.date_fin ?? null);
+
+const rulesDateDebut = computed(() => [
+  (v) => !!v || "La date de début est obligatoire.",
+  (v) =>
+    !v ||
+    !situDateDebut.value ||
+    v >= situDateDebut.value ||
+    `Date antérieure au début de la situation (${situDateDebut.value}).`,
+  (v) =>
+    !v ||
+    !situDateFin.value ||
+    v <= situDateFin.value ||
+    `Date postérieure à la fin de la situation (${situDateFin.value}).`,
+]);
 
 const rulesDateFin = computed(() => [
   (v) =>
@@ -176,12 +194,38 @@ const rulesDateFin = computed(() => [
     !form.date_debut ||
     v >= form.date_debut ||
     "La date de fin doit être postérieure à la date de début.",
+  (v) =>
+    !v ||
+    !situDateDebut.value ||
+    v >= situDateDebut.value ||
+    `Date antérieure au début de la situation (${situDateDebut.value}).`,
+  (v) =>
+    !v ||
+    !situDateFin.value ||
+    v <= situDateFin.value ||
+    `Date postérieure à la fin de la situation (${situDateFin.value}).`,
 ]);
 
 const isFormValid = computed(() => {
   const debut = form.date_debut;
   const fin = form.date_fin;
-  return !!debut && (!fin || fin >= debut);
+  if (!debut) return false;
+  if (fin && fin < debut) return false;
+  if (situDateDebut.value) {
+    if (debut < situDateDebut.value) return false;
+    if (fin && fin < situDateDebut.value) return false;
+  }
+  if (situDateFin.value) {
+    if (debut > situDateFin.value) return false;
+    if (fin && fin > situDateFin.value) return false;
+  }
+  return true;
+});
+
+watch([() => form.situation_exploitation, situations], () => {
+  if (props.mode !== "add" || !selectedSituation.value) return;
+  form.date_debut = situDateDebut.value ?? "";
+  form.date_fin = situDateFin.value ?? "";
 });
 
 const submitForm = () => {

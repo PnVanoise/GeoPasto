@@ -607,6 +607,40 @@ class ExploiterSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer)
                 {"date_fin": "La date de fin doit être postérieure à la date de début."}
             )
 
+        # Cohérence avec la situation parente (dérivée du cheptel ou du quartier)
+        cheptel_obj = attrs.get("cheptel", getattr(self.instance, "cheptel", None))
+        quartier_obj = attrs.get("quartier", getattr(self.instance, "quartier", None))
+        situation = None
+        try:
+            if cheptel_obj is not None:
+                situation = cheptel_obj.situation_exploitation
+            elif quartier_obj is not None:
+                situation = quartier_obj.situation_exploitation
+        except Exception:
+            pass
+        if situation:
+            errors = {}
+            situ_debut = situation.date_debut
+            situ_fin = situation.date_fin
+            if situ_debut and date_debut and date_debut < situ_debut:
+                errors["date_debut"] = (
+                    f"Date antérieure au début de la situation ({situ_debut})."
+                )
+            elif situ_fin and date_debut and date_debut > situ_fin:
+                errors["date_debut"] = (
+                    f"Date postérieure à la fin de la situation ({situ_fin})."
+                )
+            if situ_debut and date_fin and date_fin < situ_debut:
+                errors["date_fin"] = (
+                    f"Date antérieure au début de la situation ({situ_debut})."
+                )
+            elif situ_fin and date_fin and date_fin > situ_fin:
+                errors["date_fin"] = (
+                    f"Date postérieure à la fin de la situation ({situ_fin})."
+                )
+            if errors:
+                raise serializers.ValidationError(errors)
+
         if "nombre_animaux" not in attrs and self.instance is not None:
             return attrs
 
@@ -1061,6 +1095,36 @@ class GardeSituationSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerial
             raise serializers.ValidationError(
                 {"date_fin": "La date de fin doit être postérieure à la date de début."}
             )
+        situation = attrs.get(
+            "situation_exploitation",
+            (
+                getattr(self.instance, "situation_exploitation", None)
+                if self.instance
+                else None
+            ),
+        )
+        if situation:
+            errors = {}
+            situ_debut = situation.date_debut
+            situ_fin = situation.date_fin
+            if situ_debut and date_debut and date_debut < situ_debut:
+                errors["date_debut"] = (
+                    f"Date antérieure au début de la situation ({situ_debut})."
+                )
+            elif situ_fin and date_debut and date_debut > situ_fin:
+                errors["date_debut"] = (
+                    f"Date postérieure à la fin de la situation ({situ_fin})."
+                )
+            if situ_debut and date_fin and date_fin < situ_debut:
+                errors["date_fin"] = (
+                    f"Date antérieure au début de la situation ({situ_debut})."
+                )
+            elif situ_fin and date_fin and date_fin > situ_fin:
+                errors["date_fin"] = (
+                    f"Date postérieure à la fin de la situation ({situ_fin})."
+                )
+            if errors:
+                raise serializers.ValidationError(errors)
         return attrs
 
     class Meta:
@@ -1247,6 +1311,36 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"date_fin": "La date de fin doit être postérieure à la date de début."}
             )
+        situation = attrs.get(
+            "situation_exploitation",
+            (
+                getattr(self.instance, "situation_exploitation", None)
+                if self.instance
+                else None
+            ),
+        )
+        if situation:
+            errors = {}
+            situ_debut = situation.date_debut
+            situ_fin = situation.date_fin
+            if situ_debut and date_debut and date_debut < situ_debut:
+                errors["date_debut"] = (
+                    f"Date antérieure au début de la situation ({situ_debut})."
+                )
+            elif situ_fin and date_debut and date_debut > situ_fin:
+                errors["date_debut"] = (
+                    f"Date postérieure à la fin de la situation ({situ_fin})."
+                )
+            if situ_debut and date_fin and date_fin < situ_debut:
+                errors["date_fin"] = (
+                    f"Date antérieure au début de la situation ({situ_debut})."
+                )
+            elif situ_fin and date_fin and date_fin > situ_fin:
+                errors["date_fin"] = (
+                    f"Date postérieure à la fin de la situation ({situ_fin})."
+                )
+            if errors:
+                raise serializers.ValidationError(errors)
         eleveur = attrs.get(
             "eleveur",
             getattr(self.instance, "eleveur", None) if self.instance else None,

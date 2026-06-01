@@ -10,6 +10,7 @@
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
     "test": "vitest",
+    "lint": "eslint src/**/*.{js,vue}",
     "format": "prettier --write \"src/**/*.{js,vue,css}\"",
     "format:check": "prettier --check \"src/**/*.{js,vue,css}\""
   },
@@ -41,6 +42,8 @@
     "@vue/test-utils": "^2.4.6",
     "@vuepress/bundler-vite": "^2.0.0-rc.14",
     "@vuepress/theme-default": "^2.0.0-rc.37",
+    "eslint": "^9.39.4",
+    "eslint-plugin-vue": "^10.9.1",
     "jsdom": "^22.1.0",
     "prettier": "^3.8.3",
     "sass": "^1.97.3",

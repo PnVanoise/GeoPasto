@@ -52,7 +52,7 @@ onMounted(async () => {
 
 <style scoped>
 .form-page {
-  max-width: 860px;
+  max-width: 1200px;
   margin: 2rem auto;
   padding: 0 1rem;
 }

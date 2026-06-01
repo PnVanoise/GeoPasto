@@ -342,6 +342,31 @@ const router = createRouter({
       ],
     },
     {
+      path: "/visite",
+      children: [
+        {
+          path: "",
+          name: "visite-list",
+          component: () => import("@/views/visite/VisiteList.vue"),
+        },
+        {
+          path: "add",
+          name: "visite-add",
+          component: () => import("@/views/visite/VisitePageForm.vue"),
+        },
+        {
+          path: ":id",
+          name: "visite-view",
+          component: () => import("@/views/visite/VisitePageForm.vue"),
+        },
+        {
+          path: ":id/edit",
+          name: "visite-edit",
+          component: () => import("@/views/visite/VisitePageForm.vue"),
+        },
+      ],
+    },
+    {
       path: "/type-mesure",
       children: [
         {

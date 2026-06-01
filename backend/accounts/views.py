@@ -1,7 +1,8 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.models import Permission
 
 
 class UserPermissionsView(APIView):
@@ -26,4 +27,22 @@ class UserPermissionsView(APIView):
                 "last_name": user.last_name,
                 "permissions_by_model": grouped_permissions,
             }
+        )
+
+
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        User = get_user_model()
+        users = User.objects.filter(is_active=True).order_by("last_name", "first_name")
+        return Response(
+            [
+                {
+                    "id": u.id,
+                    "username": u.username,
+                    "full_name": f"{u.first_name} {u.last_name}".strip() or u.username,
+                }
+                for u in users
+            ]
         )

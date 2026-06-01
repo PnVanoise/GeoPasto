@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django.db.models import F, Q
 
@@ -183,3 +184,35 @@ class Evenement(AuditFieldsMixin, models.Model):
 
     def __str__(self):
         return str(self.description)
+
+
+class Visite(AuditFieldsMixin, models.Model):
+    id_visite = models.BigAutoField(primary_key=True)
+    date_visite = models.DateField()
+    description = models.CharField(max_length=150)
+    commentaire = models.TextField(null=True, blank=True)
+    unite_pastorale = models.ForeignKey(
+        "suivi_pasto.UnitePastorale",
+        on_delete=models.PROTECT,
+        related_name="visites",
+    )
+    contact_alpagiste = models.ForeignKey(
+        "suivi_pasto.Eleveur",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="visites_contact",
+    )
+    observateurs = models.ManyToManyField(
+        get_user_model(),
+        blank=True,
+        related_name="visites_observees",
+    )
+
+    class Meta:
+        verbose_name = "visite"
+        verbose_name_plural = "visites"
+        ordering = ["-date_visite"]
+
+    def __str__(self):
+        return f"Visite {self.date_visite} – {self.unite_pastorale}"

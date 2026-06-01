@@ -7,6 +7,7 @@
           <v-tab value="fiche">Fiche</v-tab>
           <v-tab value="geometries" :disabled="props.mode === 'add'">Géométries</v-tab>
           <v-tab value="conventions" :disabled="props.mode === 'add'">Conventions</v-tab>
+          <v-tab value="visites" :disabled="props.mode === 'add'">Visites</v-tab>
         </v-tabs>
 
         <v-window v-model="activeTab">
@@ -144,6 +145,32 @@
               />
             </template>
           </v-window-item>
+
+          <v-window-item value="visites">
+            <template v-if="props.mode === 'add'">
+              <div class="w3-panel w3-pale-yellow info-panel">
+                Enregistrez l'unité pastorale pour pouvoir ajouter des visites.
+              </div>
+            </template>
+            <template v-else-if="form.id">
+              <CrudListPage
+                modelName="visite"
+                apiRouteName="visite"
+                itemLabel="une visite"
+                idField="id_visite"
+                :columns="visiteGridColumns"
+                :bgColor="'#0f766e'"
+                :showTitle="false"
+                :showHeader="true"
+                :showSearch="false"
+                :showFilters="false"
+                :filters="[]"
+                :viewOnly="props.mode === 'view'"
+                :requestParams="form.id ? { unite_pastorale: form.id } : null"
+                :addQueryParams="form.id ? { unite_pastorale: form.id } : {}"
+              />
+            </template>
+          </v-window-item>
         </v-window>
       </section>
 
@@ -232,6 +259,11 @@ const situGridColumns = ref([
 const geomGridColumns = ref([
   { field: "date_debut_validite", label: "Début validité", sortable: true },
   { field: "date_fin_validite", label: "Fin validité", sortable: true },
+]);
+
+const visiteGridColumns = ref([
+  { field: "date_visite", label: "Date", sortable: true },
+  { field: "description", label: "Description", sortable: false },
 ]);
 
 const conventionGridColumns = ref([

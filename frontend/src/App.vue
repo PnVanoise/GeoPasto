@@ -218,7 +218,7 @@ watch(
           <div class="nav-item w3-signal-grey" @click="toggleAccordion('ref')">
             Referentiels
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('ref') }"
             ></i>
           </div>
@@ -323,7 +323,7 @@ watch(
           <div class="nav-item w3-signal-yellow" @click="toggleAccordion('admi')">
             Administratif
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('admi') }"
             ></i>
           </div>
@@ -351,7 +351,7 @@ watch(
           <div class="nav-item w3-signal-orange" @click="toggleAccordion('expl')">
             Exploitation
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('expl') }"
             ></i>
           </div>
@@ -433,7 +433,7 @@ watch(
           <div class="nav-item w3-signal-red" @click="toggleAccordion('plan')">
             Suivis et Mesures
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('plan') }"
             ></i>
           </div>
@@ -460,7 +460,7 @@ watch(
           <div class="nav-item w3-signal-violet" @click="toggleAccordion('eve')">
             Evenements
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('eve') }"
             ></i>
           </div>
@@ -479,7 +479,7 @@ watch(
           <div class="nav-item w3-signal-blue" @click="toggleAccordion('equip')">
             Equipements
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('equip') }"
             ></i>
           </div>

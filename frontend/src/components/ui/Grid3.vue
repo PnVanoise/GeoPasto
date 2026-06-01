@@ -386,6 +386,12 @@ function performDelete() {
   min-width: 120px;
   padding: 3px 8px;
   text-align: left;
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+
+.table-with-fixed-header th {
+  font-size: 0.82rem;
 }
 
 .table-with-fixed-header th.actions-col,

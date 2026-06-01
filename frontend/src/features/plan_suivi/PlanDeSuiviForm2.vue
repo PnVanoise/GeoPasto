@@ -10,7 +10,24 @@
             label="Description"
             density="compact"
             variant="underlined"
+            hide-details="auto"
+            :rules="[maxLen(150)]"
+            :counter="150"
+            clearable
+          />
+        </div>
+      </div>
+      <div class="w3-row form-ligne">
+        <div class="form-cell">
+          <v-textarea
+            v-model="form.commentaire"
+            :disabled="props.mode === 'view'"
+            label="Commentaire"
+            density="compact"
+            variant="underlined"
             hide-details
+            rows="2"
+            auto-grow
             clearable
           />
         </div>
@@ -135,6 +152,7 @@ import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 import CrudListPage from "../../components/crud/CrudListPage.vue";
 import PlanAvancementView from "./PlanAvancementView.vue";
+import { maxLen } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -162,6 +180,7 @@ const btTitle = computed(() => {
 const form = reactive({
   id_plan_suivi: null,
   description: "",
+  commentaire: "",
   date_debut: "",
   date_fin: "",
   type_suivi: null,

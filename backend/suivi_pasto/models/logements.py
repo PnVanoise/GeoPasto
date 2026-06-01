@@ -104,7 +104,7 @@ class Logement(AuditFieldsMixin, models.Model):
 
 class Commodite(AuditFieldsMixin, models.Model):
     id_commodite = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=100, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
 
     class Meta:
         verbose_name = "commodité"
@@ -116,8 +116,9 @@ class Commodite(AuditFieldsMixin, models.Model):
 
 class AbriDUrgence(AuditFieldsMixin, models.Model):
     id_abri_urgence = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
     etat = models.CharField(max_length=50, null=False, blank=False)
+    commentaire = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "abri d'urgence"
@@ -144,7 +145,7 @@ class AbriDUrgenceCommodite(AuditFieldsMixin, models.Model):
         related_name="abris_urgence",
     )
     etat = models.CharField(max_length=50, null=False, blank=False)
-    commentaire = models.CharField(max_length=50, null=True, blank=True)
+    commentaire = models.TextField(null=True, blank=True)
     quantite = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:

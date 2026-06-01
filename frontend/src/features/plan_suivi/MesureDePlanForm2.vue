@@ -11,7 +11,9 @@
               label="Description"
               density="compact"
               variant="underlined"
-              hide-details
+              hide-details="auto"
+              :rules="[maxLen(150)]"
+              :counter="150"
               clearable
             />
           </div>
@@ -163,6 +165,7 @@ import config from "../../../config";
 import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
+import { maxLen } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },

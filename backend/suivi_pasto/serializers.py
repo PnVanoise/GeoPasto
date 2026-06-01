@@ -344,6 +344,7 @@ class PlanDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerialize
         fields = [
             "id_plan_suivi",
             "description",
+            "commentaire",
             "date_debut",
             "date_fin",
             "type_suivi",
@@ -915,7 +916,7 @@ class SubventionPNVSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeriali
         model = SubventionPNV
         fields = [
             "id_subvention",
-            "description",
+            "commentaire",
             "montant",
             "engage",
             "paye",
@@ -961,6 +962,7 @@ class AbriDUrgenceSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializ
             "id_abri_urgence",
             "description",
             "etat",
+            "commentaire",
             "created_by",
             "created_on",
             "modified_by",
@@ -1292,6 +1294,7 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
             "situation_exploitation",
             "situation_detail",
             "description",
+            "commentaire",
             "coefficient_UGB",
             "production",
             "production_detail",

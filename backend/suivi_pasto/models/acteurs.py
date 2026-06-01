@@ -10,7 +10,7 @@ class Eleveur(AuditFieldsMixin, models.Model):
     tel_eleveur = models.CharField(max_length=50, null=True, blank=True)
     mail_eleveur = models.CharField(max_length=50, null=True, blank=True)
     adresse_eleveur = models.CharField(max_length=50, null=True, blank=True)
-    commentaire = models.CharField(max_length=500, null=True, blank=True)
+    commentaire = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "éleveur"
@@ -22,7 +22,7 @@ class Eleveur(AuditFieldsMixin, models.Model):
 
 class TypeDExploitant(AuditFieldsMixin, models.Model):
     id_type_exploitant = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
 
     class Meta:
         verbose_name = "type d'exploitant"
@@ -123,7 +123,7 @@ class Berger(AuditFieldsMixin, models.Model):
     prenom_berger = models.CharField(max_length=50, null=False, blank=False)
     tel_berger = models.CharField(max_length=50, null=True, blank=True)
     adresse_berger = models.CharField(max_length=50, null=True, blank=True)
-    commentaire = models.CharField(max_length=500, null=True, blank=True)
+    commentaire = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "berger"

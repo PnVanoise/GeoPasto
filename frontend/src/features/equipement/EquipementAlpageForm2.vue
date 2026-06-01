@@ -6,14 +6,16 @@
       <section class="layout-card">
         <div class="w3-row form-ligne">
           <div class="w3-half form-cell">
-            <v-text-field
-              v-model="form.description"
-              label="Description"
+            <v-textarea
+              v-model="form.commentaire"
+              label="Commentaire"
               :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details
-              required
+              rows="2"
+              auto-grow
+              clearable
             />
           </div>
           <div class="w3-half form-cell">
@@ -146,7 +148,7 @@ const ups = ref([]);
 const upContextGeoData = ref(null);
 
 const form = reactive({
-  description: "",
+  commentaire: "",
   etat: "",
   type_equipement: null,
   unite_pastorale: null,
@@ -215,7 +217,7 @@ watch(
     const base = newVal || {};
     const src = base?.properties ? { ...base.properties } : base;
 
-    form.description = src.description ?? "";
+    form.commentaire = src.commentaire ?? "";
     form.etat = src.etat ?? "";
     form.type_equipement = normalizeFkId(src.type_equipement ?? src.type_equipement_detail, [
       "id_type_equipement",
@@ -243,7 +245,7 @@ watch(
 
 const submitForm = async () => {
   const payload = {
-    description: form.description,
+    commentaire: form.commentaire || null,
     etat: form.etat,
     type_equipement: form.type_equipement,
     unite_pastorale: form.unite_pastorale,

@@ -7,7 +7,7 @@ from .mixins import AuditFieldsMixin
 
 class Production(AuditFieldsMixin, models.Model):
     id_production = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
 
     class Meta:
         verbose_name = "production"
@@ -19,7 +19,7 @@ class Production(AuditFieldsMixin, models.Model):
 
 class CategoriePension(AuditFieldsMixin, models.Model):
     id_categorie_pension = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
 
     class Meta:
         verbose_name = "catégorie de pension"
@@ -31,7 +31,7 @@ class CategoriePension(AuditFieldsMixin, models.Model):
 
 class Espece(AuditFieldsMixin, models.Model):
     id_espece = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
 
     class Meta:
         verbose_name = "espèce"
@@ -43,7 +43,7 @@ class Espece(AuditFieldsMixin, models.Model):
 
 class Race(AuditFieldsMixin, models.Model):
     id_race = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
     espece = models.ForeignKey(
         "suivi_pasto.Espece",
         on_delete=models.PROTECT,
@@ -62,7 +62,7 @@ class Race(AuditFieldsMixin, models.Model):
 
 class CategorieAnimaux(AuditFieldsMixin, models.Model):
     id_categorie_animaux = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
     coefficient_UGB = models.DecimalField(
         max_digits=3,
         decimal_places=2,
@@ -89,7 +89,8 @@ class CategorieAnimaux(AuditFieldsMixin, models.Model):
 
 class Cheptel(AuditFieldsMixin, models.Model):
     id_cheptel = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
+    commentaire = models.TextField(null=True, blank=True)
 
     eleveur = models.ForeignKey(
         "suivi_pasto.Eleveur",

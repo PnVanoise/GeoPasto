@@ -115,7 +115,7 @@ class ProprietaireFoncier(AuditFieldsMixin, models.Model):
     tel_propr = models.CharField(max_length=30, null=True, blank=True)
     mail_propr = models.CharField(max_length=50, null=True, blank=True)
     adresse_propr = models.CharField(max_length=100, null=True, blank=True)
-    commentaire = models.CharField(max_length=50, null=True, blank=True)
+    commentaire = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "propriétaire foncier"

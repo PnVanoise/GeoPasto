@@ -183,7 +183,24 @@
             :disabled="props.mode === 'view'"
             density="compact"
             variant="underlined"
+            hide-details="auto"
+            :rules="[maxLen(150)]"
+            :counter="150"
+            clearable
+          />
+        </div>
+      </div>
+      <div class="w3-row form-ligne">
+        <div class="form-cell">
+          <v-textarea
+            v-model="form.commentaire"
+            label="Commentaire"
+            :disabled="props.mode === 'view'"
+            density="compact"
+            variant="underlined"
             hide-details
+            rows="2"
+            auto-grow
             clearable
           />
         </div>
@@ -216,6 +233,7 @@ import { reactive, watch, ref, computed, onMounted } from "vue";
 import config from "../../../config";
 import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
+import { maxLen } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -247,6 +265,7 @@ const form = reactive({
   situation_exploitation: "",
   nombre_animaux: "",
   description: "",
+  commentaire: "",
   date_debut: "",
   date_fin: "",
   coefficient_UGB: 0,

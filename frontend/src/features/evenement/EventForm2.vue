@@ -131,8 +131,26 @@
               density="compact"
               variant="underlined"
               rows="2"
+              hide-details="auto"
+              :rules="[maxLen(150)]"
+              :counter="150"
+              auto-grow
+              required
+            />
+          </div>
+        </div>
+        <div class="w3-row form-ligne">
+          <div class="form-cell">
+            <v-textarea
+              v-model="form.commentaire"
+              label="Commentaire"
+              :disabled="props.mode === 'view'"
+              density="compact"
+              variant="underlined"
+              rows="2"
               hide-details
               auto-grow
+              clearable
             />
           </div>
         </div>
@@ -220,6 +238,7 @@ import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEdito
 import { usePermissions } from "../../composables/usePermissions";
 import { selectMenuProps } from "../../composables/useSelectMenuProps";
 import { useMainStore } from "../../store/index";
+import { maxLen } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -250,6 +269,7 @@ const form = reactive({
   date_observation: "",
   source: "",
   description: "",
+  commentaire: "",
   geometry: null,
   situation: null,
   type_evenement: null,
@@ -516,6 +536,7 @@ watch(
     form.date_observation = src.date_observation ?? "";
     form.source = src.source ?? "";
     form.description = src.description ?? "";
+    form.commentaire = src.commentaire ?? "";
     form.type_evenement = normalizeFkId(src.type_evenement, ["id_type_evenement", "id"]);
     form.situation =
       normalizeFkId(src.situation, ["id_situation", "id"]) || contextSituationId.value || null;
@@ -558,6 +579,7 @@ const submitForm = async () => {
     date_observation: form.date_observation || null,
     source: form.source || "",
     description: form.description || "",
+    commentaire: form.commentaire || null,
     geometry: form.geometry ?? null,
     situation: effectiveSituationId.value || null,
     type_evenement: form.type_evenement || null,

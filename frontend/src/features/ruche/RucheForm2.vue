@@ -5,14 +5,16 @@
       <section class="layout-card">
         <div class="w3-row form-ligne">
           <div class="w3-col s12 form-cell">
-            <v-text-field
-              v-model="form.description"
-              label="Description"
+            <v-textarea
+              v-model="form.commentaire"
+              label="Commentaire"
               :disabled="props.mode === 'view'"
               density="compact"
               variant="outlined"
               hide-details
-              required
+              rows="2"
+              auto-grow
+              clearable
             />
           </div>
         </div>
@@ -92,7 +94,7 @@ const situations = ref([]);
 
 const form = reactive({
   id: null,
-  description: "",
+  commentaire: "",
   situation_exploitation: null,
   geometry: null,
 });
@@ -103,7 +105,7 @@ watch(
     const base = newVal || {};
     const src = base.properties ? { ...base.properties } : base;
     form.id = base.id ?? src.id ?? null;
-    form.description = src.description ?? "";
+    form.commentaire = src.commentaire ?? "";
     form.situation_exploitation = src.situation_exploitation ?? null;
     form.geometry = base.geometry ?? src.geometry ?? null;
   },

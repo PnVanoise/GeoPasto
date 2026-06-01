@@ -5,7 +5,7 @@ from .mixins import AuditFieldsMixin
 
 class TypeEquipement(AuditFieldsMixin, models.Model):
     id_type_equipement = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
     categorie = models.CharField(max_length=50, null=False, blank=False)
 
     class Meta:
@@ -18,7 +18,7 @@ class TypeEquipement(AuditFieldsMixin, models.Model):
 
 class EquipementAlpage(AuditFieldsMixin, models.Model):
     id_equipement_alpage = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    commentaire = models.TextField(null=True, blank=True)
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
     type_equipement = models.ForeignKey(
@@ -43,7 +43,7 @@ class EquipementAlpage(AuditFieldsMixin, models.Model):
 
 class EquipementExploitant(AuditFieldsMixin, models.Model):
     id_equipement_exploitant = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    commentaire = models.TextField(null=True, blank=True)
     etat = models.CharField(max_length=50, null=False, blank=False)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
     type_equipement = models.ForeignKey(

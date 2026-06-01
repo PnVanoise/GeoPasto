@@ -6,7 +6,7 @@ from .mixins import AuditFieldsMixin
 
 class TypeDeSuivi(AuditFieldsMixin, models.Model):
     id_type_suivi = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
 
     class Meta:
         verbose_name = "type de suivi"
@@ -18,7 +18,8 @@ class TypeDeSuivi(AuditFieldsMixin, models.Model):
 
 class PlanDeSuivi(AuditFieldsMixin, models.Model):
     id_plan_suivi = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
+    commentaire = models.TextField(null=True, blank=True)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
     type_suivi = models.ForeignKey(
@@ -52,7 +53,7 @@ class PlanDeSuivi(AuditFieldsMixin, models.Model):
 
 class TypeDeMesure(AuditFieldsMixin, models.Model):
     id_type_mesure = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
 
     class Meta:
         verbose_name = "type de mesure"
@@ -64,8 +65,8 @@ class TypeDeMesure(AuditFieldsMixin, models.Model):
 
 class MesureDePlan(AuditFieldsMixin, models.Model):
     id_mesure_plan = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
-    commentaire = models.CharField(max_length=50, null=True, blank=True)
+    description = models.CharField(max_length=150, null=False, blank=False)
+    commentaire = models.TextField(null=True, blank=True)
     debut_periode = models.DateField(null=True, blank=True)
     fin_periode = models.DateField(null=True, blank=True)
     type_mesure = models.ForeignKey(
@@ -135,7 +136,7 @@ class RealisationMesure(AuditFieldsMixin, models.Model):
 
 class TypeEvenement(AuditFieldsMixin, models.Model):
     id_type_evenement = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=50, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False)
 
     class Meta:
         verbose_name = "type d'événement"
@@ -151,7 +152,8 @@ class Evenement(AuditFieldsMixin, models.Model):
     observateur = models.CharField(max_length=50, null=False, blank=False)
     date_observation = models.DateField(null=False, blank=False)
     source = models.CharField(max_length=50, null=True, blank=True)
-    description = models.CharField(max_length=500, null=True, blank=True)
+    description = models.CharField(max_length=150, null=False, blank=False)
+    commentaire = models.TextField(null=True, blank=True)
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
     situation = models.ForeignKey(
         "suivi_pasto.SituationDExploitation",

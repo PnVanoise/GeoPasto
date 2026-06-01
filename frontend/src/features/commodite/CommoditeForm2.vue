@@ -9,7 +9,9 @@
           :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
           label="Description"
           dense
-          hide-details
+          hide-details="auto"
+          :rules="[maxLen(150)]"
+          :counter="150"
           clearable
         />
       </div>
@@ -40,6 +42,7 @@ import { reactive, watch, computed } from "vue";
 import config from "../../../config";
 import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
+import { maxLen } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },

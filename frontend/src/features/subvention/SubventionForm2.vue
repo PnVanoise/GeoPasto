@@ -5,14 +5,15 @@
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
-          <v-text-field
-            id="description"
-            v-model="form.description"
+          <v-textarea
+            v-model="form.commentaire"
             :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
-            label="Description"
+            label="Commentaire"
             dense
             variant="underlined"
             hide-details
+            rows="2"
+            auto-grow
             clearable
           />
         </div>
@@ -122,7 +123,7 @@ const btTitle = computed(() => {
 });
 
 const form = reactive({
-  description: "",
+  commentaire: "",
   montant: "",
   engage: false,
   paye: false,

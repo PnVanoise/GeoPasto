@@ -10,7 +10,9 @@
             :disabled="props.mode === 'view'"
             density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
+            :rules="[maxLen(150)]"
+            :counter="150"
             clearable
           />
         </div>
@@ -24,6 +26,21 @@
             density="compact"
             variant="underlined"
             hide-details
+            clearable
+          />
+        </div>
+      </div>
+      <div class="w3-row form-ligne">
+        <div class="form-cell">
+          <v-textarea
+            v-model="form.commentaire"
+            label="Commentaire"
+            :disabled="props.mode === 'view'"
+            density="compact"
+            variant="underlined"
+            hide-details
+            rows="2"
+            auto-grow
             clearable
           />
         </div>
@@ -76,6 +93,7 @@
 <script setup>
 import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
+import { maxLen } from "@/utils/validators";
 import CrudList2 from "../../components/crud/CrudList2.vue";
 import AbriDUrgenceCommoditeForm from "./AbriDUrgenceCommoditeForm.vue";
 
@@ -100,6 +118,7 @@ const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"
 const form = reactive({
   description: "",
   etat: "",
+  commentaire: "",
 });
 
 const commGridColumns = ref([

@@ -292,10 +292,10 @@ const mesuresMapLayers = computed(() => {
 });
 
 const mesureColumns = [
-  { field: "description", label: "Description", sortable: true },
   { field: "type_mesure_detail.description", label: "Type", sortable: true },
-  { field: "debut_periode", label: "Début", sortable: true },
-  { field: "fin_periode", label: "Fin", sortable: true },
+  { field: "obligation", label: "Oblig.", sortable: true },
+  { field: "debut_periode", label: "Début", sortable: true, format: "date" },
+  { field: "fin_periode", label: "Fin", sortable: true, format: "date" },
 ];
 
 const fetchMesuresForPlan = async (planId) => {

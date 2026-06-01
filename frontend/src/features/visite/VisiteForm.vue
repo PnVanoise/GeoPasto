@@ -26,16 +26,20 @@
         </div>
         <div class="w3-half form-cell">
           <v-select
-            v-model="form.contact_alpagiste"
+            v-model="form.contact_alpagiste_ids"
             :items="alpagistes"
             item-value="id_eleveur"
             item-title="full_name"
             :disabled="props.mode === 'view'"
-            label="Contact alpagiste"
+            label="Contacts alpagistes"
             density="compact"
             variant="underlined"
             hide-details
+            multiple
+            chips
+            closable-chips
             clearable
+            :menu-props="{ maxHeight: '300px' }"
           />
         </div>
       </div>
@@ -49,7 +53,8 @@
           label="Observateurs PNV"
           density="compact"
           variant="underlined"
-          hide-details
+          :hide-details="form.observateur_ids.length > 0 ? true : 'auto'"
+          :rules="props.mode !== 'view' ? [rulesObservateurs] : []"
           multiple
           chips
           closable-chips
@@ -60,11 +65,15 @@
         <v-text-field
           v-model="form.description"
           :disabled="props.mode === 'view'"
-          label="Description"
+          label="Description *"
           density="compact"
           variant="underlined"
           hide-details="auto"
-          :rules="[maxLen(150)]"
+          :rules="
+            props.mode !== 'view'
+              ? [(v) => !!v?.trim() || 'La description est obligatoire.', maxLen(150)]
+              : []
+          "
           :counter="150"
           clearable
         />
@@ -89,12 +98,27 @@
       <v-btn
         v-if="props.mode !== 'view'"
         color="success"
-        type="submit"
+        @click="handleSubmitClick"
         prepend-icon="mdi-content-save"
+        :disabled="!isFormValid"
         >{{ btTitle }}</v-btn
       >
     </div>
   </form>
+
+  <v-dialog v-model="confirmDialog" max-width="420" persistent>
+    <v-card>
+      <v-card-title class="text-h6">Aucun contact alpagiste</v-card-title>
+      <v-card-text>
+        Aucun contact alpagiste n'a été renseigné. Voulez-vous continuer sans contact alpagiste ?
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="confirmDialog = false">Annuler</v-btn>
+        <v-btn color="success" variant="flat" @click="confirmAndSubmit">Continuer</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -124,13 +148,19 @@ const form = reactive({
   description: "",
   commentaire: "",
   unite_pastorale: null,
-  contact_alpagiste: null,
+  contact_alpagiste_ids: [],
   observateur_ids: [],
 });
 
 const alpagistes = ref([]);
 const users = ref([]);
 const upNom = ref("");
+const confirmDialog = ref(false);
+
+const rulesObservateurs = (v) =>
+  (Array.isArray(v) && v.length > 0) || "Au moins un observateur PNV est requis.";
+
+const isFormValid = computed(() => !!form.description?.trim() && form.observateur_ids.length > 0);
 
 watch(
   () => props.initialForm,
@@ -140,7 +170,11 @@ watch(
     form.description = val.description ?? "";
     form.commentaire = val.commentaire ?? "";
     form.unite_pastorale = val.unite_pastorale ?? null;
-    form.contact_alpagiste = val.contact_alpagiste ?? null;
+    form.contact_alpagiste_ids = Array.isArray(val.contacts_alpagistes)
+      ? val.contacts_alpagistes.map((e) => e.id)
+      : Array.isArray(val.contact_alpagiste_ids)
+        ? val.contact_alpagiste_ids
+        : [];
     form.observateur_ids = Array.isArray(val.observateurs)
       ? val.observateurs.map((o) => o.id)
       : Array.isArray(val.observateur_ids)
@@ -194,15 +228,28 @@ onMounted(() => {
     .catch(() => {});
 });
 
-const submitForm = () => {
-  props.onSubmit?.({
-    date_visite: form.date_visite || null,
-    description: form.description,
-    commentaire: form.commentaire || null,
-    unite_pastorale: form.unite_pastorale,
-    contact_alpagiste: form.contact_alpagiste || null,
-    observateur_ids: form.observateur_ids,
-  });
+const buildPayload = () => ({
+  date_visite: form.date_visite || null,
+  description: form.description,
+  commentaire: form.commentaire || null,
+  unite_pastorale: form.unite_pastorale,
+  contact_alpagiste_ids: form.contact_alpagiste_ids,
+  observateur_ids: form.observateur_ids,
+});
+
+const handleSubmitClick = () => {
+  if (!form.description?.trim()) return;
+  if (!form.observateur_ids.length) return;
+  if (!form.contact_alpagiste_ids.length) {
+    confirmDialog.value = true;
+    return;
+  }
+  props.onSubmit?.(buildPayload());
+};
+
+const confirmAndSubmit = () => {
+  confirmDialog.value = false;
+  props.onSubmit?.(buildPayload());
 };
 
 const closeModal = () => props.onClose?.();

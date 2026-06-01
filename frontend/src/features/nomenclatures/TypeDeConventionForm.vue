@@ -34,6 +34,7 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="!isFormValid"
         >{{ btTitle }}</v-btn
       >
     </div>
@@ -90,6 +91,8 @@ watch(
 );
 
 onMounted(() => {});
+
+const isFormValid = computed(() => !!form.description?.trim());
 
 // Submit
 const submitForm = () => {

@@ -196,11 +196,9 @@ class Visite(AuditFieldsMixin, models.Model):
         on_delete=models.PROTECT,
         related_name="visites",
     )
-    contact_alpagiste = models.ForeignKey(
+    contacts_alpagistes = models.ManyToManyField(
         "suivi_pasto.Eleveur",
-        on_delete=models.PROTECT,
         blank=True,
-        null=True,
         related_name="visites_contact",
     )
     observateurs = models.ManyToManyField(

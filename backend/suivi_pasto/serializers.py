@@ -1535,12 +1535,13 @@ class EquipementExploitantSerializer(
 
 
 class VisiteSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
-    contact_alpagiste = serializers.PrimaryKeyRelatedField(
-        queryset=Eleveur.objects.all(), allow_null=True, required=False
+    contact_alpagiste_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True,
     )
-    contact_alpagiste_detail = EleveurSerializer(
-        source="contact_alpagiste", read_only=True
-    )
+    contacts_alpagistes = serializers.SerializerMethodField()
     observateur_ids = serializers.ListField(
         child=serializers.IntegerField(),
         write_only=True,
@@ -1559,8 +1560,8 @@ class VisiteSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
             "commentaire",
             "unite_pastorale",
             "unite_pastorale_nom",
-            "contact_alpagiste",
-            "contact_alpagiste_detail",
+            "contact_alpagiste_ids",
+            "contacts_alpagistes",
             "observateur_ids",
             "observateurs",
         ]
@@ -1569,6 +1570,15 @@ class VisiteSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
         if obj.unite_pastorale_id:
             return obj.unite_pastorale.nom_up
         return None
+
+    def get_contacts_alpagistes(self, obj):
+        return [
+            {
+                "id": e.id_eleveur,
+                "full_name": f"{e.nom_eleveur} {e.prenom_eleveur or ''}".strip(),
+            }
+            for e in obj.contacts_alpagistes.all()
+        ]
 
     def get_observateurs(self, obj):
         return [
@@ -1580,17 +1590,23 @@ class VisiteSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        ids = validated_data.pop("observateur_ids", [])
+        alpagiste_ids = validated_data.pop("contact_alpagiste_ids", [])
+        observateur_ids = validated_data.pop("observateur_ids", [])
         visite = Visite.objects.create(**validated_data)
-        if ids:
-            visite.observateurs.set(ids)
+        if alpagiste_ids:
+            visite.contacts_alpagistes.set(alpagiste_ids)
+        if observateur_ids:
+            visite.observateurs.set(observateur_ids)
         return visite
 
     def update(self, instance, validated_data):
-        ids = validated_data.pop("observateur_ids", None)
+        alpagiste_ids = validated_data.pop("contact_alpagiste_ids", None)
+        observateur_ids = validated_data.pop("observateur_ids", None)
         for attr, val in validated_data.items():
             setattr(instance, attr, val)
         instance.save()
-        if ids is not None:
-            instance.observateurs.set(ids)
+        if alpagiste_ids is not None:
+            instance.contacts_alpagistes.set(alpagiste_ids)
+        if observateur_ids is not None:
+            instance.observateurs.set(observateur_ids)
         return instance

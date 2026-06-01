@@ -1200,8 +1200,8 @@ class VisiteViewset(BaseModelViewSet):
 
     def get_queryset(self):
         qs = (
-            Visite.objects.select_related("unite_pastorale", "contact_alpagiste")
-            .prefetch_related("observateurs")
+            Visite.objects.select_related("unite_pastorale")
+            .prefetch_related("observateurs", "contacts_alpagistes")
             .order_by("-date_visite")
         )
         up = self.request.query_params.get("unite_pastorale")

@@ -446,7 +446,7 @@ const closeModal = () => props.onClose?.();
 onMounted(async () => {
   try {
     const [resChoices, resUP] = await Promise.all([
-      auth.axiosInstance.get(`${config.API_BASE_URL}/choices_logement/`),
+      auth.axiosInstance.get(`${config.API_BASE_URL}/api/choices_logement/`),
       auth.axiosInstance.get(`${config.API_BASE_URL}/api/unitePastorale/light/`),
     ]);
     choices.value = resChoices.data ?? {};

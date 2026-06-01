@@ -484,9 +484,21 @@ const closeModal = () => props.onClose?.();
 .up-form-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-rows: minmax(480px, auto);
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
   margin-top: 0.5rem;
+}
+.map-card {
+  display: flex;
+  flex-direction: column;
+}
+.up-form :deep(.ol-map-wrapper) {
+  flex: 1;
+  min-height: 0;
+}
+.up-form :deep(.ol-map) {
+  height: 100%;
 }
 
 .layout-card {

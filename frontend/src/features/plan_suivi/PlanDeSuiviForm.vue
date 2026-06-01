@@ -449,7 +449,7 @@ const closeModal = () => {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
   margin-top: 0.5rem;
 }
 .plan-suivi-left {
@@ -464,6 +464,15 @@ const closeModal = () => {
   position: sticky;
   top: 1rem;
   min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+.plan-suivi-form :deep(.ol-map-wrapper) {
+  flex: 1;
+  min-height: 0;
+}
+.plan-suivi-form :deep(.ol-map) {
+  height: 100%;
 }
 .layout-card {
   background: #ffffff;

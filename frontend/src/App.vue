@@ -600,8 +600,8 @@ watch(
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 88px;
-  padding: 12px 20px;
+  min-height: 72px;
+  padding: 10px 20px;
   position: relative;
   color: #fff;
 }
@@ -651,11 +651,12 @@ watch(
 .header-pill {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.45);
-  min-height: 40px;
-  padding: 8px 14px;
+  min-height: 34px;
+  padding: 6px 12px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
+  font-size: 0.875rem;
   /* transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease; */
 }
 
@@ -763,7 +764,7 @@ watch(
 
 .app-content {
   width: 100%;
-  padding: 16px;
+  padding: 2px 16px 16px;
 }
 
 .nav-item {

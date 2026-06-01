@@ -155,15 +155,52 @@ Le fichier `pytest.ini` à la racine du projet configure le module de settings D
 
 ## Création d'une nouvelle instance (prod)
 
+### Prérequis système (paquets Debian/Ubuntu)
+
+```bash
+# PostgreSQL 15 + PostGIS
+sudo apt-get install -y postgresql-15 postgresql-client-15 \
+    postgresql-15-postgis-3 postgresql-15-postgis-3-scripts
+
+# Bibliothèques géospatiales (GDAL, GEOS, PROJ) — requises par GeoDjango / psycopg2
+sudo apt-get install -y gdal-bin libgdal-dev python3-gdal \
+    libgeos-dev libproj-dev proj-bin
+
+# Python 3.11 + outils de build (pour compiler psycopg2 en prod)
+sudo apt-get install -y python3.11 python3.11-dev python3.11-venv \
+    python3-pip build-essential libpq-dev postgresql-server-dev-all
+
+# Node.js 18 + npm (frontend — Vite 5 / Vue 3)
+sudo apt-get install -y nodejs npm
+
+# Serveur web
+sudo apt-get install -y nginx
+```
+
+> **Versions validées sur ce serveur (Debian 12) :** PostgreSQL 15.7, PostGIS 3.3.2, GDAL 3.6.2, GEOS 3.11.1, PROJ 9.1.1, Python 3.11.2, Node.js 18.19, npm 9.2.
+
+---
+
 1. Créer la base de données PostgreSQL et activer l'extension PostGIS :
 
 ```sql
 CREATE DATABASE geopasto;
 \c geopasto
-CREATE EXTENSION postgis;
+CREATE EXTENSION postgis SCHEMA postgis;
+CREATE SCHEMA geopasto;
 ```
 
-2. Créer un utilisateur et lui donner les droits sur la base.
+2. Créer un utilisateur et lui donner les droits :
+
+```sql
+CREATE USER geopasto_user WITH PASSWORD '...';
+GRANT CONNECT ON DATABASE geopasto TO geopasto_user;
+GRANT USAGE, CREATE ON SCHEMA geopasto TO geopasto_user;
+GRANT USAGE ON SCHEMA postgis TO geopasto_user;
+```
+
+   Django utilise `search_path=geopasto,postgis,public` — toutes les tables applicatives atterrissent dans le schéma `geopasto`. Ce schéma doit exister avant tout `migrate`.
+
 3. Récupérer les sources, créer le venv et installer les dépendances de production :
 
 ```bash

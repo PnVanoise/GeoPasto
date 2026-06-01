@@ -487,11 +487,7 @@ watch(
             <div
               :class="[
                 'nav-item w3-signal-blue transparent',
-                {
-                  active:
-                    route.path.startsWith('/logement') &&
-                    !route.path.startsWith('/logement-commodite'),
-                },
+                { active: route.path.startsWith('/logement') },
               ]"
             >
               <RouterLink to="/logement">Logements</RouterLink>
@@ -507,22 +503,10 @@ watch(
             <div
               :class="[
                 'nav-item w3-signal-blue transparent',
-                {
-                  active:
-                    route.path.startsWith('/commodite') &&
-                    !route.path.startsWith('/logement-commodite'),
-                },
+                { active: route.path.startsWith('/commodite') },
               ]"
             >
               <RouterLink to="/commodite">Commodités</RouterLink>
-            </div>
-            <div
-              :class="[
-                'nav-item w3-signal-blue transparent',
-                { active: route.path.startsWith('/logement-commodite') },
-              ]"
-            >
-              <RouterLink to="/logement-commodite">Logements / Commodités</RouterLink>
             </div>
           </div>
         </aside>

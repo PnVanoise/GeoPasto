@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <UPProprietaireForm2
+    <UPProprietaireForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import UPProprietaireForm2 from "../../features/proprietaire/UPProprietaireForm2.vue";
+import UPProprietaireForm from "../../features/proprietaire/UPProprietaireForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

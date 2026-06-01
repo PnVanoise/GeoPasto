@@ -3,11 +3,15 @@ import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "./useCrud";
 
 /**
- * useCrudPage — extension de useCrud pour les vues avec navigation par routes dédiées.
+ * useCrudPage — composable standard pour toutes les vues CRUD de l'application.
+ * À utiliser dans CrudListPage, *List.vue et *PageForm.vue.
+ *
+ * Construit sur useCrud (couche données) en remplaçant la navigation modale
+ * par une navigation par routes nommées.
  *
  * Différences avec useCrud :
  *  - openAdd / openEdit / openView  → router.push() au lieu d'ouvrir une modale
- *  - createItem / updateItem        → redirigent vers la liste après succès
+ *  - createItem / updateItem        → redirigent vers la liste après succès (router.back)
  *  - deleteItem                     → reste sur la liste (pas de redirection)
  *  - showModal / selectedItem / mode → absents (inutiles en mode page)
  *

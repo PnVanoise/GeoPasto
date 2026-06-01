@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <TypeDeSuiviForm2
+    <TypeDeSuiviForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import TypeDeSuiviForm2 from "../../features/nomenclatures/TypeDeSuiviForm2.vue";
+import TypeDeSuiviForm from "../../features/nomenclatures/TypeDeSuiviForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

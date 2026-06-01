@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <EquipementAlpageForm2
+    <EquipementAlpageForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import EquipementAlpageForm2 from "../../features/equipement/EquipementAlpageForm2.vue";
+import EquipementAlpageForm from "../../features/equipement/EquipementAlpageForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

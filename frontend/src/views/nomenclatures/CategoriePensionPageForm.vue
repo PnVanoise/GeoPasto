@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <CategoriePensionForm2
+    <CategoriePensionForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import CategoriePensionForm2 from "../../features/nomenclatures/CategoriePensionForm2.vue";
+import CategoriePensionForm from "../../features/nomenclatures/CategoriePensionForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

@@ -2,7 +2,7 @@ import { render, fireEvent, screen } from "@testing-library/vue";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { ref, defineComponent, markRaw } from "vue";
 
-// Mock useCrud composable used by CrudList2
+// Mock useCrud composable used by CrudList
 vi.mock("../../composables/useCrud", () => {
   const { ref } = require("vue");
   return {
@@ -76,9 +76,9 @@ vi.mock("../../components/Modal.vue", () => {
 });
 
 // Import the component under test (after mocks)
-import CrudList2 from "../crud/CrudList2.vue";
+import CrudList from "../crud/CrudList.vue";
 
-describe("CrudList2 view-only flow", () => {
+describe("CrudList view-only flow", () => {
   it("opens embedded form in view mode and shows fields disabled / no save / no next id", async () => {
     // Dummy child form that mirrors behavior we expect from real form
     const DummyForm = defineComponent({
@@ -92,7 +92,7 @@ describe("CrudList2 view-only flow", () => {
       `,
     });
 
-    render(CrudList2, {
+    render(CrudList, {
       props: {
         title: "Commodités",
         modelName: "abridurgencecommodite",

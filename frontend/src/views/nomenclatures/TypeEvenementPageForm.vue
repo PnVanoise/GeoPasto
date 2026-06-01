@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <TypeEvenementForm2
+    <TypeEvenementForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import TypeEvenementForm2 from "../../features/evenement/TypeEvenementForm2.vue";
+import TypeEvenementForm from "../../features/evenement/TypeEvenementForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

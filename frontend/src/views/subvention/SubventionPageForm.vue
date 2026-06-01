@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <SubventionForm2
+    <SubventionForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import SubventionForm2 from "../../features/subvention/SubventionForm2.vue";
+import SubventionForm from "../../features/subvention/SubventionForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <EleveurForm2
+    <EleveurForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import EleveurForm2 from "../../features/eleveur/EleveurForm2.vue";
+import EleveurForm from "../../features/eleveur/EleveurForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

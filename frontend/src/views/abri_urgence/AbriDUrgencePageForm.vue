@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <AbriDUrgenceForm2
+    <AbriDUrgenceForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import AbriDUrgenceForm2 from "../../features/abri_urgence/AbriDUrgenceForm2.vue";
+import AbriDUrgenceForm from "../../features/abri_urgence/AbriDUrgenceForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

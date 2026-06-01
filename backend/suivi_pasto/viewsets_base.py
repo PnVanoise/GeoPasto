@@ -1,7 +1,6 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import action
 from django.utils import timezone
 
 import logging
@@ -14,7 +13,6 @@ class BaseModelViewSet(ModelViewSet):
     """
     Standardized ModelViewSet with:
     - uniform create/update logging + error handling
-    - generic getNextId action for models that use manual integer PKs
     """
 
     def _resolve_base_queryset(self):
@@ -107,34 +105,6 @@ class BaseModelViewSet(ModelViewSet):
             f"BaseModelViewset {self.__class__.__name__} - Validation errors during update: {serializer.errors}"
         )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=False, methods=["get"], url_path="getNextId")
-    def get_next_id(self, request):
-        """
-        Generic next-id endpoint. Only returns a next id when the model uses a
-        manual integer PK. Uses DB-side ordering but still not safe under heavy concurrency—
-        prefer migrating to AutoField/BigAutoField or UUIDs.
-        """
-        try:
-            qs = self._resolve_base_queryset().order_by(self.get_pk_field_name())
-        except Exception:
-            logger.warning(
-                f"BaseModelViewset {self.__class__.__name__} - Error occurred while fetching queryset for next ID"
-            )
-            return Response({"next_id": None})
-        last = qs.last()
-        if not last:
-            return Response({"next_id": 1})
-        pk_name = self.get_pk_field_name()
-        last_val = getattr(last, pk_name, None)
-        try:
-            next_id = int(last_val) + 1
-        except Exception:
-            logger.warning(
-                f"BaseModelViewset {self.__class__.__name__} - Error occurred while calculating next ID"
-            )
-            return Response({"next_id": None})
-        return Response({"next_id": next_id})
 
     def list(self, request, *args, **kwargs):
         """

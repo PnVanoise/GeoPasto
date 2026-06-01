@@ -1,3 +1,6 @@
+// Couche de base CRUD : données, état modale, GeoJSON, permissions.
+// Consommé par CrudList (listes embarquées) et par useCrudPage.
+// Dans les vues, préférer useCrudPage qui ajoute la navigation par routes.
 import { ref } from "vue";
 import auth from "@/services/axios";
 import config from "../../config";

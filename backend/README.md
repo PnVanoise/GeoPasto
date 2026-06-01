@@ -26,7 +26,7 @@ source venv/bin/activate
 pip install -r backend/requirements-dev.txt
 
 # configurer les variables d'environnement (voir backend/.env.example)
-cp backend/.env.example .env
+cp backend/.env.example backend/.env
 # éditez .env pour renseigner DJANGO_SECRET_KEY et DATABASE_URL
 
 # appliquer migrations et lancer le serveur

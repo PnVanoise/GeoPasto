@@ -16,9 +16,6 @@ venv/
 .venv/
 venv*/
 
-# Environment files (may contain secrets)
-.env
-.env.*
 
 # Logs
 *.log
@@ -34,3 +31,10 @@ venv*/
 .coverage
 build/
 *.egg-info
+
+CLAUDE.md
+mkdocs.yml
+.github/
+doc/
+doc_site/
+

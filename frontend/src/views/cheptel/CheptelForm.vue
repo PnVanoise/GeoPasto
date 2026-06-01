@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <CheptelForm2
+    <CheptelForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import CheptelForm2 from "../../features/cheptel/CheptelForm2.vue";
+import CheptelForm from "../../features/cheptel/CheptelForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <GardeSituationForm2
+    <GardeSituationForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import GardeSituationForm2 from "../../features/garde_situation/GardeSituationForm2.vue";
+import GardeSituationForm from "../../features/garde_situation/GardeSituationForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

@@ -91,7 +91,7 @@
           </v-window-item>
 
           <v-window-item value="geometries">
-            <CrudList2
+            <CrudList
               modelName="geometrieunitepastorale"
               apiRouteName="geometrieUP"
               itemLabel="une géométrie"
@@ -190,7 +190,7 @@ import { usePermissions } from "@/composables/usePermissions";
 import config from "@/../config";
 import OpenLayersGeoJsonMap from "@/components/map/OpenLayersGeoJsonMap.vue";
 import CrudListPage from "@/components/crud/CrudListPage.vue";
-import CrudList2 from "@/components/crud/CrudList2.vue";
+import CrudList from "@/components/crud/CrudList.vue";
 import GeometrieUPForm from "./GeometrieUPForm.vue";
 
 const props = defineProps({

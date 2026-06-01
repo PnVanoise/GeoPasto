@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <EspeceForm2
+    <EspeceForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import EspeceForm2 from "../../features/nomenclatures/EspeceForm2.vue";
+import EspeceForm from "../../features/nomenclatures/EspeceForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

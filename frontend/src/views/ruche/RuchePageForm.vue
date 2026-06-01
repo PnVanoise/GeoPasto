@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <RucheForm2
+    <RucheForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import RucheForm2 from "../../features/ruche/RucheForm2.vue";
+import RucheForm from "../../features/ruche/RucheForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

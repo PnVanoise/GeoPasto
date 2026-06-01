@@ -55,7 +55,7 @@
         </div>
       </template>
       <template v-else>
-        <CrudList2
+        <CrudList
           title="Commodités"
           modelName="abridurgencecommodite"
           apiRouteName="abriDUrgenceCommodite"
@@ -94,7 +94,7 @@
 import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
 import { maxLen } from "@/utils/validators";
-import CrudList2 from "../../components/crud/CrudList2.vue";
+import CrudList from "../../components/crud/CrudList.vue";
 import AbriDUrgenceCommoditeForm from "./AbriDUrgenceCommoditeForm.vue";
 
 const props = defineProps({

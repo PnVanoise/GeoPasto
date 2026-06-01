@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <TypeDeConventionForm2
+    <TypeDeConventionForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import TypeDeConventionForm2 from "../../features/nomenclatures/TypeDeConventionForm2.vue";
+import TypeDeConventionForm from "../../features/nomenclatures/TypeDeConventionForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

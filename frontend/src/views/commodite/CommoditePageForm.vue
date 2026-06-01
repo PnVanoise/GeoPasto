@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading-state">
       <v-progress-circular indeterminate color="primary" />
     </div>
-    <CommoditeForm2
+    <CommoditeForm
       v-else
       :initialForm="itemData"
       :mode="pageMode"
@@ -18,7 +18,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrudPage } from "@/composables/useCrudPage";
-import CommoditeForm2 from "../../features/commodite/CommoditeForm2.vue";
+import CommoditeForm from "../../features/commodite/CommoditeForm.vue";
 import auth from "@/services/axios";
 import config from "@/../config";
 

@@ -30,8 +30,8 @@ cd frontend
 # installer les dépendances
 npm install
 
-# configurer l'URL du backend (voir section Configuration)
-# éditer frontend/config.js
+# copier et adapter le fichier d'environnement
+cp .env.example .env
 
 # lancer le serveur de développement
 npm run dev
@@ -43,13 +43,14 @@ Le serveur écoute par défaut sur `http://localhost:5173`.
 
 ## Configuration
 
-Éditer `frontend/config.js` pour pointer vers le backend :
+Copier `frontend/.env.example` en `frontend/.env` et renseigner l'URL du backend :
 
-```js
-export default {
-  API_BASE_URL: 'http://<@ip_server>:8000'
-};
 ```
+VITE_API_BASE_URL=http://<adresse_du_serveur>
+```
+
+- **Dev local sans nginx** : laisser vide — Vite proxy les appels `/api/` vers `localhost:8000`
+- **Serveur avec nginx** : pointer vers le domaine public
 
 Ce fichier n'est pas versionné — il doit être créé/adapté à chaque instance.
 

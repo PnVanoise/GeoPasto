@@ -218,7 +218,7 @@ watch(
           <div class="nav-item w3-signal-grey" @click="toggleAccordion('ref')">
             Referentiels
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('ref') }"
             ></i>
           </div>
@@ -323,7 +323,7 @@ watch(
           <div class="nav-item w3-signal-yellow" @click="toggleAccordion('admi')">
             Administratif
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('admi') }"
             ></i>
           </div>
@@ -351,7 +351,7 @@ watch(
           <div class="nav-item w3-signal-orange" @click="toggleAccordion('expl')">
             Exploitation
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('expl') }"
             ></i>
           </div>
@@ -433,7 +433,7 @@ watch(
           <div class="nav-item w3-signal-red" @click="toggleAccordion('plan')">
             Suivis et Mesures
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('plan') }"
             ></i>
           </div>
@@ -460,7 +460,7 @@ watch(
           <div class="nav-item w3-signal-violet" @click="toggleAccordion('eve')">
             Evenements
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('eve') }"
             ></i>
           </div>
@@ -479,7 +479,7 @@ watch(
           <div class="nav-item w3-signal-blue" @click="toggleAccordion('equip')">
             Equipements
             <i
-              class="fa fa-caret-down accordion-caret"
+              class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('equip') }"
             ></i>
           </div>
@@ -487,11 +487,7 @@ watch(
             <div
               :class="[
                 'nav-item w3-signal-blue transparent',
-                {
-                  active:
-                    route.path.startsWith('/logement') &&
-                    !route.path.startsWith('/logement-commodite'),
-                },
+                { active: route.path.startsWith('/logement') },
               ]"
             >
               <RouterLink to="/logement">Logements</RouterLink>
@@ -507,22 +503,10 @@ watch(
             <div
               :class="[
                 'nav-item w3-signal-blue transparent',
-                {
-                  active:
-                    route.path.startsWith('/commodite') &&
-                    !route.path.startsWith('/logement-commodite'),
-                },
+                { active: route.path.startsWith('/commodite') },
               ]"
             >
               <RouterLink to="/commodite">Commodités</RouterLink>
-            </div>
-            <div
-              :class="[
-                'nav-item w3-signal-blue transparent',
-                { active: route.path.startsWith('/logement-commodite') },
-              ]"
-            >
-              <RouterLink to="/logement-commodite">Logements / Commodités</RouterLink>
             </div>
           </div>
         </aside>

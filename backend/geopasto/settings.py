@@ -16,10 +16,10 @@ from datetime import timedelta
 import os
 from django.core.exceptions import ImproperlyConfigured
 
-# Load .env from project root. Try python-dotenv first, otherwise fall back
+# Load .env from backend/. Try python-dotenv first, otherwise fall back
 # to a tiny manual loader so the settings work even if dot-env isn't
 # installed in the runtime environment (e.g. systemd/gunicorn venv mismatch).
-env_path = Path(__file__).resolve().parents[2] / ".env"
+env_path = Path(__file__).resolve().parents[1] / ".env"
 try:
     from dotenv import load_dotenv
 

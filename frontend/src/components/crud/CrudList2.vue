@@ -18,34 +18,36 @@
         />
 
         <!-- Rendu automatique des filtres -->
-        <template v-if="props.showFilters" v-for="filter in props.filters" :key="filter.key">
-          <!-- Checkbox -->
-          <div v-if="filter.type === 'checkbox'" style="margin: 0 10px">
-            <v-switch
-              v-model="activeFilters[filter.key]"
-              :label="filter.label"
-              dense
-              flat
-              color="primary"
-              hide-details
-              density="compact"
-            />
-          </div>
+        <template v-if="props.showFilters">
+          <template v-for="filter in props.filters" :key="filter.key">
+            <!-- Checkbox -->
+            <div v-if="filter.type === 'checkbox'" style="margin: 0 10px">
+              <v-switch
+                v-model="activeFilters[filter.key]"
+                :label="filter.label"
+                dense
+                flat
+                color="primary"
+                hide-details
+                density="compact"
+              />
+            </div>
 
-          <!-- Select -->
-          <div v-if="filter.type === 'select'" style="margin: 0 10px; min-width: 200px">
-            <v-select
-              :items="[{ value: '', label: '-- Tous --' }].concat(unref(filter.options) || [])"
-              item-title="label"
-              item-value="value"
-              v-model="activeFilters[filter.key]"
-              :label="filter.label"
-              dense
-              hide-details
-              clearable
-              density="compact"
-            />
-          </div>
+            <!-- Select -->
+            <div v-if="filter.type === 'select'" style="margin: 0 10px; min-width: 200px">
+              <v-select
+                :items="[{ value: '', label: '-- Tous --' }].concat(unref(filter.options) || [])"
+                item-title="label"
+                item-value="value"
+                v-model="activeFilters[filter.key]"
+                :label="filter.label"
+                dense
+                hide-details
+                clearable
+                density="compact"
+              />
+            </div>
+          </template>
         </template>
       </div>
 

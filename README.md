@@ -96,7 +96,8 @@ make runserver    # écoute sur http://127.0.0.1:8000
 ```bash
 cd frontend
 npm install
-# éditer frontend/config.js — renseigner API_BASE_URL
+# copier et adapter le fichier d'environnement (voir frontend/.env.example)
+cp frontend/.env.example frontend/.env
 npm run dev       # écoute sur http://localhost:5173
 ```
 

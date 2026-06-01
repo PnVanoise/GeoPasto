@@ -1,7 +1,10 @@
 module.exports = {
-  apps : [{
-    name   : "vueform-project",
-    script : "/home/geoagri/frontend/vueform-project/src/main.js",
-    cwd: "/home/geoagri/frontend/vueform-project"
-  }]
-}
+  apps: [
+    {
+      name: "geopasto-frontend",
+      script: "./node_modules/.bin/vite",
+      args: "--port 9877",
+      cwd: "/home/geoagri/geopasto/frontend",
+    },
+  ],
+};

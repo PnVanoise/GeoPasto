@@ -151,7 +151,7 @@ router.register(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("choices_logement/", get_choices_logement, name="get_choices_logement"),
     path("api/", include(router.urls)),
+    path("api/choices_logement/", get_choices_logement, name="get_choices_logement"),
     path("", include("accounts.urls")),
 ]

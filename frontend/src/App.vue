@@ -454,6 +454,15 @@ watch(
             >
               <RouterLink to="/mesure-plan">Mesures de suivi</RouterLink>
             </div>
+            <div
+              v-if="hasPermissionForModel('visite')"
+              :class="[
+                'nav-item w3-signal-red transparent',
+                { active: route.path.startsWith('/visite') },
+              ]"
+            >
+              <RouterLink to="/visite">Visites</RouterLink>
+            </div>
           </div>
 
           <!-- Accordeon 'Evenements'-->

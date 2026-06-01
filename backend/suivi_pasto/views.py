@@ -115,6 +115,9 @@ from suivi_pasto.serializers import (
     EquipementAlpageSerializer,
 )
 
+from suivi_pasto.models import Visite
+from suivi_pasto.serializers import VisiteSerializer
+
 
 from .choices_logement import (
     LST_STATUT,
@@ -1075,6 +1078,20 @@ class EleveurViewset(BaseModelViewSet):
         ]
         return Response(data)
 
+    @action(
+        detail=False, methods=["get"], url_path="by-unite-pastorale/(?P<up_id>[^/.]+)"
+    )
+    def by_unite_pastorale(self, request, up_id=None):
+        eleveur_ids = (
+            EtreCompose.objects.filter(exploitant__situations__unite_pastorale_id=up_id)
+            .values_list("eleveur_id", flat=True)
+            .distinct()
+        )
+        eleveurs = Eleveur.objects.filter(id_eleveur__in=eleveur_ids).order_by(
+            "nom_eleveur"
+        )
+        return Response(EleveurSerializer(eleveurs, many=True).data)
+
 
 class TypeDExploitantViewset(BaseModelViewSet):
     serializer_class = TypeDExploitantSerializer
@@ -1176,3 +1193,18 @@ class ProductionViewset(BaseModelViewSet):
     def get_queryset(self):
         queryset = Production.objects.all().order_by("id_production")
         return queryset
+
+
+class VisiteViewset(BaseModelViewSet):
+    serializer_class = VisiteSerializer
+
+    def get_queryset(self):
+        qs = (
+            Visite.objects.select_related("unite_pastorale")
+            .prefetch_related("observateurs", "contacts_alpagistes")
+            .order_by("-date_visite")
+        )
+        up = self.request.query_params.get("unite_pastorale")
+        if up:
+            qs = qs.filter(unite_pastorale=up)
+        return qs

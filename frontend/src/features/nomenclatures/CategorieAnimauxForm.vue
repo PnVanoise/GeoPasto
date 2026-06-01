@@ -65,6 +65,7 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="!isFormValid"
         >{{ btTitle }}</v-btn
       >
     </div>
@@ -135,6 +136,8 @@ onMounted(() => {
 });
 
 // Submits
+const isFormValid = computed(() => !!form.description?.trim());
+
 const submitForm = () => {
   if (!props.onSubmit) return;
   // payload propre (deep copy) : enlever champs read-only et n'envoyer l'id que pour update

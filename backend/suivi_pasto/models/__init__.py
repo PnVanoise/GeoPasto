@@ -39,6 +39,7 @@ from .suivi import (
     RealisationMesure,
     TypeEvenement,
     Evenement,
+    Visite,
 )
 from .equipements import (
     TypeEquipement,
@@ -85,6 +86,7 @@ __all__ = [
     "RealisationMesure",
     "TypeEvenement",
     "Evenement",
+    "Visite",
     "TypeEquipement",
     "EquipementAlpage",
     "EquipementExploitant",

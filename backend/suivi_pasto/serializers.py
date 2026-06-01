@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Sum
 
@@ -33,7 +34,7 @@ from suivi_pasto.models import (
 )
 from suivi_pasto.models import SituationDExploitation, Exploiter
 from suivi_pasto.models import Ruche, Berger, GardeSituation
-from suivi_pasto.models import TypeEvenement, Evenement
+from suivi_pasto.models import TypeEvenement, Evenement, Visite
 from suivi_pasto.models import TypeEquipement, EquipementAlpage, EquipementExploitant
 from suivi_pasto.models import (
     Production,
@@ -1531,3 +1532,81 @@ class EquipementExploitantSerializer(
         if instance.geometry is not None:
             instance.geometry.transform(4326)
         return super().to_representation(instance)
+
+
+class VisiteSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+    contact_alpagiste_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True,
+    )
+    contacts_alpagistes = serializers.SerializerMethodField()
+    observateur_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True,
+    )
+    observateurs = serializers.SerializerMethodField()
+    unite_pastorale_nom = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Visite
+        fields = [
+            "id_visite",
+            "date_visite",
+            "description",
+            "commentaire",
+            "unite_pastorale",
+            "unite_pastorale_nom",
+            "contact_alpagiste_ids",
+            "contacts_alpagistes",
+            "observateur_ids",
+            "observateurs",
+        ]
+
+    def get_unite_pastorale_nom(self, obj):
+        if obj.unite_pastorale_id:
+            return obj.unite_pastorale.nom_up
+        return None
+
+    def get_contacts_alpagistes(self, obj):
+        return [
+            {
+                "id": e.id_eleveur,
+                "full_name": f"{e.nom_eleveur} {e.prenom_eleveur or ''}".strip(),
+            }
+            for e in obj.contacts_alpagistes.all()
+        ]
+
+    def get_observateurs(self, obj):
+        return [
+            {
+                "id": u.id,
+                "full_name": f"{u.first_name} {u.last_name}".strip() or u.username,
+            }
+            for u in obj.observateurs.all()
+        ]
+
+    def create(self, validated_data):
+        alpagiste_ids = validated_data.pop("contact_alpagiste_ids", [])
+        observateur_ids = validated_data.pop("observateur_ids", [])
+        visite = Visite.objects.create(**validated_data)
+        if alpagiste_ids:
+            visite.contacts_alpagistes.set(alpagiste_ids)
+        if observateur_ids:
+            visite.observateurs.set(observateur_ids)
+        return visite
+
+    def update(self, instance, validated_data):
+        alpagiste_ids = validated_data.pop("contact_alpagiste_ids", None)
+        observateur_ids = validated_data.pop("observateur_ids", None)
+        for attr, val in validated_data.items():
+            setattr(instance, attr, val)
+        instance.save()
+        if alpagiste_ids is not None:
+            instance.contacts_alpagistes.set(alpagiste_ids)
+        if observateur_ids is not None:
+            instance.observateurs.set(observateur_ids)
+        return instance

@@ -223,6 +223,7 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="!isFormValid"
       >
         {{ btTitle }}
       </v-btn>
@@ -262,6 +263,14 @@ const formTitle = computed(() => {
 });
 
 const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"));
+
+const isFormValid = computed(
+  () =>
+    !!form.description?.trim() &&
+    !!form.date_evenement &&
+    !!form.observateur?.trim() &&
+    !!form.date_observation
+);
 
 const form = reactive({
   date_evenement: "",

@@ -58,6 +58,8 @@ from suivi_pasto.views import (
 
 ##########
 
+from suivi_pasto.views import VisiteViewset
+
 router = routers.SimpleRouter()
 
 
@@ -147,6 +149,8 @@ router.register(
     "categorie_animaux", CategorieAnimauxViewset, basename="categorie_animaux"
 )
 ###########
+
+router.register("visite", VisiteViewset, basename="visite")
 
 
 urlpatterns = [

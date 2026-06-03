@@ -836,6 +836,7 @@ defineExpose({
     const features = source.getFeatures();
     return Array.isArray(features) && features.length > 0;
   },
+  fitToFeatures,
 });
 
 onMounted(async () => {

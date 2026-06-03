@@ -73,6 +73,7 @@
             class="import-textarea"
           />
           <div class="import-actions">
+            <span v-if="importInfo" class="import-info">{{ importInfo }}</span>
             <span v-if="importError" class="import-error">{{ importError }}</span>
             <v-btn color="primary" size="small" prepend-icon="mdi-import" @click="importerGeometrie"
               >Importer</v-btn
@@ -97,7 +98,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed } from "vue";
+import { reactive, ref, computed, watch } from "vue";
 import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
 import WKT from "ol/format/WKT";
@@ -155,6 +156,21 @@ const showImport = ref(false);
 const importText = ref("");
 const importCrs = ref("EPSG:2154");
 const importError = ref("");
+const importInfo = ref("");
+
+const detectImportCrs = (text) => {
+  const trimmed = text?.trim();
+  if (!trimmed || trimmed.startsWith("{")) return "";
+  const coordMatch = trimmed.match(/\(\s*([-\d.]+)\s+([-\d.]+)/);
+  const firstX = coordMatch ? parseFloat(coordMatch[1]) : null;
+  return firstX !== null && Math.abs(firstX) < 360 && importCrs.value !== "EPSG:4326"
+    ? "Coordonnées WGS84 détectées — projection source ignorée."
+    : "";
+};
+
+watch(importText, (text) => {
+  importInfo.value = detectImportCrs(text);
+});
 
 const crsOptions = [
   { value: "EPSG:2154", label: "Lambert 93 (EPSG:2154)" },
@@ -163,6 +179,7 @@ const crsOptions = [
 
 const importerGeometrie = () => {
   importError.value = "";
+  importInfo.value = "";
   const text = importText.value.trim();
   if (!text) {
     importError.value = "Collez une géométrie WKT ou GeoJSON.";
@@ -183,8 +200,12 @@ const importerGeometrie = () => {
       }
       if (!geometry?.type) throw new Error("GeoJSON invalide.");
     } else {
+      const coordMatch = text.match(/\(\s*([-\d.]+)\s+([-\d.]+)/);
+      const firstX = coordMatch ? parseFloat(coordMatch[1]) : null;
+      const effectiveCrs =
+        firstX !== null && Math.abs(firstX) < 360 ? "EPSG:4326" : importCrs.value;
       const olFeature = new WKT().readFeature(text, {
-        dataProjection: importCrs.value,
+        dataProjection: effectiveCrs,
         featureProjection: "EPSG:4326",
       });
       if (!olFeature) throw new Error("WKT invalide.");
@@ -192,7 +213,7 @@ const importerGeometrie = () => {
     }
 
     form.geometry = geometry;
-    showImport.value = false;
+    if (!importInfo.value) showImport.value = false;
     importText.value = "";
   } catch (e) {
     importError.value = e.message || "Format non reconnu (WKT ou GeoJSON attendu).";
@@ -298,5 +319,9 @@ const submitForm = () => {
 .import-error {
   font-size: 0.78rem;
   color: #dc2626;
+}
+.import-info {
+  font-size: 0.78rem;
+  color: #2563eb;
 }
 </style>

@@ -612,7 +612,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
             # 4) Equipements exploitant: clone and reattach to new situation
             for old_eq in source.eqptsExploitant.all():
                 EquipementExploitant.objects.create(
-                    description=old_eq.description,
+                    commentaire=old_eq.commentaire,
                     etat=old_eq.etat,
                     geometry=old_eq.geometry,
                     type_equipement=old_eq.type_equipement,

@@ -85,7 +85,7 @@
                 :items="ups"
                 item-title="nom_up"
                 item-value="id_unite_pastorale"
-                :disabled="props.mode === 'view'"
+                :disabled="props.mode === 'view' || props.lockUnitePastorale"
                 label="Unité pastorale"
                 density="compact"
                 variant="underlined"
@@ -180,6 +180,7 @@ const props = defineProps({
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
+  lockUnitePastorale: { type: Boolean, default: false },
 });
 
 const { can } = usePermissions("plandesuivi");

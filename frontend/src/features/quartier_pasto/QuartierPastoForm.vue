@@ -80,23 +80,9 @@
           </button>
 
           <div v-if="showImport" class="import-panel">
-            <div class="import-row">
-              <v-select
-                v-model="importCrs"
-                :items="crsOptions"
-                item-value="value"
-                item-title="label"
-                label="Projection source"
-                density="compact"
-                variant="underlined"
-                hide-details
-                class="import-crs-select"
-              />
-              <span class="import-hint">WKT ou GeoJSON</span>
-            </div>
             <v-textarea
               v-model="importText"
-              label="Coller la géométrie copiée depuis QGIS"
+              label="Coller la géométrie copiée depuis QGIS (WKT ou GeoJSON)"
               density="compact"
               variant="outlined"
               hide-details
@@ -280,32 +266,43 @@ const splitSuccess = ref(false);
 
 const showImport = ref(false);
 const importText = ref("");
-const importCrs = ref("EPSG:2154");
 const importError = ref("");
 const importInfo = ref("");
+const detectedCrs = ref("");
 
-const detectImportCrs = (text) => {
-  const trimmed = text?.trim();
-  if (!trimmed || trimmed.startsWith("{")) return "";
-  const coordMatch = trimmed.match(/\(\s*([-\d.]+)\s+([-\d.]+)/);
-  const firstX = coordMatch ? parseFloat(coordMatch[1]) : null;
-  return firstX !== null && Math.abs(firstX) < 360 && importCrs.value !== "EPSG:4326"
-    ? "Coordonnées WGS84 détectées — projection source ignorée."
-    : "";
+const CRS_LABELS = {
+  "EPSG:4326": "WGS84 (EPSG:4326)",
+  "EPSG:2154": "Lambert 93 (EPSG:2154)",
+  "EPSG:3857": "Web Mercator (EPSG:3857)",
+};
+
+const detectCrsFromCoords = (x, y) => {
+  if (Math.abs(x) <= 180 && Math.abs(y) <= 90) return "EPSG:4326";
+  if (x > 70000 && x < 1300000 && y > 6000000 && y < 7200000) return "EPSG:2154";
+  return "EPSG:3857";
 };
 
 watch(importText, (text) => {
-  importInfo.value = detectImportCrs(text);
+  importError.value = "";
+  const trimmed = text?.trim();
+  if (!trimmed || trimmed.startsWith("{")) {
+    detectedCrs.value = "";
+    importInfo.value = "";
+    return;
+  }
+  const coordMatch = trimmed.match(/\(\s*([-\d.]+)\s+([-\d.]+)/);
+  if (!coordMatch) {
+    detectedCrs.value = "";
+    importInfo.value = "";
+    return;
+  }
+  const crs = detectCrsFromCoords(parseFloat(coordMatch[1]), parseFloat(coordMatch[2]));
+  detectedCrs.value = crs;
+  importInfo.value = `Projection détectée : ${CRS_LABELS[crs]}`;
 });
-
-const crsOptions = [
-  { value: "EPSG:2154", label: "Lambert 93 (EPSG:2154)" },
-  { value: "EPSG:4326", label: "WGS84 (EPSG:4326)" },
-];
 
 const importerGeometrie = () => {
   importError.value = "";
-  importInfo.value = "";
   const text = importText.value.trim();
   if (!text) {
     importError.value = "Collez une géométrie WKT ou GeoJSON.";
@@ -324,10 +321,7 @@ const importerGeometrie = () => {
       }
       if (!geometry?.type) throw new Error("GeoJSON invalide.");
     } else {
-      const coordMatch = text.match(/\(\s*([-\d.]+)\s+([-\d.]+)/);
-      const firstX = coordMatch ? parseFloat(coordMatch[1]) : null;
-      const effectiveCrs =
-        firstX !== null && Math.abs(firstX) < 360 ? "EPSG:4326" : importCrs.value;
+      const effectiveCrs = detectedCrs.value || "EPSG:4326";
       const olFeature = new WKT().readFeature(text, {
         dataProjection: effectiveCrs,
         featureProjection: "EPSG:4326",
@@ -336,7 +330,7 @@ const importerGeometrie = () => {
       geometry = new GeoJSON().writeGeometryObject(olFeature.getGeometry());
     }
     form.value.geometry = geometry;
-    if (!importInfo.value) showImport.value = false;
+    showImport.value = false;
     importText.value = "";
   } catch (e) {
     importError.value = e.message || "Format non reconnu (WKT ou GeoJSON attendu).";

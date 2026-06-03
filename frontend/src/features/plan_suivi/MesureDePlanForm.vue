@@ -88,16 +88,19 @@
         </div>
         <div class="w3-row form-ligne">
           <div class="w3-half form-cell">
-            <v-radio-group
-              v-model="form.obligation"
-              :disabled="props.mode === 'view'"
-              inline
-              density="compact"
-              hide-details
-            >
-              <v-radio label="Préconisation" :value="false" />
-              <v-radio label="Obligation" :value="true" />
-            </v-radio-group>
+            <div class="obligation-field" :class="{ 'is-disabled': props.mode === 'view' }">
+              <span class="obligation-label">Obligation</span>
+              <v-radio-group
+                v-model="form.obligation"
+                :disabled="props.mode === 'view'"
+                inline
+                density="compact"
+                hide-details
+              >
+                <v-radio label="Préconisation" :value="false" />
+                <v-radio label="Obligation" :value="true" />
+              </v-radio-group>
+            </div>
           </div>
           <div class="w3-half form-cell">
             <v-select
@@ -420,6 +423,31 @@ const closeModal = () => {
 }
 .mesure-plan-form :deep(.v-field__input),
 .mesure-plan-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
+}
+.obligation-field {
+  padding: 4px 0 2px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.42);
+  transition: border-color 140ms ease;
+}
+.obligation-field:hover {
+  border-bottom-color: rgba(0, 0, 0, 0.87);
+}
+.obligation-field.is-disabled {
+  border-bottom-style: dashed;
+  opacity: 0.6;
+}
+.obligation-label {
+  display: block;
+  font-size: 0.82rem;
+  color: rgba(0, 0, 0, 0.6);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.obligation-field :deep(.v-radio-group) {
+  padding-top: 0;
+}
+.obligation-field :deep(.v-label) {
   font-size: 0.88rem;
 }
 .form-ligne {

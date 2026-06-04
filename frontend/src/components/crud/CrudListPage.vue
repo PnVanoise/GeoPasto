@@ -44,6 +44,34 @@
                 density="compact"
               />
             </div>
+
+            <div v-if="filter.type === 'multiselect'" style="margin: 0 10px; min-width: 200px">
+              <v-select
+                :items="unref(filter.options) || []"
+                item-title="label"
+                item-value="value"
+                v-model="activeFilters[filter.key]"
+                :label="filter.label"
+                multiple
+                chips
+                closable-chips
+                dense
+                hide-details
+                density="compact"
+              />
+            </div>
+
+            <div v-if="filter.type === 'date'" style="margin: 0 10px; min-width: 160px">
+              <v-text-field
+                v-model="activeFilters[filter.key]"
+                :label="filter.label"
+                type="date"
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
+              />
+            </div>
           </template>
         </template>
       </div>
@@ -153,7 +181,7 @@ const searchQuery = ref("");
 const activeFilters = ref({});
 
 props.filters.forEach((f) => {
-  activeFilters.value[f.key] = f.default ?? "";
+  activeFilters.value[f.key] = "default" in f ? f.default : "";
 });
 
 // ── Filtrage ─────────────────────────────────────────────────────────────────

@@ -64,6 +64,19 @@ class TypeDeMesure(AuditFieldsMixin, models.Model):
         return str(self.description)
 
 
+class Enjeu(AuditFieldsMixin, models.Model):
+    id_enjeu = models.BigAutoField(primary_key=True)
+    description = models.CharField(max_length=150, null=False, blank=False)
+
+    class Meta:
+        verbose_name = "enjeu"
+        verbose_name_plural = "enjeux"
+        ordering = ["description"]
+
+    def __str__(self):
+        return str(self.description)
+
+
 class MesureDePlan(AuditFieldsMixin, models.Model):
     id_mesure_plan = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=150, null=False, blank=False)
@@ -86,6 +99,11 @@ class MesureDePlan(AuditFieldsMixin, models.Model):
     )
     geometry = models.GeometryField(srid=2154, null=True, blank=True)
     obligation = models.BooleanField(default=False)
+    enjeux = models.ManyToManyField(
+        "suivi_pasto.Enjeu",
+        blank=True,
+        related_name="mesures_de_plan",
+    )
 
     class Meta:
         verbose_name = "mesure de plan"

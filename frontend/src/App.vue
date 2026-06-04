@@ -317,6 +317,14 @@ watch(
             >
               <RouterLink to="/type-evenement">Types d'evenements</RouterLink>
             </div>
+            <div
+              :class="[
+                'nav-item w3-signal-grey transparent',
+                { active: route.path.startsWith('/enjeu') },
+              ]"
+            >
+              <RouterLink to="/enjeu">Enjeux</RouterLink>
+            </div>
           </div>
 
           <!-- Accordeon 'administratif'-->

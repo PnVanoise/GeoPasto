@@ -87,6 +87,26 @@
           </div>
         </div>
         <div class="w3-row form-ligne">
+          <div class="form-cell">
+            <v-select
+              v-model="form.enjeu_ids"
+              :items="enjeux"
+              item-value="id_enjeu"
+              item-title="description"
+              :disabled="props.mode === 'view'"
+              label="Enjeux"
+              density="compact"
+              variant="underlined"
+              hide-details
+              multiple
+              chips
+              closable-chips
+              clearable
+              :menu-props="{ maxHeight: '300px' }"
+            />
+          </div>
+        </div>
+        <div class="w3-row form-ligne">
           <div class="w3-half form-cell">
             <div class="obligation-field" :class="{ 'is-disabled': props.mode === 'view' }">
               <span class="obligation-label">Obligation</span>
@@ -244,6 +264,7 @@ const form = reactive({
   plan_suivi: null,
   geometry: null,
   obligation: false,
+  enjeu_ids: [],
 });
 
 const geometryType = ref("Polygon");
@@ -347,6 +368,7 @@ const importerGeometrie = async () => {
 
 const typemesures = ref([]);
 const plansuivis = ref([]);
+const enjeux = ref([]);
 const upContextGeoData = ref(null);
 
 const mapContextLayers = computed(() => {
@@ -413,6 +435,7 @@ watch(
     form.plan_suivi = src.plan_suivi ?? null;
     form.geometry = newVal.geometry ?? src.geometry ?? null;
     form.obligation = src.obligation ?? false;
+    form.enjeu_ids = Array.isArray(src.enjeux) ? src.enjeux.map((e) => e.id) : [];
     if (form.geometry?.type) {
       geometryType.value = form.geometry.type;
     }
@@ -450,6 +473,13 @@ onMounted(() => {
       plansuivis.value = data;
     })
     .catch(() => {});
+
+  auth.axiosInstance
+    .get(`${config.API_BASE_URL}/api/enjeu/`)
+    .then(({ data }) => {
+      enjeux.value = data;
+    })
+    .catch(() => {});
 });
 
 const submitForm = () => {
@@ -465,6 +495,7 @@ const submitForm = () => {
       plan_suivi: form.plan_suivi || null,
       geometry: form.geometry ?? null,
       obligation: form.obligation,
+      enjeu_ids: form.enjeu_ids,
     });
   }
 };

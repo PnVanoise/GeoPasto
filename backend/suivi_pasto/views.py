@@ -295,7 +295,7 @@ class MesureDePlanViewset(BaseModelViewSet):
         queryset = (
             MesureDePlan.objects.all()
             .select_related("type_mesure")
-            .select_related("plan_suivi")
+            .select_related("plan_suivi__unite_pastorale")
             .prefetch_related("enjeux")
             .order_by("id_mesure_plan")
         )

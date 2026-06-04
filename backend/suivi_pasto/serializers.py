@@ -373,6 +373,9 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
         queryset=PlanDeSuivi.objects.all(), allow_null=True
     )
     plan_suivi_detail = PlanDeSuiviSerializer(source="plan_suivi", read_only=True)
+    unite_pastorale_detail = UnitePastoraleLSerializer(
+        source="plan_suivi.unite_pastorale", read_only=True
+    )
     type_mesure = serializers.PrimaryKeyRelatedField(
         queryset=TypeDeMesure.objects.all(),
         allow_null=True,
@@ -399,6 +402,7 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
             "type_mesure_detail",
             "plan_suivi",
             "plan_suivi_detail",
+            "unite_pastorale_detail",
             "geometry",
             "obligation",
             "enjeu_ids",

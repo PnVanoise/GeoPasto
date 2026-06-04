@@ -394,6 +394,7 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
         geo_field = "geometry"
         fields = [
             "id_mesure_plan",
+            "code",
             "description",
             "commentaire",
             "date_debut_validite",
@@ -480,6 +481,7 @@ class MesureDePlanSimpleSerializer(
         model = MesureDePlan
         fields = [
             "id_mesure_plan",
+            "code",
             "description",
             "commentaire",
             "date_debut_validite",

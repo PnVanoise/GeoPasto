@@ -79,6 +79,7 @@ class Enjeu(AuditFieldsMixin, models.Model):
 
 class MesureDePlan(AuditFieldsMixin, models.Model):
     id_mesure_plan = models.BigAutoField(primary_key=True)
+    code = models.CharField(max_length=5, null=True, blank=True)
     description = models.CharField(max_length=150, null=False, blank=False)
     commentaire = models.TextField(null=True, blank=True)
     date_debut_validite = models.DateField(null=True, blank=True)

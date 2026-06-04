@@ -383,9 +383,17 @@ function performDelete() {
 
 .table-with-fixed-header th,
 .table-with-fixed-header td {
-  min-width: 120px;
+  min-width: 0;
+  width: 1%;
+  white-space: nowrap;
   padding: 3px 8px;
   text-align: left;
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+
+.table-with-fixed-header th {
+  font-size: 0.82rem;
 }
 
 .table-with-fixed-header th.actions-col,
@@ -421,7 +429,7 @@ function performDelete() {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
 }
 
 .table-with-fixed-header td.actions-col .icon-view,

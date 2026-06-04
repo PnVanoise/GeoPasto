@@ -63,12 +63,13 @@ const logout = () => {
 }
 
 button {
-  padding: 10px 20px;
+  padding: 6px 14px;
   background-color: #ff4757;
   color: white;
   border: none;
   border-radius: 999px;
   cursor: pointer;
+  font-size: 0.875rem;
 }
 
 button:hover {

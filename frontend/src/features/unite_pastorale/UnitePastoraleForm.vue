@@ -8,6 +8,7 @@
           <v-tab value="geometries" :disabled="props.mode === 'add'">Géométries</v-tab>
           <v-tab value="conventions" :disabled="props.mode === 'add'">Conventions</v-tab>
           <v-tab value="visites" :disabled="props.mode === 'add'">Visites</v-tab>
+          <v-tab value="suivis" :disabled="props.mode === 'add'">Suivis</v-tab>
         </v-tabs>
 
         <v-window v-model="activeTab">
@@ -171,6 +172,32 @@
               />
             </template>
           </v-window-item>
+
+          <v-window-item value="suivis">
+            <template v-if="props.mode === 'add'">
+              <div class="w3-panel w3-pale-yellow info-panel">
+                Enregistrez l'unité pastorale pour pouvoir ajouter des suivis.
+              </div>
+            </template>
+            <template v-else-if="form.id">
+              <CrudListPage
+                modelName="plandesuivi"
+                apiRouteName="planSuivi"
+                itemLabel="un suivi"
+                idField="id_plan_suivi"
+                :columns="suiviGridColumns"
+                :bgColor="'#64748b'"
+                :showTitle="false"
+                :showHeader="true"
+                :showSearch="false"
+                :showFilters="false"
+                :filters="[]"
+                :viewOnly="props.mode === 'view'"
+                :requestParams="form.id ? { unite_pastorale: form.id } : null"
+                :addQueryParams="form.id ? { unite_pastorale: form.id } : {}"
+              />
+            </template>
+          </v-window-item>
         </v-window>
       </section>
 
@@ -270,6 +297,13 @@ const conventionGridColumns = ref([
   { field: "exploitant_nom", label: "Alpagiste", sortable: true },
   { field: "date_debut", label: "Début", sortable: true },
   { field: "date_fin", label: "Fin", sortable: true },
+]);
+
+const suiviGridColumns = ref([
+  { field: "description", label: "Description", sortable: true },
+  { field: "date_debut", label: "Début", sortable: true },
+  { field: "date_fin", label: "Fin", sortable: true },
+  { field: "type_suivi_detail.description", label: "Type de suivi", sortable: true },
 ]);
 
 const form = reactive({
@@ -484,9 +518,21 @@ const closeModal = () => props.onClose?.();
 .up-form-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-rows: minmax(480px, auto);
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
   margin-top: 0.5rem;
+}
+.map-card {
+  display: flex;
+  flex-direction: column;
+}
+.up-form :deep(.ol-map-wrapper) {
+  flex: 1;
+  min-height: 0;
+}
+.up-form :deep(.ol-map) {
+  height: 100%;
 }
 
 .layout-card {

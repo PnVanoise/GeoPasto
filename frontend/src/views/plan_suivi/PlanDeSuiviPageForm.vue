@@ -10,6 +10,7 @@
       itemLabel="un suivi"
       :onSubmit="handleSubmit"
       :onClose="() => router.back()"
+      :lockUnitePastorale="!!route.query.unite_pastorale"
     />
   </div>
 </template>

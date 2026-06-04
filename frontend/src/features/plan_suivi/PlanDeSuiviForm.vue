@@ -85,7 +85,7 @@
                 :items="ups"
                 item-title="nom_up"
                 item-value="id_unite_pastorale"
-                :disabled="props.mode === 'view'"
+                :disabled="props.mode === 'view' || props.lockUnitePastorale"
                 label="Unité pastorale"
                 density="compact"
                 variant="underlined"
@@ -180,6 +180,7 @@ const props = defineProps({
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
+  lockUnitePastorale: { type: Boolean, default: false },
 });
 
 const { can } = usePermissions("plandesuivi");
@@ -292,10 +293,10 @@ const mesuresMapLayers = computed(() => {
 });
 
 const mesureColumns = [
-  { field: "description", label: "Description", sortable: true },
   { field: "type_mesure_detail.description", label: "Type", sortable: true },
-  { field: "debut_periode", label: "Début", sortable: true },
-  { field: "fin_periode", label: "Fin", sortable: true },
+  { field: "obligation", label: "Oblig.", sortable: true },
+  { field: "debut_periode", label: "Début", sortable: true, format: "date" },
+  { field: "fin_periode", label: "Fin", sortable: true, format: "date" },
 ];
 
 const fetchMesuresForPlan = async (planId) => {
@@ -449,7 +450,7 @@ const closeModal = () => {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
   margin-top: 0.5rem;
 }
 .plan-suivi-left {
@@ -464,6 +465,15 @@ const closeModal = () => {
   position: sticky;
   top: 1rem;
   min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+.plan-suivi-form :deep(.ol-map-wrapper) {
+  flex: 1;
+  min-height: 0;
+}
+.plan-suivi-form :deep(.ol-map) {
+  height: 100%;
 }
 .layout-card {
   background: #ffffff;

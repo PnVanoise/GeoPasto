@@ -118,7 +118,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
       },
       popup: {
         typeLabel: "Équipement alpage",
-        attribute: "description",
+        attribute: "type_equipement_label",
         idAttribute: "id_equipement_alpage",
         route: "",
       },
@@ -139,7 +139,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
       },
       popup: {
         typeLabel: "Équipement exploitant",
-        attribute: "description",
+        attribute: "type_equipement_label",
         idAttribute: "id_equipement_exploitant",
         route: "",
       },
@@ -434,6 +434,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
             properties: {
               ...(f?.properties || {}),
               id_equipement_alpage: rawId ?? f?.properties?.id_equipement_alpage,
+              type_equipement_label: f?.properties?.type_equipement_detail?.description ?? null,
             },
           };
         });
@@ -465,6 +466,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
             properties: {
               ...(f?.properties || {}),
               id_equipement_exploitant: rawId ?? f?.properties?.id_equipement_exploitant,
+              type_equipement_label: f?.properties?.type_equipement_detail?.description ?? null,
             },
           };
         });
@@ -492,9 +494,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
         .map((f) => {
           const rawId = f?.id ?? f?.properties?.id_mesure_plan ?? f?.properties?.id;
           const typeMesure = f?.properties?.type_mesure_detail?.description;
-          const desc = f?.properties?.description;
-          const popupLabel =
-            [typeMesure, desc].filter(Boolean).join(" – ") || desc || `Mesure ${rawId}`;
+          const popupLabel = typeMesure || `Mesure ${rawId}`;
           return {
             ...f,
             id: rawId != null ? `mesure_plan:${rawId}` : undefined,

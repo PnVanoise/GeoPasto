@@ -295,8 +295,8 @@ const mesuresMapLayers = computed(() => {
 const mesureColumns = [
   { field: "type_mesure_detail.description", label: "Type", sortable: true },
   { field: "obligation", label: "Oblig.", sortable: true },
-  { field: "debut_periode", label: "Début", sortable: true, format: "date" },
-  { field: "fin_periode", label: "Fin", sortable: true, format: "date" },
+  { field: "date_debut_validite", label: "Début validité", sortable: true, format: "date" },
+  { field: "date_fin_validite", label: "Fin validité", sortable: true, format: "date" },
 ];
 
 const fetchMesuresForPlan = async (planId) => {

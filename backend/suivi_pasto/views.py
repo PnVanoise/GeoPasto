@@ -305,6 +305,22 @@ class MesureDePlanViewset(BaseModelViewSet):
         unite_pastorale = self.request.GET.get("unite_pastorale")
         if unite_pastorale is not None:
             queryset = queryset.filter(plan_suivi__unite_pastorale_id=unite_pastorale)
+        situation_id = self.request.GET.get("situation")
+        if situation_id is not None:
+            try:
+                situ = SituationDExploitation.objects.get(pk=situation_id)
+                if situ.date_fin:
+                    queryset = queryset.filter(
+                        Q(date_debut_validite__isnull=True)
+                        | Q(date_debut_validite__lte=situ.date_fin)
+                    )
+                if situ.date_debut:
+                    queryset = queryset.filter(
+                        Q(date_fin_validite__isnull=True)
+                        | Q(date_fin_validite__gte=situ.date_debut)
+                    )
+            except SituationDExploitation.DoesNotExist:
+                pass
         return queryset
 
 

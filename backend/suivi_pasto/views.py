@@ -31,6 +31,7 @@ from suivi_pasto.models import (
     TypeDeSuivi,
     PlanDeSuivi,
     TypeDeMesure,
+    Enjeu,
     MesureDePlan,
     RealisationMesure,
 )
@@ -88,6 +89,7 @@ from suivi_pasto.serializers import (
     TypeDeSuiviSerializer,
     PlanDeSuiviSerializer,
     TypeDeMesureSerializer,
+    EnjeuSerializer,
     MesureDePlanSerializer,
     RealisationMesureSerializer,
 )
@@ -279,6 +281,13 @@ class TypeDeMesureViewset(BaseModelViewSet):
         return queryset
 
 
+class EnjeuViewset(BaseModelViewSet):
+    serializer_class = EnjeuSerializer
+
+    def get_queryset(self):
+        return Enjeu.objects.all().order_by("description")
+
+
 class MesureDePlanViewset(BaseModelViewSet):
     serializer_class = MesureDePlanSerializer
 
@@ -287,6 +296,7 @@ class MesureDePlanViewset(BaseModelViewSet):
             MesureDePlan.objects.all()
             .select_related("type_mesure")
             .select_related("plan_suivi")
+            .prefetch_related("enjeux")
             .order_by("id_mesure_plan")
         )
         plan_suivi = self.request.GET.get("plan_suivi")

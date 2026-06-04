@@ -17,6 +17,7 @@ from suivi_pasto.models import (
     TypeDeSuivi,
     PlanDeSuivi,
     TypeDeMesure,
+    Enjeu,
     MesureDePlan,
     RealisationMesure,
 )
@@ -361,6 +362,12 @@ class TypeDeMesureSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializ
         fields = ["id_type_mesure", "description"]
 
 
+class EnjeuSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Enjeu
+        fields = ["id_enjeu", "description"]
+
+
 class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     plan_suivi = serializers.PrimaryKeyRelatedField(
         queryset=PlanDeSuivi.objects.all(), allow_null=True
@@ -371,6 +378,13 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
         allow_null=True,
     )
     type_mesure_detail = TypeDeMesureSerializer(source="type_mesure", read_only=True)
+    enjeu_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True,
+    )
+    enjeux = serializers.SerializerMethodField()
 
     class Meta:
         model = MesureDePlan
@@ -387,6 +401,13 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
             "plan_suivi_detail",
             "geometry",
             "obligation",
+            "enjeu_ids",
+            "enjeux",
+        ]
+
+    def get_enjeux(self, obj):
+        return [
+            {"id": e.id_enjeu, "description": e.description} for e in obj.enjeux.all()
         ]
 
     def validate(self, attrs):
@@ -402,6 +423,20 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
                 }
             )
         return attrs
+
+    def create(self, validated_data):
+        enjeu_ids = validated_data.pop("enjeu_ids", [])
+        instance = super().create(validated_data)
+        if enjeu_ids:
+            instance.enjeux.set(enjeu_ids)
+        return instance
+
+    def update(self, instance, validated_data):
+        enjeu_ids = validated_data.pop("enjeu_ids", None)
+        instance = super().update(instance, validated_data)
+        if enjeu_ids is not None:
+            instance.enjeux.set(enjeu_ids)
+        return instance
 
     def to_representation(self, instance):
         if instance.geometry is not None:

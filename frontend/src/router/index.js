@@ -392,6 +392,31 @@ const router = createRouter({
       ],
     },
     {
+      path: "/enjeu",
+      children: [
+        {
+          path: "",
+          name: "enjeu-list",
+          component: () => import("@/views/enjeu/EnjeuList.vue"),
+        },
+        {
+          path: "add",
+          name: "enjeu-add",
+          component: () => import("@/views/enjeu/EnjeuPageForm.vue"),
+        },
+        {
+          path: ":id",
+          name: "enjeu-view",
+          component: () => import("@/views/enjeu/EnjeuPageForm.vue"),
+        },
+        {
+          path: ":id/edit",
+          name: "enjeu-edit",
+          component: () => import("@/views/enjeu/EnjeuPageForm.vue"),
+        },
+      ],
+    },
+    {
       path: "/mesure-plan",
       children: [
         {

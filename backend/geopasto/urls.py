@@ -27,6 +27,7 @@ from suivi_pasto.views import (
     TypeDeSuiviViewset,
     PlanDeSuiviViewset,
     TypeDeMesureViewset,
+    EnjeuViewset,
     MesureDePlanViewset,
     RealisationMesureViewset,
     EtreComposeViewset,
@@ -123,6 +124,7 @@ router.register("evenement", EvenementViewset, basename="evenement")
 router.register("typeSuivi", TypeDeSuiviViewset, basename="typesuivi")
 router.register("planSuivi", PlanDeSuiviViewset, basename="plansuivi")
 router.register("typeMesure", TypeDeMesureViewset, basename="typemesure")
+router.register("enjeu", EnjeuViewset, basename="enjeu")
 router.register("mesurePlan", MesureDePlanViewset, basename="mesureplan")
 router.register(
     "realisationMesure", RealisationMesureViewset, basename="realisationmesure"

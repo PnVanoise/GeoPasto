@@ -313,6 +313,11 @@ const form = reactive({
   enjeu_ids: [],
 });
 
+const JJ_MM_RE = /^\d{2}\/\d{2}$/;
+const jjmmToMmjj = (v) => (v && JJ_MM_RE.test(v) ? `${v.slice(3, 5)}-${v.slice(0, 2)}` : v);
+const mmjjToJjmm = (v) =>
+  v && /^\d{2}-\d{2}$/.test(v) ? `${v.slice(3, 5)}/${v.slice(0, 2)}` : (v ?? "");
+
 const geometryType = ref("Polygon");
 const geometryTypeOptions = [
   { label: "Point", value: "Point" },
@@ -563,11 +568,6 @@ const rulesFinValidite = computed(() => [
     v >= form.date_debut_validite ||
     "La fin de validité doit être postérieure au début de validité.",
 ]);
-
-const JJ_MM_RE = /^\d{2}\/\d{2}$/;
-const jjmmToMmjj = (v) => (v && JJ_MM_RE.test(v) ? `${v.slice(3, 5)}-${v.slice(0, 2)}` : v);
-const mmjjToJjmm = (v) =>
-  v && /^\d{2}-\d{2}$/.test(v) ? `${v.slice(3, 5)}/${v.slice(0, 2)}` : (v ?? "");
 
 const rulesPerioDeRealisation = [
   (v) => !v || JJ_MM_RE.test(v) || "Format attendu : JJ/MM (ex: 15/07).",

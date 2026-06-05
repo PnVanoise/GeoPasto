@@ -110,6 +110,10 @@ function formatCellValue(entry, col) {
     return toFrDate(value);
   }
 
+  if (typeof col?.format === "function") {
+    return col.format(value);
+  }
+
   return value;
 }
 

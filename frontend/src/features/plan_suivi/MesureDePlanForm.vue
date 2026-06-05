@@ -4,7 +4,20 @@
     <div class="mesure-layout">
       <section class="layout-card mesure-fields-card">
         <div class="w3-row form-ligne">
-          <div class="w3-half form-cell">
+          <div class="w3-quarter form-cell">
+            <v-text-field
+              v-model="form.code"
+              :disabled="props.mode === 'view'"
+              label="Code"
+              density="compact"
+              variant="underlined"
+              hide-details="auto"
+              maxlength="5"
+              :counter="5"
+              clearable
+            />
+          </div>
+          <div class="w3-threequarter form-cell">
             <v-text-field
               v-model="form.description"
               :disabled="props.mode === 'view'"
@@ -17,7 +30,9 @@
               clearable
             />
           </div>
-          <div class="w3-half form-cell">
+        </div>
+        <div class="w3-row form-ligne">
+          <div class="w3-full form-cell">
             <v-text-field
               v-model="form.commentaire"
               :disabled="props.mode === 'view'"
@@ -33,8 +48,8 @@
           <div class="w3-half form-cell">
             <v-text-field
               type="date"
-              label="Début de période"
-              v-model="form.debut_periode"
+              label="Début de validité"
+              v-model="form.date_debut_validite"
               :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
@@ -45,14 +60,42 @@
           <div class="w3-half form-cell">
             <v-text-field
               type="date"
-              label="Fin de période"
-              v-model="form.fin_periode"
+              label="Fin de validité"
+              v-model="form.date_fin_validite"
               :disabled="props.mode === 'view'"
               density="compact"
               variant="underlined"
               hide-details="auto"
               clearable
-              :rules="rulesFinPeriode"
+              :rules="rulesFinValidite"
+            />
+          </div>
+        </div>
+        <div class="w3-row form-ligne">
+          <div class="w3-half form-cell">
+            <v-text-field
+              label="Début période réalisation"
+              v-model="form.debut_periode_realisation"
+              :disabled="props.mode === 'view'"
+              density="compact"
+              variant="underlined"
+              hide-details="auto"
+              clearable
+              placeholder="JJ/MM (ex: 15/07)"
+              :rules="rulesPerioDeRealisation"
+            />
+          </div>
+          <div class="w3-half form-cell">
+            <v-text-field
+              label="Fin période réalisation"
+              v-model="form.fin_periode_realisation"
+              :disabled="props.mode === 'view'"
+              density="compact"
+              variant="underlined"
+              hide-details="auto"
+              clearable
+              placeholder="JJ/MM (ex: 31/08)"
+              :rules="rulesFinPeriodeRealisation"
             />
           </div>
         </div>
@@ -256,16 +299,24 @@ const btTitle = computed(() => {
 
 const form = reactive({
   id_mesure_plan: null,
+  code: "",
   description: "",
   commentaire: "",
-  debut_periode: "",
-  fin_periode: "",
+  date_debut_validite: "",
+  date_fin_validite: "",
+  debut_periode_realisation: "",
+  fin_periode_realisation: "",
   type_mesure: null,
   plan_suivi: null,
   geometry: null,
   obligation: false,
   enjeu_ids: [],
 });
+
+const JJ_MM_RE = /^\d{2}\/\d{2}$/;
+const jjmmToMmjj = (v) => (v && JJ_MM_RE.test(v) ? `${v.slice(3, 5)}-${v.slice(0, 2)}` : v);
+const mmjjToJjmm = (v) =>
+  v && /^\d{2}-\d{2}$/.test(v) ? `${v.slice(3, 5)}/${v.slice(0, 2)}` : (v ?? "");
 
 const geometryType = ref("Polygon");
 const geometryTypeOptions = [
@@ -427,10 +478,13 @@ watch(
     if (!newVal) return;
     const src = newVal.properties ? { ...newVal.properties } : newVal;
     form.id_mesure_plan = src.id_mesure_plan ?? null;
+    form.code = src.code ?? "";
     form.description = src.description ?? "";
     form.commentaire = src.commentaire ?? "";
-    form.debut_periode = src.debut_periode ?? "";
-    form.fin_periode = src.fin_periode ?? "";
+    form.date_debut_validite = src.date_debut_validite ?? "";
+    form.date_fin_validite = src.date_fin_validite ?? "";
+    form.debut_periode_realisation = mmjjToJjmm(src.debut_periode_realisation);
+    form.fin_periode_realisation = mmjjToJjmm(src.fin_periode_realisation);
     form.type_mesure = src.type_mesure ?? null;
     form.plan_suivi = src.plan_suivi ?? null;
     form.geometry = newVal.geometry ?? src.geometry ?? null;
@@ -487,10 +541,17 @@ const submitForm = () => {
   if (props.onSubmit) {
     props.onSubmit({
       id_mesure_plan: form.id_mesure_plan,
+      code: form.code || null,
       description: form.description,
       commentaire: form.commentaire || null,
-      debut_periode: form.debut_periode || null,
-      fin_periode: form.fin_periode || null,
+      date_debut_validite: form.date_debut_validite || null,
+      date_fin_validite: form.date_fin_validite || null,
+      debut_periode_realisation: form.debut_periode_realisation
+        ? jjmmToMmjj(form.debut_periode_realisation)
+        : null,
+      fin_periode_realisation: form.fin_periode_realisation
+        ? jjmmToMmjj(form.fin_periode_realisation)
+        : null,
       type_mesure: form.type_mesure || null,
       plan_suivi: form.plan_suivi || null,
       geometry: form.geometry ?? null,
@@ -500,17 +561,29 @@ const submitForm = () => {
   }
 };
 
-const rulesFinPeriode = computed(() => [
+const rulesFinValidite = computed(() => [
   (v) =>
     !v ||
-    !form.debut_periode ||
-    v >= form.debut_periode ||
-    "La fin de période doit être postérieure au début de période.",
+    !form.date_debut_validite ||
+    v >= form.date_debut_validite ||
+    "La fin de validité doit être postérieure au début de validité.",
+]);
+
+const rulesPerioDeRealisation = [
+  (v) => !v || JJ_MM_RE.test(v) || "Format attendu : JJ/MM (ex: 15/07).",
+];
+const rulesFinPeriodeRealisation = computed(() => [
+  (v) => !v || JJ_MM_RE.test(v) || "Format attendu : JJ/MM (ex: 31/08).",
+  (v) =>
+    !v ||
+    !form.debut_periode_realisation ||
+    jjmmToMmjj(v) >= jjmmToMmjj(form.debut_periode_realisation) ||
+    "La fin de période réalisation doit être postérieure au début.",
 ]);
 
 const isFormValid = computed(() => {
-  const debut = form.debut_periode;
-  const fin = form.fin_periode;
+  const debut = form.date_debut_validite;
+  const fin = form.date_fin_validite;
   return !fin || !debut || fin >= debut;
 });
 

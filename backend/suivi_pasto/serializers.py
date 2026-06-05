@@ -394,10 +394,13 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
         geo_field = "geometry"
         fields = [
             "id_mesure_plan",
+            "code",
             "description",
             "commentaire",
-            "debut_periode",
-            "fin_periode",
+            "date_debut_validite",
+            "date_fin_validite",
+            "debut_periode_realisation",
+            "fin_periode_realisation",
             "type_mesure",
             "type_mesure_detail",
             "plan_suivi",
@@ -414,16 +417,37 @@ class MesureDePlanSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer
             {"id": e.id_enjeu, "description": e.description} for e in obj.enjeux.all()
         ]
 
+    @staticmethod
+    def _validate_periode_mm_jj(value, field_name):
+        import re
+
+        if value and not re.match(r"^\d{2}-\d{2}$", value):
+            raise serializers.ValidationError(
+                {field_name: "Format attendu : MM-JJ (ex: 07-15)."}
+            )
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
         debut = attrs.get(
-            "debut_periode", getattr(self.instance, "debut_periode", None)
+            "date_debut_validite", getattr(self.instance, "date_debut_validite", None)
         )
-        fin = attrs.get("fin_periode", getattr(self.instance, "fin_periode", None))
+        fin = attrs.get(
+            "date_fin_validite", getattr(self.instance, "date_fin_validite", None)
+        )
         if debut and fin and debut > fin:
             raise serializers.ValidationError(
                 {
-                    "fin_periode": "La fin de période doit être postérieure au début de période."
+                    "date_fin_validite": "La fin de validité doit être postérieure au début de validité."
+                }
+            )
+        debut_r = attrs.get("debut_periode_realisation")
+        fin_r = attrs.get("fin_periode_realisation")
+        self._validate_periode_mm_jj(debut_r, "debut_periode_realisation")
+        self._validate_periode_mm_jj(fin_r, "fin_periode_realisation")
+        if debut_r and fin_r and fin_r < debut_r:
+            raise serializers.ValidationError(
+                {
+                    "fin_periode_realisation": "La fin de période de réalisation doit être postérieure au début."
                 }
             )
         return attrs
@@ -457,10 +481,13 @@ class MesureDePlanSimpleSerializer(
         model = MesureDePlan
         fields = [
             "id_mesure_plan",
+            "code",
             "description",
             "commentaire",
-            "debut_periode",
-            "fin_periode",
+            "date_debut_validite",
+            "date_fin_validite",
+            "debut_periode_realisation",
+            "fin_periode_realisation",
             "type_mesure",
             "type_mesure_detail",
             "plan_suivi",
@@ -492,6 +519,25 @@ class RealisationMesureSerializer(
             "commentaire",
             "date_realisation",
         ]
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        mesure = attrs.get("mesure_plan", getattr(self.instance, "mesure_plan", None))
+        situation = attrs.get("situation", getattr(self.instance, "situation", None))
+        if mesure and situation:
+            md = mesure.date_debut_validite
+            mf = mesure.date_fin_validite
+            sd = situation.date_debut
+            sf = situation.date_fin
+            if md and sf and md > sf:
+                raise serializers.ValidationError(
+                    "Cette mesure n'est pas applicable sur la période de cette situation."
+                )
+            if mf and sd and mf < sd:
+                raise serializers.ValidationError(
+                    "Cette mesure n'est pas applicable sur la période de cette situation."
+                )
+        return attrs
 
 
 # Bloc expoitation

@@ -79,10 +79,13 @@ class Enjeu(AuditFieldsMixin, models.Model):
 
 class MesureDePlan(AuditFieldsMixin, models.Model):
     id_mesure_plan = models.BigAutoField(primary_key=True)
+    code = models.CharField(max_length=5, null=True, blank=True)
     description = models.CharField(max_length=150, null=False, blank=False)
     commentaire = models.TextField(null=True, blank=True)
-    debut_periode = models.DateField(null=True, blank=True)
-    fin_periode = models.DateField(null=True, blank=True)
+    date_debut_validite = models.DateField(null=True, blank=True)
+    date_fin_validite = models.DateField(null=True, blank=True)
+    debut_periode_realisation = models.CharField(max_length=5, null=True, blank=True)
+    fin_periode_realisation = models.CharField(max_length=5, null=True, blank=True)
     type_mesure = models.ForeignKey(
         "suivi_pasto.TypeDeMesure",
         on_delete=models.PROTECT,
@@ -110,9 +113,9 @@ class MesureDePlan(AuditFieldsMixin, models.Model):
         verbose_name_plural = "mesures de plan"
         constraints = [
             models.CheckConstraint(
-                check=Q(fin_periode__isnull=True)
-                | Q(debut_periode__lte=F("fin_periode")),
-                name="chk_mesure_plan_periodes_coherentes",
+                check=Q(date_fin_validite__isnull=True)
+                | Q(date_debut_validite__lte=F("date_fin_validite")),
+                name="chk_mesure_plan_validite_coherente",
             ),
         ]
 

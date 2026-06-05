@@ -292,11 +292,15 @@ const mesuresMapLayers = computed(() => {
   return layers;
 });
 
+const mmjjToJjmm = (v) =>
+  v && /^\d{2}-\d{2}$/.test(v) ? `${v.slice(3, 5)}/${v.slice(0, 2)}` : (v ?? "");
+
 const mesureColumns = [
+  { field: "code", label: "Code", sortable: true },
   { field: "type_mesure_detail.description", label: "Type", sortable: true },
   { field: "obligation", label: "Oblig.", sortable: true },
-  { field: "debut_periode", label: "Début", sortable: true, format: "date" },
-  { field: "fin_periode", label: "Fin", sortable: true, format: "date" },
+  { field: "debut_periode_realisation", label: "Début", sortable: true, format: mmjjToJjmm },
+  { field: "fin_periode_realisation", label: "Fin", sortable: true, format: mmjjToJjmm },
 ];
 
 const fetchMesuresForPlan = async (planId) => {

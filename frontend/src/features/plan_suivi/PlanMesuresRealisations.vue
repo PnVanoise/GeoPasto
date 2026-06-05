@@ -85,7 +85,10 @@
               :key="mesure.id_mesure_plan"
               :ref="(el) => setMesureRowRef(mesure.id_mesure_plan, el)"
               class="mesure-row"
-              :class="{ 'mesure-highlighted': mesure.id_mesure_plan === highlightedMesureId }"
+              :class="{
+                'mesure-highlighted': mesure.id_mesure_plan === highlightedMesureId,
+                'mesure-non-applicable': !isMesureApplicable(mesure),
+              }"
             >
               <div class="mesure-info">
                 <span class="mesure-description">{{ mesure.description }}</span>
@@ -93,8 +96,12 @@
                   {{ mesure.type_mesure_detail.description }}
                 </span>
                 <span class="mesure-dates">
-                  {{ formatDate(mesure.debut_periode) }} – {{ formatDate(mesure.fin_periode) }}
+                  {{ formatDate(mesure.date_debut_validite) }} –
+                  {{ formatDate(mesure.date_fin_validite) }}
                 </span>
+                <span v-if="!isMesureApplicable(mesure)" class="non-applicable-badge"
+                  >Non applicable</span
+                >
                 <v-btn
                   v-if="canEditMesure"
                   icon="mdi-pencil"
@@ -106,7 +113,7 @@
                 />
               </div>
 
-              <div class="realisation-inline">
+              <div v-if="isMesureApplicable(mesure)" class="realisation-inline">
                 <v-select
                   :model-value="getStatut(mesure.id_mesure_plan)"
                   :items="statutOptions"
@@ -197,6 +204,19 @@ const savingIds = ref(new Set());
 const openedPanel = ref(undefined);
 const highlightedMesureId = ref(null);
 const mesureRowRefs = {};
+const situationDateDebut = ref(null);
+const situationDateFin = ref(null);
+
+const isMesureApplicable = (mesure) => {
+  const md = mesure.date_debut_validite;
+  const mf = mesure.date_fin_validite;
+  if (!md && !mf) return true;
+  const sd = situationDateDebut.value;
+  const sf = situationDateFin.value;
+  if (md && sf && md > sf) return false;
+  if (mf && sd && mf < sd) return false;
+  return true;
+};
 
 const setMesureRowRef = (id, el) => {
   if (el) mesureRowRefs[id] = el;
@@ -283,15 +303,24 @@ const fetchMesuresForPlan = async (planId) => {
 const fetchRealisationsForSituation = async () => {
   if (!props.situationId) return;
   try {
-    const { data } = await auth.axiosInstance.get(
-      `${config.API_BASE_URL}/api/realisationMesure/?situation=${props.situationId}`
-    );
-    const items = Array.isArray(data) ? data : (data.results ?? []);
+    const [realisationsRes, situationRes] = await Promise.all([
+      auth.axiosInstance.get(
+        `${config.API_BASE_URL}/api/realisationMesure/?situation=${props.situationId}`
+      ),
+      auth.axiosInstance.get(
+        `${config.API_BASE_URL}/api/situationExploitation/${props.situationId}/`
+      ),
+    ]);
+    const items = Array.isArray(realisationsRes.data)
+      ? realisationsRes.data
+      : (realisationsRes.data?.results ?? []);
     for (const r of items) {
       const mesurePlanId =
         typeof r.mesure_plan === "object" ? r.mesure_plan.id_mesure_plan : r.mesure_plan;
       realisationsMap[mesurePlanId] = r;
     }
+    situationDateDebut.value = situationRes.data?.date_debut ?? null;
+    situationDateFin.value = situationRes.data?.date_fin ?? null;
   } catch {}
 };
 
@@ -485,6 +514,18 @@ fetchPlans();
   background: #ede9fe;
   border-color: #7c3aed;
   border-left-width: 3px;
+}
+
+.mesure-non-applicable {
+  opacity: 0.5;
+  background: #f1f5f9;
+}
+
+.non-applicable-badge {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-style: italic;
+  margin-left: 4px;
 }
 
 .mesure-info {

@@ -23,8 +23,8 @@ const columns = [
   { field: "type_mesure_detail.description", label: "Type de mesure", sortable: true },
   { field: "unite_pastorale_detail.nom_up", label: "UP", sortable: true },
   { field: "obligation", label: "Obligation", sortable: true },
-  { field: "debut_periode", label: "Début", sortable: true },
-  { field: "fin_periode", label: "Fin", sortable: true },
+  { field: "date_debut_validite", label: "Début validité", sortable: true },
+  { field: "date_fin_validite", label: "Fin validité", sortable: true },
 ];
 const searchFields = [
   "description",
@@ -67,8 +67,8 @@ const filters = ref([
       if (!value) return rows;
       const d = new Date(value);
       return rows.filter((r) => {
-        const debut = r.debut_periode ? new Date(r.debut_periode) : null;
-        const fin = r.fin_periode ? new Date(r.fin_periode) : null;
+        const debut = r.date_debut_validite ? new Date(r.date_debut_validite) : null;
+        const fin = r.date_fin_validite ? new Date(r.date_fin_validite) : null;
         if (debut && d < debut) return false;
         if (fin && d > fin) return false;
         return true;

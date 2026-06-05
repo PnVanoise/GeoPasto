@@ -54,38 +54,47 @@
                 v-for="situ in situations"
                 :key="situ.id_situation"
                 class="col-situ cell-statut"
-                :class="cellClass(mesure.id_mesure_plan, situ.id_situation)"
+                :class="
+                  isMesureApplicable(mesure, situ)
+                    ? cellClass(mesure.id_mesure_plan, situ.id_situation)
+                    : 'statut-na'
+                "
               >
-                <v-menu v-if="!viewOnly" location="bottom center" :close-on-content-click="true">
-                  <template #activator="{ props: menuProps }">
-                    <button
-                      v-bind="menuProps"
-                      class="statut-btn"
-                      :title="statutLabel(mesure.id_mesure_plan, situ.id_situation)"
-                    >
-                      <v-icon size="16">{{
-                        statutIcon(mesure.id_mesure_plan, situ.id_situation)
-                      }}</v-icon>
-                    </button>
-                  </template>
-                  <v-list density="compact" class="statut-menu">
-                    <v-list-item
-                      v-for="opt in statutOptions"
-                      :key="opt.value"
-                      :prepend-icon="opt.icon"
-                      :title="opt.label"
-                      @click="setStatut(mesure.id_mesure_plan, situ.id_situation, opt.value)"
-                    />
-                  </v-list>
-                </v-menu>
-                <span
-                  v-else
-                  class="statut-badge"
-                  :title="statutLabel(mesure.id_mesure_plan, situ.id_situation)"
-                >
-                  <v-icon size="16">{{
-                    statutIcon(mesure.id_mesure_plan, situ.id_situation)
-                  }}</v-icon>
+                <template v-if="isMesureApplicable(mesure, situ)">
+                  <v-menu v-if="!viewOnly" location="bottom center" :close-on-content-click="true">
+                    <template #activator="{ props: menuProps }">
+                      <button
+                        v-bind="menuProps"
+                        class="statut-btn"
+                        :title="statutLabel(mesure.id_mesure_plan, situ.id_situation)"
+                      >
+                        <v-icon size="16">{{
+                          statutIcon(mesure.id_mesure_plan, situ.id_situation)
+                        }}</v-icon>
+                      </button>
+                    </template>
+                    <v-list density="compact" class="statut-menu">
+                      <v-list-item
+                        v-for="opt in statutOptions"
+                        :key="opt.value"
+                        :prepend-icon="opt.icon"
+                        :title="opt.label"
+                        @click="setStatut(mesure.id_mesure_plan, situ.id_situation, opt.value)"
+                      />
+                    </v-list>
+                  </v-menu>
+                  <span
+                    v-else
+                    class="statut-badge"
+                    :title="statutLabel(mesure.id_mesure_plan, situ.id_situation)"
+                  >
+                    <v-icon size="16">{{
+                      statutIcon(mesure.id_mesure_plan, situ.id_situation)
+                    }}</v-icon>
+                  </span>
+                </template>
+                <span v-else class="statut-badge" title="Non applicable">
+                  <v-icon size="16" color="#cbd5e1">mdi-cancel</v-icon>
                 </span>
               </td>
             </tr>
@@ -93,7 +102,7 @@
         </table>
 
         <div class="legend">
-          <span v-for="opt in statutOptions" :key="opt.value" class="legend-item">
+          <span v-for="opt in legendeOptions" :key="opt.value ?? 'na'" class="legend-item">
             <v-icon size="14" :color="opt.iconColor">{{ opt.icon }}</v-icon>
             {{ opt.label }}
           </span>
@@ -140,6 +149,23 @@ const statutOptions = [
   },
   { value: "realisee", label: "Réalisée", icon: "mdi-check-circle", iconColor: "#22c55e" },
 ];
+
+const legendeOptions = [
+  ...statutOptions,
+  { value: null, label: "Non renseignée", icon: "mdi-minus-circle-outline", iconColor: "#cbd5e1" },
+  { value: "na", label: "Non applicable", icon: "mdi-cancel", iconColor: "#cbd5e1" },
+];
+
+const isMesureApplicable = (mesure, situ) => {
+  const md = mesure.date_debut_validite;
+  const mf = mesure.date_fin_validite;
+  if (!md && !mf) return true;
+  const sd = situ.date_debut;
+  const sf = situ.date_fin;
+  if (md && sf && md > sf) return false;
+  if (mf && sd && mf < sd) return false;
+  return true;
+};
 
 const getRealisation = (mesurePlanId, situationId) =>
   realisationsIndex[mesurePlanId]?.[situationId] ?? null;
@@ -370,6 +396,10 @@ defineExpose({ refresh: fetchAll });
 .statut-none .statut-btn,
 .statut-none .statut-badge {
   color: #cbd5e1;
+}
+
+.statut-na {
+  background: #f8fafc;
 }
 
 .statut-non_realisee .statut-btn,

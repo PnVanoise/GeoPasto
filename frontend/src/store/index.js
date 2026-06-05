@@ -40,6 +40,7 @@ export const useMainStore = defineStore("main", {
       }, 5000); // Effacer le message après 5 secondes
     },
     async fetchUserPermissions() {
+      if (Object.keys(this.userPermissions).length > 0) return;
       try {
         const response = await auth.axiosInstance.get("/userpermissions/");
         this.username = response.data.username;

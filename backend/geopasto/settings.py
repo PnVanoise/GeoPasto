@@ -284,3 +284,5 @@ GRAPH_MODELS = {
         "suivi_pasto",
     ],
 }
+
+CSRF_TRUSTED_ORIGINS = ["https://pastoralisme.vanoise-parcnational.fr"]

@@ -1,0 +1,1134 @@
+[
+{
+  "model": "suivi_pasto.production",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.810Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Lait"
+  }
+},
+{
+  "model": "suivi_pasto.production",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.810Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Viande"
+  }
+},
+{
+  "model": "suivi_pasto.production",
+  "pk": 3,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.810Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Sans objet"
+  }
+},
+{
+  "model": "suivi_pasto.categoriepension",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.968Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-05-01T10:15:41.200Z",
+    "description": "100 %"
+  }
+},
+{
+  "model": "suivi_pasto.categoriepension",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.968Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "0%"
+  }
+},
+{
+  "model": "suivi_pasto.categoriepension",
+  "pk": 3,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.968Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Mixte"
+  }
+},
+{
+  "model": "suivi_pasto.espece",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.386Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Bovin"
+  }
+},
+{
+  "model": "suivi_pasto.espece",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.386Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Ovin"
+  }
+},
+{
+  "model": "suivi_pasto.espece",
+  "pk": 3,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.386Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Caprin"
+  }
+},
+{
+  "model": "suivi_pasto.espece",
+  "pk": 4,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.386Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Porcin"
+  }
+},
+{
+  "model": "suivi_pasto.espece",
+  "pk": 5,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.386Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Equin"
+  }
+},
+{
+  "model": "suivi_pasto.espece",
+  "pk": 6,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.386Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Chien de protection"
+  }
+},
+{
+  "model": "suivi_pasto.espece",
+  "pk": 21,
+  "fields": {
+    "created_by": "alacheny",
+    "created_on": "2026-05-27T08:55:03.775Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Asin"
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Abondance",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Tarine",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 3,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Charolaise",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 26,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Limousine",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 27,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Autre/Inconnu",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 28,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Thône & Marthod",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 29,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Lacaune",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 30,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Mérinos",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 31,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Mourerous",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 32,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Préalpes",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 33,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Pays",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 34,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Autre/Inconnu",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 35,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Abruzzes",
+    "espece": 6
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 36,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Montagne des Pyrénées",
+    "espece": 6
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 37,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Berger d'Anatolie / Kangal",
+    "espece": 6
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 38,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Cao de gado transmontano",
+    "espece": 6
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 39,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Autre/Inconnu",
+    "espece": 6
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 40,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Autre/Inconnu",
+    "espece": 3
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 41,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Autre/Inconnu",
+    "espece": 4
+  }
+},
+{
+  "model": "suivi_pasto.race",
+  "pk": 42,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.007Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Autre/Inconnu",
+    "espece": 5
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-05-13T09:24:01.893Z",
+    "description": "Adulte",
+    "coefficient_UGB": "1.00",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-05-13T09:24:15.447Z",
+    "description": "Génisse",
+    "coefficient_UGB": "0.60",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 3,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-05-13T09:24:19.394Z",
+    "description": "Veau",
+    "coefficient_UGB": "0.00",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 9,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "alacheny",
+    "modified_on": "2026-05-27T08:56:03.016Z",
+    "description": "Inconnue",
+    "coefficient_UGB": "1.00",
+    "espece": 1
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 10,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-05-13T09:24:41.236Z",
+    "description": "Suitée",
+    "coefficient_UGB": "0.15",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 11,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-05-13T09:24:46.045Z",
+    "description": "Gestante",
+    "coefficient_UGB": "0.15",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 12,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "alacheny",
+    "modified_on": "2026-05-27T08:55:57.796Z",
+    "description": "Inconnue",
+    "coefficient_UGB": "0.15",
+    "espece": 2
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 13,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-05-13T09:25:04.149Z",
+    "description": "Sans objet",
+    "coefficient_UGB": "0.00",
+    "espece": 6
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 14,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "alacheny",
+    "modified_on": "2026-05-27T08:55:33.479Z",
+    "description": "Inconnue",
+    "coefficient_UGB": "0.15",
+    "espece": 3
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 15,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Sans objet",
+    "coefficient_UGB": "0.00",
+    "espece": 4
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 16,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:33.954Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-05-13T09:26:50.134Z",
+    "description": "Sans objet",
+    "coefficient_UGB": "1.00",
+    "espece": 5
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 18,
+  "fields": {
+    "created_by": "geoagri",
+    "created_on": "2026-05-13T09:26:19.419Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Suitée",
+    "coefficient_UGB": "0.15",
+    "espece": 3
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 19,
+  "fields": {
+    "created_by": "geoagri",
+    "created_on": "2026-05-13T09:26:33.567Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Gestante",
+    "coefficient_UGB": "0.15",
+    "espece": 3
+  }
+},
+{
+  "model": "suivi_pasto.categorieanimaux",
+  "pk": 20,
+  "fields": {
+    "created_by": "alacheny",
+    "created_on": "2026-05-27T09:01:07.589Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Inconnue",
+    "coefficient_UGB": "1.00",
+    "espece": 21
+  }
+},
+{
+  "model": "suivi_pasto.typedesuivi",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.254Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Alpages sentinelles"
+  }
+},
+{
+  "model": "suivi_pasto.typedesuivi",
+  "pk": 3,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.254Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "MAEC"
+  }
+},
+{
+  "model": "suivi_pasto.typedesuivi",
+  "pk": 6,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.254Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Autres"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.241Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Mise en défens"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.241Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Retard de pâturage"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 3,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.241Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Fauche tardive"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 4,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.241Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Mesure biomasse alpages sentinelles"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 7,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.241Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Niveau de fréquentation limité"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 8,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.241Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Niveau de consommation limité"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 9,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.241Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Tournée de fin d'estive alpages sentinelles"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 10,
+  "fields": {
+    "created_by": "bquintin",
+    "created_on": "2026-05-27T09:46:58.038Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Evacuation carcasses"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 11,
+  "fields": {
+    "created_by": "bquintin",
+    "created_on": "2026-06-04T08:48:07.929Z",
+    "modified_by": "bquintin",
+    "modified_on": "2026-06-04T08:49:36.105Z",
+    "description": "Zone à pâturer en premier"
+  }
+},
+{
+  "model": "suivi_pasto.typedemesure",
+  "pk": 12,
+  "fields": {
+    "created_by": "bquintin",
+    "created_on": "2026-06-04T09:02:18.939Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Installation d'un fil/clôture"
+  }
+},
+{
+  "model": "suivi_pasto.typeevenement",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.136Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.143Z",
+    "description": "Observation présence troupeau"
+  }
+},
+{
+  "model": "suivi_pasto.typeevenement",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.136Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.143Z",
+    "description": "Prédation"
+  }
+},
+{
+  "model": "suivi_pasto.typeevenement",
+  "pk": 5,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.136Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.143Z",
+    "description": "Echange verbal"
+  }
+},
+{
+  "model": "suivi_pasto.enjeu",
+  "pk": 1,
+  "fields": {
+    "created_by": "geoagri",
+    "created_on": "2026-06-04T07:38:10.239Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Lagopède"
+  }
+},
+{
+  "model": "suivi_pasto.enjeu",
+  "pk": 2,
+  "fields": {
+    "created_by": "geoagri",
+    "created_on": "2026-06-04T07:38:17.120Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Zone humide"
+  }
+},
+{
+  "model": "suivi_pasto.enjeu",
+  "pk": 3,
+  "fields": {
+    "created_by": "geoagri",
+    "created_on": "2026-06-04T08:38:39.462Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Pelouse alpine"
+  }
+},
+{
+  "model": "suivi_pasto.enjeu",
+  "pk": 4,
+  "fields": {
+    "created_by": "bquintin",
+    "created_on": "2026-06-04T08:43:52.575Z",
+    "modified_by": "bquintin",
+    "modified_on": "2026-06-04T08:46:31.158Z",
+    "description": "Nardaie"
+  }
+},
+{
+  "model": "suivi_pasto.typeconvention",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.227Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Bail rural"
+  }
+},
+{
+  "model": "suivi_pasto.typeconvention",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.227Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Convention pluriannuelle de pâturage"
+  }
+},
+{
+  "model": "suivi_pasto.typeconvention",
+  "pk": 5,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.227Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Bail rural à clauses environnementales"
+  }
+},
+{
+  "model": "suivi_pasto.typeconvention",
+  "pk": 6,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.227Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Bail verbal"
+  }
+},
+{
+  "model": "suivi_pasto.typedexploitant",
+  "pk": 0,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.266Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Exploitant Individuel"
+  }
+},
+{
+  "model": "suivi_pasto.typedexploitant",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.266Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Groupement Pastoral"
+  }
+},
+{
+  "model": "suivi_pasto.typedexploitant",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.266Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Groupement Agricole d'Exploitation en Commun"
+  }
+},
+{
+  "model": "suivi_pasto.typedexploitant",
+  "pk": 6,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.266Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Entreprise Agricole à Responsabilités limitées"
+  }
+},
+{
+  "model": "suivi_pasto.typedexploitant",
+  "pk": 7,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:35.266Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Société Agricole à Responsabilités Limitées"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 0,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Abreuvoir fixe",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Pierre à sel",
+    "categorie": "Exploitant"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Abreuvoir mobile",
+    "categorie": "Exploitant"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 6,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Place de traite",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 7,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Captage",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 8,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Machine à traire mobile",
+    "categorie": "Exploitant"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 9,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Clôtures",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 10,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Parc de nuit",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 11,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Conduite d'eau",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 12,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Cuve de stockage d'eau",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 13,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Pompe",
+    "categorie": "Exploitant"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 14,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Panneau solaire",
+    "categorie": "Exploitant"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 15,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": null,
+    "modified_on": "2026-04-21T08:14:20.123Z",
+    "description": "Batterie",
+    "categorie": "Exploitant"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 16,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T08:14:20.111Z",
+    "modified_by": "geoagri",
+    "modified_on": "2026-04-21T08:34:29.618Z",
+    "description": "Logement",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 17,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-05-11T12:41:20.495Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Abri héliportable",
+    "categorie": "Exploitant"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 18,
+  "fields": {
+    "created_by": "bquintin",
+    "created_on": "2026-05-27T09:14:28.805Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Piste",
+    "categorie": "Alpage"
+  }
+},
+{
+  "model": "suivi_pasto.typeequipement",
+  "pk": 19,
+  "fields": {
+    "created_by": "alacheny",
+    "created_on": "2026-05-27T09:17:23.006Z",
+    "modified_by": "alacheny",
+    "modified_on": "2026-05-27T09:17:52.424Z",
+    "description": "Aménagement pour l'abreuvement",
+    "categorie": "Exploitant"
+  }
+},
+{
+  "model": "suivi_pasto.commodite",
+  "pk": 1,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.043Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Toilettes"
+  }
+},
+{
+  "model": "suivi_pasto.commodite",
+  "pk": 2,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.043Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Poêle à bois"
+  }
+},
+{
+  "model": "suivi_pasto.commodite",
+  "pk": 3,
+  "fields": {
+    "created_by": null,
+    "created_on": "2026-04-21T09:34:34.043Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Bouteille de gaz"
+  }
+},
+{
+  "model": "suivi_pasto.commodite",
+  "pk": 4,
+  "fields": {
+    "created_by": "mrobert",
+    "created_on": "2026-05-06T12:53:46.258Z",
+    "modified_by": null,
+    "modified_on": null,
+    "description": "Panneau solaire"
+  }
+}
+]

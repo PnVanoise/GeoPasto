@@ -379,7 +379,7 @@ const computedActions = computed(() => {
   if (props.viewOnly) {
     return { add: false, view: true, edit: false, delete: false };
   }
-  return crud.actions;
+  return crud.actions.value;
 });
 
 function handleEdit(item) {

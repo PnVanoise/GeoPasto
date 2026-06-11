@@ -16,7 +16,7 @@ export function usePermissions(modelName) {
       view: can("view"),
       edit: can("change"),
       delete: can("delete"),
-    })).value;
+    }));
 
   return { can, actionsFor };
 }

@@ -1,38 +1,40 @@
 <template>
-  <h3 class="w3-center w3-margin">{{ formTitle }}</h3>
-  <form @submit.prevent="submitForm">
-    <div class="w3-row form-ligne">
-      <div class="w3-half form-cell">
-        <v-select
-          v-model="form.unite_pastorale"
-          :items="ups"
-          item-title="nom_up"
-          item-value="id_unite_pastorale"
-          label="Unité pastorale"
-          :menu-props="selectMenuProps"
-          :disabled="props.mode === 'view'"
-          density="compact"
-          variant="outlined"
-          hide-details
-          clearable
-        />
+  <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
+  <form class="up-proprietaire-form" @submit.prevent="submitForm">
+    <section class="layout-card">
+      <div class="w3-row form-ligne">
+        <div class="w3-half form-cell">
+          <v-select
+            v-model="form.unite_pastorale"
+            :items="ups"
+            item-title="nom_up"
+            item-value="id_unite_pastorale"
+            label="Unité pastorale"
+            :menu-props="selectMenuProps"
+            :disabled="props.mode === 'view'"
+            density="compact"
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
+        <div class="w3-half form-cell">
+          <v-select
+            v-model="form.proprietaire"
+            :items="proprietaires"
+            item-title="nom_complet"
+            item-value="id_proprietaire"
+            label="Propriétaire"
+            :menu-props="selectMenuProps"
+            :disabled="props.mode === 'view'"
+            density="compact"
+            variant="underlined"
+            hide-details
+            clearable
+          />
+        </div>
       </div>
-      <div class="w3-half form-cell">
-        <v-select
-          v-model="form.proprietaire"
-          :items="proprietaires"
-          item-title="nom_complet"
-          item-value="id_proprietaire"
-          label="Propriétaire"
-          :menu-props="selectMenuProps"
-          :disabled="props.mode === 'view'"
-          density="compact"
-          variant="outlined"
-          hide-details
-          clearable
-        />
-      </div>
-    </div>
+    </section>
 
     <div class="form-actions">
       <v-btn color="info" @click="closeModal" prepend-icon="mdi-arrow-left-circle">Retour</v-btn>
@@ -109,11 +111,43 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.layout-card {
+  background: #ffffff;
+  border: 1px solid #d7dde6;
+  border-left: 3px solid #64748b;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+.layout-card:hover {
+  border-color: #c8d0db;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+}
+
 .form-ligne {
   padding: 4px;
 }
 .form-cell {
   padding: 4px;
+}
+
+.up-proprietaire-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.up-proprietaire-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+.up-proprietaire-form :deep(.v-input) {
+  font-size: 0.88rem;
+}
+.up-proprietaire-form :deep(.v-field__input),
+.up-proprietaire-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
 }
 
 .form-actions {

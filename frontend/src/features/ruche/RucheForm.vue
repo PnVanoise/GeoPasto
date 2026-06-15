@@ -1,5 +1,5 @@
 <template>
-  <h3 class="w3-center w3-margin">{{ formTitle }}</h3>
+  <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
   <form class="ruche-form" @submit.prevent="submitForm">
     <div class="ruche-layout">
       <section class="layout-card">
@@ -10,7 +10,7 @@
               label="Commentaire"
               :disabled="props.mode === 'view'"
               density="compact"
-              variant="outlined"
+              variant="underlined"
               hide-details
               rows="2"
               auto-grow
@@ -29,7 +29,7 @@
               :menu-props="selectMenuProps"
               :disabled="props.mode === 'view'"
               density="compact"
-              variant="outlined"
+              variant="underlined"
               hide-details
               clearable
             />
@@ -173,6 +173,22 @@ onMounted(async () => {
 }
 .form-cell {
   padding: 4px;
+}
+
+.ruche-form :deep(.v-input--density-compact .v-field__input) {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.ruche-form :deep(.v-label.v-field-label) {
+  font-size: 0.82rem;
+}
+.ruche-form :deep(.v-input) {
+  font-size: 0.88rem;
+}
+.ruche-form :deep(.v-field__input),
+.ruche-form :deep(.v-select__selection-text) {
+  font-size: 0.88rem;
 }
 
 .form-actions {

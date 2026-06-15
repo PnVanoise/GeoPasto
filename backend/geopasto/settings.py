@@ -65,7 +65,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
-ALLOWED_HOSTS = ["*"]
+_allowed = os.environ.get("ALLOWED_HOSTS", "*")
+ALLOWED_HOSTS = [h.strip() for h in _allowed.split(",") if h.strip()]
 
 
 # Application definition
@@ -107,13 +108,8 @@ MIDDLEWARE = [
 ]
 
 # Configuration CORS
-CORS_ALLOWED_ORIGINS = [
-    "http://151.80.250.138:9877",
-    "http://151.80.250.138",
-    "http://151.80.250.138:8000",
-    "http://pastoralisme.vanoise-parcnational.fr",
-    "https://pastoralisme.vanoise-parcnational.fr",
-]
+_cors = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors.split(",") if o.strip()]
 
 
 # Optionnel : Autoriser tous les domaines (à utiliser avec prudence)
@@ -213,7 +209,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = "/home/geoagri/geopasto/backend/geopasto/static/"
+STATIC_ROOT = os.environ.get("STATIC_ROOT", str(BASE_DIR / "static"))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -285,4 +281,5 @@ GRAPH_MODELS = {
     ],
 }
 
-CSRF_TRUSTED_ORIGINS = ["https://pastoralisme.vanoise-parcnational.fr"]
+_csrf = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf.split(",") if o.strip()]

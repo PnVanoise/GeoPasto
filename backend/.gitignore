@@ -8,7 +8,6 @@ venv/
 
 # Local env files (may contain DB credentials, API keys, etc.)
 .env
-.env.*
 
 # Django / Python useful ignores
 *.sqlite3

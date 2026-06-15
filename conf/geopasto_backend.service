@@ -1,0 +1,31 @@
+# Systemd service for geopasto Django backend (gunicorn)
+#
+# Placeholders to replace:
+#   <DEPLOY_USER>   — system user running the service (e.g. geoagri)
+#   <DEPLOY_PATH>   — absolute path to the geopasto repository (e.g. /home/user/geopasto)
+#
+# Install:
+#   sudo cp conf/geopasto_backend.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable geopasto_backend
+#   sudo systemctl start geopasto_backend
+
+[Unit]
+Description=gunicorn daemon for Geopasto
+After=network.target
+
+[Service]
+User=<DEPLOY_USER>
+Group=<DEPLOY_USER>
+WorkingDirectory=<DEPLOY_PATH>/backend
+EnvironmentFile=<DEPLOY_PATH>/backend/.env
+ExecStart=<DEPLOY_PATH>/backend/venv/bin/gunicorn \
+    --access-logfile <DEPLOY_PATH>/backend/gunicorn-access.log \
+    --error-logfile <DEPLOY_PATH>/backend/gunicorn-error.log \
+    --workers 3 \
+    --bind 0.0.0.0:8000 \
+    geopasto.wsgi:application
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

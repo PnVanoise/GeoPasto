@@ -1,0 +1,64 @@
+# Nginx configuration for geopasto
+#
+# Placeholders to replace:
+#   <SERVER_NAME>   — domain name or public IP (e.g. pastoralisme.example.fr)
+#   <DEPLOY_PATH>   — absolute path to the geopasto repository (e.g. /home/user/geopasto)
+#
+# Copy to: /etc/nginx/sites-available/geopasto_backend
+# Enable:  sudo ln -s /etc/nginx/sites-available/geopasto_backend /etc/nginx/sites-enabled/
+# Test:    sudo nginx -t
+# Reload:  sudo systemctl reload nginx
+
+server {
+    listen 80;
+    server_name <SERVER_NAME>;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name <SERVER_NAME>;
+
+    ssl_certificate     /etc/letsencrypt/live/<SERVER_NAME>/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<SERVER_NAME>/privkey.pem;
+    include             /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
+
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # Frontend — built with: cd frontend && npm run build
+    location / {
+        root <DEPLOY_PATH>/frontend/dist;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Django API
+    location /api/ {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Django admin
+    location /admin/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Django static files (admin CSS, etc.)
+    location /static/ {
+        alias <DEPLOY_PATH>/backend/geopasto/static/;
+    }
+
+    # Documentation site
+    location /doc/ {
+        alias <DEPLOY_PATH>/doc_site/;
+        index index.html;
+    }
+}

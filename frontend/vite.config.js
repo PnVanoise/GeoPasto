@@ -19,5 +19,9 @@ export default defineConfig({
       '/api': 'http://localhost:8000',
       '/admin': 'http://localhost:8000',
     },
+    allowedHosts: ['localhost', 'pastoralisme.vanoise-parcnational.fr']
+  },
+  preview: {
+    allowedHosts: ['localhost', 'pastoralisme.vanoise-parcnational.fr']
   },
 })

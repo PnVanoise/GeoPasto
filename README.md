@@ -55,14 +55,19 @@ sudo apt-get install -y gdal-bin libgdal-dev python3-gdal \
 sudo apt-get install -y python3.11 python3.11-dev python3.11-venv \
     python3-pip build-essential libpq-dev postgresql-server-dev-all
 
-# Node.js 18 + npm
-sudo apt-get install -y nodejs npm
-
 # Serveur web
 sudo apt-get install -y nginx
 ```
 
-> **Versions validées :** PostgreSQL 15.7, PostGIS 3.3.2, GDAL 3.6.2, Python 3.11.2, Node.js 18.19.
+Node.js 20 est requis (cf. `frontend/.nvmrc`) — l'installer via nvm, pas apt :
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+cd frontend && nvm install && nvm use
+```
+
+> **Versions validées :** PostgreSQL 15.7, PostGIS 3.3.2, GDAL 3.6.2, Python 3.11.2, Node.js 20.20.2.
 
 ---
 

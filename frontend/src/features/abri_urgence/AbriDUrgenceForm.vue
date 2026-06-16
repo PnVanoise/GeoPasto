@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="abri-urgence-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="abri-urgence-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="form-cell">
@@ -8,10 +8,11 @@
             v-model="form.description"
             label="Description"
             :disabled="props.mode === 'view'"
+            class="required"
             density="compact"
             variant="underlined"
             hide-details="auto"
-            :rules="[maxLen(150)]"
+            :rules="[required, maxLen(150)]"
             :counter="150"
             clearable
           />
@@ -23,9 +24,11 @@
             v-model="form.etat"
             label="État de l'abri"
             :disabled="props.mode === 'view'"
+            class="required"
             density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
+            :rules="[required]"
             clearable
           />
         </div>
@@ -83,17 +86,18 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="formRef?.isValid === false"
       >
         {{ btTitle }}
       </v-btn>
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
 import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 import CrudList from "../../components/crud/CrudList.vue";
 import AbriDUrgenceCommoditeForm from "./AbriDUrgenceCommoditeForm.vue";
 
@@ -106,6 +110,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("abridurgence");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -147,7 +153,12 @@ watch(
   { immediate: true }
 );
 
-const submitForm = () => {};
+const submitForm = async () => {
+  if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
+  props.onSubmit(form);
+};
 
 const closeModal = () => props.onClose?.();
 </script>

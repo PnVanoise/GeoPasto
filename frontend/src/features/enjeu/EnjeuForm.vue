@@ -1,17 +1,18 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="enjeu-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="enjeu-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
           <v-text-field
             v-model="form.description"
             :disabled="props.mode === 'view'"
+            class="required"
             label="Description"
             density="compact"
             variant="underlined"
             hide-details="auto"
-            :rules="[maxLen(150)]"
+            :rules="[required, maxLen(150)]"
             :counter="150"
             clearable
           />
@@ -26,17 +27,17 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
-import { reactive, watch, computed } from "vue";
+import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -47,6 +48,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("enjeu");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -77,10 +80,10 @@ watch(
   { immediate: true }
 );
 
-const isFormValid = computed(() => !!form.description?.trim());
-
-const submitForm = () => {
+const submitForm = async () => {
   if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   const payload = { description: form.description };
   if (props.mode === "change") payload.id_enjeu = form.id_enjeu;
   props.onSubmit(payload);

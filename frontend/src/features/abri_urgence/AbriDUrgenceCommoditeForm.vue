@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="abri-urgence-commodite-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="abri-urgence-commodite-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
@@ -41,9 +41,11 @@
             label="Etat de la commodité"
             v-model="form.etat"
             :disabled="props.mode === 'view' || !can('change')"
+            class="required"
             density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
+            :rules="[required]"
             clearable
           />
         </div>
@@ -83,10 +85,11 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
@@ -94,6 +97,7 @@ import { reactive, watch, ref, computed, onMounted } from "vue";
 import config from "../../../config";
 import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
+import { required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -105,6 +109,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("abridurgencecommodite");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -165,10 +171,11 @@ onMounted(() => {
     .catch(() => {});
 });
 
-const submitForm = () => {
-  if (props.onSubmit) {
-    props.onSubmit(form);
-  }
+const submitForm = async () => {
+  if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
+  props.onSubmit(form);
 };
 
 const closeModal = () => {

@@ -1,7 +1,7 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
 
-  <form class="event-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="event-form" @submit.prevent="submitForm">
     <div class="event-layout">
       <section class="layout-card event-fields-card">
         <div class="w3-row form-ligne">
@@ -11,10 +11,11 @@
               type="date"
               label="Date de l'événement"
               :disabled="props.mode === 'view'"
+              class="required"
               density="compact"
               variant="underlined"
-              hide-details
-              required
+              hide-details="auto"
+              :rules="[required]"
             />
           </div>
           <div class="w3-half form-cell">
@@ -23,10 +24,11 @@
               type="date"
               label="Date d'observation"
               :disabled="props.mode === 'view'"
+              class="required"
               density="compact"
               variant="underlined"
-              hide-details
-              required
+              hide-details="auto"
+              :rules="[required]"
             />
           </div>
         </div>
@@ -37,10 +39,11 @@
               v-model="form.observateur"
               label="Observateur"
               :disabled="props.mode === 'view'"
+              class="required"
               density="compact"
               variant="underlined"
-              hide-details
-              required
+              hide-details="auto"
+              :rules="[required]"
             />
           </div>
           <div class="w3-half form-cell">
@@ -128,14 +131,14 @@
               v-model="form.description"
               label="Description"
               :disabled="props.mode === 'view'"
+              class="required"
               density="compact"
               variant="underlined"
               rows="2"
               hide-details="auto"
-              :rules="[maxLen(150)]"
+              :rules="[required, maxLen(150)]"
               :counter="150"
               auto-grow
-              required
             />
           </div>
         </div>
@@ -223,12 +226,12 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
       >
         {{ btTitle }}
       </v-btn>
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
@@ -239,7 +242,7 @@ import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEdito
 import { usePermissions } from "../../composables/usePermissions";
 import { selectMenuProps } from "../../composables/useSelectMenuProps";
 import { useMainStore } from "../../store/index";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -256,6 +259,8 @@ const props = defineProps({
 const mainStore = useMainStore();
 const { can } = usePermissions("evenement");
 
+const formRef = ref(null);
+
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
   if (props.mode === "change") return `Modifier ${props.itemLabel}`;
@@ -263,14 +268,6 @@ const formTitle = computed(() => {
 });
 
 const btTitle = computed(() => (props.mode === "add" ? "Ajouter" : "Enregistrer"));
-
-const isFormValid = computed(
-  () =>
-    !!form.description?.trim() &&
-    !!form.date_evenement &&
-    !!form.observateur?.trim() &&
-    !!form.date_observation
-);
 
 const form = reactive({
   date_evenement: "",
@@ -577,6 +574,8 @@ watch(
 
 const submitForm = async () => {
   submitted.value = true;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
 
   if (!geometryValidity.value?.isValid) {
     return;

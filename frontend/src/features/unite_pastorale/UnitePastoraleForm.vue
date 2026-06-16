@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="up-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="up-form" @submit.prevent="submitForm">
     <div class="up-form-layout">
       <section class="layout-card">
         <v-tabs v-model="activeTab" density="compact" color="primary" class="up-tabs">
@@ -17,10 +17,12 @@
               <v-text-field
                 v-model="form.properties.code_up"
                 :disabled="props.mode === 'view' || !can('change')"
+                class="required"
                 label="Code UP"
                 density="compact"
                 variant="underlined"
-                hide-details
+                hide-details="auto"
+                :rules="[required]"
                 clearable
               />
             </div>
@@ -28,10 +30,12 @@
               <v-text-field
                 v-model="form.properties.nom_up"
                 :disabled="props.mode === 'view' || !can('change')"
+                class="required"
                 label="Nom UP"
                 density="compact"
                 variant="underlined"
-                hide-details
+                hide-details="auto"
+                :rules="[required]"
                 clearable
               />
             </div>
@@ -231,16 +235,18 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
 import { reactive, ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import auth from "@/services/axios";
 import { usePermissions } from "@/composables/usePermissions";
+import { required } from "@/utils/validators";
 import config from "@/../config";
 import OpenLayersGeoJsonMap from "@/components/map/OpenLayersGeoJsonMap.vue";
 import CrudListPage from "@/components/crud/CrudListPage.vue";
@@ -258,6 +264,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("unitepastorale");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   const nom = form.properties?.nom_up;
@@ -506,8 +514,10 @@ const buildPayload = () => {
   return payload;
 };
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   props.onSubmit(buildPayload());
 };
 

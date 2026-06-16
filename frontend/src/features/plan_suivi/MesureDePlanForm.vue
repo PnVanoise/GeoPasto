@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="mesure-plan-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="mesure-plan-form" @submit.prevent="submitForm">
     <div class="mesure-layout">
       <section class="layout-card mesure-fields-card">
         <div class="w3-row form-ligne">
@@ -21,11 +21,12 @@
             <v-text-field
               v-model="form.description"
               :disabled="props.mode === 'view'"
+              class="required"
               label="Description"
               density="compact"
               variant="underlined"
               hide-details="auto"
-              :rules="[maxLen(150)]"
+              :rules="[required, maxLen(150)]"
               :counter="150"
               clearable
             />
@@ -249,11 +250,11 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
@@ -262,7 +263,7 @@ import config from "../../../config";
 import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 import WKT from "ol/format/WKT";
 import GeoJSON from "ol/format/GeoJSON";
 import proj4 from "proj4";
@@ -283,6 +284,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("mesuredeplan");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -536,8 +539,10 @@ onMounted(() => {
     .catch(() => {});
 });
 
-const submitForm = () => {
+const submitForm = async () => {
   submitted.value = true;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   if (props.onSubmit) {
     props.onSubmit({
       id_mesure_plan: form.id_mesure_plan,
@@ -580,12 +585,6 @@ const rulesFinPeriodeRealisation = computed(() => [
     jjmmToMmjj(v) >= jjmmToMmjj(form.debut_periode_realisation) ||
     "La fin de période réalisation doit être postérieure au début.",
 ]);
-
-const isFormValid = computed(() => {
-  const debut = form.date_debut_validite;
-  const fin = form.date_fin_validite;
-  return !fin || !debut || fin >= debut;
-});
 
 const closeModal = () => {
   props.onClose?.();

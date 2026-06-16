@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="plan-suivi-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="plan-suivi-form" @submit.prevent="submitForm">
     <div class="plan-suivi-layout">
       <div
         class="plan-suivi-left"
@@ -12,11 +12,12 @@
               <v-text-field
                 v-model="form.description"
                 :disabled="props.mode === 'view'"
+                class="required"
                 label="Description"
                 density="compact"
                 variant="underlined"
                 hide-details="auto"
-                :rules="[maxLen(150)]"
+                :rules="[required, maxLen(150)]"
                 :counter="150"
                 clearable
               />
@@ -157,11 +158,11 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
@@ -172,7 +173,7 @@ import { usePermissions } from "../../composables/usePermissions";
 import CrudListPage from "../../components/crud/CrudListPage.vue";
 import PlanAvancementView from "./PlanAvancementView.vue";
 import OpenLayersGeoJsonMap from "../../components/map/OpenLayersGeoJsonMap.vue";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -184,6 +185,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("plandesuivi");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -403,12 +406,6 @@ const rulesDateFin = computed(() => [
     "La date de fin doit être postérieure à la date de début.",
 ]);
 
-const isFormValid = computed(() => {
-  const debut = form.date_debut;
-  const fin = form.date_fin;
-  return !fin || !debut || fin >= debut;
-});
-
 const onMapFeatureClick = async ({ id, layer }) => {
   if (!id) {
     selectedFeature.value = null;
@@ -438,10 +435,11 @@ const onMesureRowClick = (entry) => {
   if (selectedFeature.value) mapRef.value?.zoomToId(prefixedId);
 };
 
-const submitForm = () => {
-  if (props.onSubmit) {
-    props.onSubmit(form);
-  }
+const submitForm = async () => {
+  if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
+  props.onSubmit(form);
 };
 
 const closeModal = () => {

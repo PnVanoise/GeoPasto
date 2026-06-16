@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="categorie-animaux-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="categorie-animaux-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
@@ -11,8 +11,9 @@
             label="Description"
             density="compact"
             variant="underlined"
+            class="required"
             hide-details="auto"
-            :rules="[maxLen(150)]"
+            :rules="[required, maxLen(150)]"
             :counter="150"
             clearable
           />
@@ -65,11 +66,11 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
@@ -77,7 +78,7 @@ import { reactive, watch, ref, computed, onMounted } from "vue";
 import config from "../../../config";
 import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -88,6 +89,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("categorieanimaux");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -135,11 +138,10 @@ onMounted(() => {
     .catch((error) => {});
 });
 
-// Submits
-const isFormValid = computed(() => !!form.description?.trim());
-
-const submitForm = () => {
+const submitForm = async () => {
   if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   // payload propre (deep copy) : enlever champs read-only et n'envoyer l'id que pour update
   const payload = JSON.parse(JSON.stringify(form));
   if (props.mode === "add") delete payload.id_categorie_animaux;

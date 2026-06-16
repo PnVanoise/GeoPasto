@@ -1,18 +1,19 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="type-evenement-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="type-evenement-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
           <v-text-field
             id="description"
             v-model="form.description"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
+            class="required"
             label="Description"
-            dense
+            density="compact"
             variant="underlined"
             hide-details="auto"
-            :rules="[maxLen(150)]"
+            :rules="[required, maxLen(150)]"
             :counter="150"
             clearable
           />
@@ -34,29 +35,29 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
-import { reactive, watch, ref, computed, onMounted } from "vue";
-import config from "../../../config";
-import auth from "@/services/axios";
+import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
-  mode: { type: String, default: "view" }, // add | change | view
+  mode: { type: String, default: "view" },
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
 });
 
 const { can } = usePermissions("typeevenement");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -71,7 +72,6 @@ const btTitle = computed(() => {
   return "";
 });
 
-// Formulaire réactif
 const form = reactive({
   id_type_evenement: null,
   description: "",
@@ -82,7 +82,6 @@ watch(
   (newVal) => {
     if (newVal) {
       Object.assign(form, newVal);
-      // assurer l'ID pour le mode "change" (compatibilité id / id_type_evenement)
       if (newVal.id_type_evenement !== undefined && newVal.id_type_evenement !== null) {
         form.id_type_evenement = newVal.id_type_evenement;
       } else if (newVal.id !== undefined && newVal.id !== null) {
@@ -93,26 +92,16 @@ watch(
   { immediate: true }
 );
 
-onMounted(() => {});
-
-const isFormValid = computed(() => !!form.description?.trim());
-
-// Submit
-const submitForm = () => {
+const submitForm = async () => {
   if (!props.onSubmit) return;
-  // payload propre (deep copy) : enlever champs read-only et n'envoyer l'id que pour update
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   const payload = JSON.parse(JSON.stringify(form));
   if (props.mode === "add") delete payload.id_type_evenement;
   props.onSubmit(payload);
 };
 
-// Close
 const closeModal = () => {
   props.onClose?.();
 };
 </script>
-<style scoped>
-.disable-events {
-  pointer-events: none;
-}
-</style>

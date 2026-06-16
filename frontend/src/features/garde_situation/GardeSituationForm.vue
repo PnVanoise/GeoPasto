@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="garde-situation-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="garde-situation-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
@@ -41,6 +41,7 @@
             label="Date de début"
             v-model="form.date_debut"
             :disabled="props.mode === 'view'"
+            class="required"
             density="compact"
             variant="underlined"
             hide-details="auto"
@@ -92,11 +93,11 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
@@ -114,6 +115,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("gardesituation");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -206,32 +209,17 @@ const rulesDateFin = computed(() => [
     `Date postérieure à la fin de la situation (${situDateFin.value}).`,
 ]);
 
-const isFormValid = computed(() => {
-  const debut = form.date_debut;
-  const fin = form.date_fin;
-  if (!debut) return false;
-  if (fin && fin < debut) return false;
-  if (situDateDebut.value) {
-    if (debut < situDateDebut.value) return false;
-    if (fin && fin < situDateDebut.value) return false;
-  }
-  if (situDateFin.value) {
-    if (debut > situDateFin.value) return false;
-    if (fin && fin > situDateFin.value) return false;
-  }
-  return true;
-});
-
 watch([() => form.situation_exploitation, situations], () => {
   if (props.mode !== "add" || !selectedSituation.value) return;
   form.date_debut = situDateDebut.value ?? "";
   form.date_fin = situDateFin.value ?? "";
 });
 
-const submitForm = () => {
-  if (props.onSubmit) {
-    props.onSubmit(form);
-  }
+const submitForm = async () => {
+  if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
+  props.onSubmit(form);
 };
 
 const closeModal = () => {

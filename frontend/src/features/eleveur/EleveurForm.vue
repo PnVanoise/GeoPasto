@@ -1,18 +1,20 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
 
-  <form class="eleveur-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="eleveur-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
           <v-text-field
             id="nom"
             v-model="form.nom_eleveur"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
+            class="required"
             label="Nom"
-            dense
+            density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
+            :rules="[required]"
             clearable
           />
         </div>
@@ -20,9 +22,9 @@
           <v-text-field
             id="prenom"
             v-model="form.prenom_eleveur"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
             label="Prénom"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -34,9 +36,9 @@
           <v-text-field
             id="tel"
             v-model="form.tel_eleveur"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
             label="Téléphone"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -46,9 +48,9 @@
           <v-text-field
             id="mail"
             v-model="form.mail_eleveur"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
             label="Email"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -60,9 +62,9 @@
           <v-text-field
             id="adresse"
             v-model="form.adresse_eleveur"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
             label="Adresse"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -72,9 +74,9 @@
           <v-text-field
             id="commentaire"
             v-model="form.commentaire"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
             label="Commentaire"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -97,25 +99,29 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
-import { reactive, watch, computed, onMounted } from "vue";
+import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
+import { required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
-  mode: { type: String, default: "view" }, // add | change | view
+  mode: { type: String, default: "view" },
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
 });
 
 const { can } = usePermissions("eleveur");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -145,7 +151,6 @@ watch(
   (newVal) => {
     if (newVal) {
       Object.assign(form, newVal);
-      // assurer l'ID pour le mode "change" (compatibilité id / id_eleveur)
       if (newVal.id_eleveur !== undefined && newVal.id_eleveur !== null) {
         form.id_eleveur = newVal.id_eleveur;
       } else if (newVal.id !== undefined && newVal.id !== null) {
@@ -156,25 +161,16 @@ watch(
   { immediate: true }
 );
 
-onMounted(() => {});
-
-// Submit
-const submitForm = () => {
+const submitForm = async () => {
   if (!props.onSubmit) return;
-  // payload propre (deep copy) : enlever champs read-only et n'envoyer l'id que pour update
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   const payload = JSON.parse(JSON.stringify(form));
   if (props.mode === "add") delete payload.id_eleveur;
   props.onSubmit(payload);
 };
 
-// Close
 const closeModal = () => {
   props.onClose?.();
 };
 </script>
-
-<style scoped>
-.disable-events {
-  pointer-events: none;
-}
-</style>

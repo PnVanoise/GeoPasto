@@ -535,36 +535,9 @@ const closeModal = () => props.onClose?.();
   height: 100%;
 }
 
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-
-.up-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-.up-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
 .up-form :deep(.v-label),
 .up-form :deep(.v-chip__content) {
   font-size: 0.82rem;
-}
-.up-form :deep(.v-input) {
-  font-size: 0.88rem;
 }
 .up-form :deep(.v-field__input),
 .up-form :deep(.v-select__selection-text),
@@ -575,12 +548,6 @@ const closeModal = () => props.onClose?.();
   margin-top: 0;
 }
 
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
-}
 .up-section-gap {
   margin-top: 0.75rem;
 }
@@ -592,13 +559,6 @@ const closeModal = () => props.onClose?.();
 .info-panel {
   padding: 12px;
   border: 1px solid #ddd;
-}
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
 }
 .up-tabs {
   margin-bottom: 0.5rem;
@@ -612,11 +572,6 @@ const closeModal = () => props.onClose?.();
 }
 
 @media (max-width: 700px) {
-  .form-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.4rem;
-  }
   .form-actions :deep(.v-btn) {
     width: 100%;
   }

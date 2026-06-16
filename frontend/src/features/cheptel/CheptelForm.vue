@@ -581,49 +581,6 @@ const closeModal = () => {
 };
 </script>
 <style scoped>
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-
-.cheptel-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-
-.cheptel-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-
-.cheptel-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
-
-.cheptel-form :deep(.v-field__input),
-.cheptel-form :deep(.v-select__selection-text) {
-  font-size: 0.88rem;
-}
-
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
-}
-
 .cheptel-form :deep(.v-field--disabled) {
   opacity: 1;
 }
@@ -631,13 +588,5 @@ const closeModal = () => {
 .cheptel-form :deep(.v-field--disabled .v-select__selection-text) {
   color: #000000;
   -webkit-text-fill-color: #000000;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
 }
 </style>

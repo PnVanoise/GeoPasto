@@ -607,14 +607,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.form-ligne {
-  padding: 4px;
-}
-
-.form-cell {
-  padding: 4px;
-}
-
 .event-layout {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
@@ -632,23 +624,6 @@ onMounted(async () => {
 .event-map-card {
   grid-area: map;
   min-width: 0;
-}
-
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
 }
 
 .context-alert-content {
@@ -734,33 +709,6 @@ onMounted(async () => {
   border-width: 1px;
   background: rgba(220, 38, 38, 0.9);
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-}
-
-.event-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-
-.event-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-
-.event-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
-
-.event-form :deep(.v-field__input),
-.event-form :deep(.v-select__selection-text) {
-  font-size: 0.88rem;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
 }
 
 @media (max-width: 1100px) {

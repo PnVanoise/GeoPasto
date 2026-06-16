@@ -134,15 +134,6 @@ onMounted(async () => {
   align-items: start;
 }
 
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-}
-
 .map-title {
   margin: 0 0 10px;
   font-size: 1rem;
@@ -166,36 +157,6 @@ onMounted(async () => {
   color: #92400e;
   background: #fef3c7;
   border: 1px solid #fcd34d;
-}
-
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
-}
-
-.ruche-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-.ruche-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-.ruche-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
-.ruche-form :deep(.v-field__input),
-.ruche-form :deep(.v-select__selection-text) {
-  font-size: 0.88rem;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1.2rem;
 }
 
 @media (max-width: 900px) {

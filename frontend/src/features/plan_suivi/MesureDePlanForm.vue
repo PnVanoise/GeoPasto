@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="mesure-plan-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="mesure-plan-form" @submit.prevent="submitForm">
     <div class="mesure-layout">
       <section class="layout-card mesure-fields-card">
         <div class="w3-row form-ligne">
@@ -21,11 +21,12 @@
             <v-text-field
               v-model="form.description"
               :disabled="props.mode === 'view'"
+              class="required"
               label="Description"
               density="compact"
               variant="underlined"
               hide-details="auto"
-              :rules="[maxLen(150)]"
+              :rules="[required, maxLen(150)]"
               :counter="150"
               clearable
             />
@@ -249,11 +250,11 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
@@ -262,7 +263,7 @@ import config from "../../../config";
 import auth from "@/services/axios";
 import { usePermissions } from "../../composables/usePermissions";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 import WKT from "ol/format/WKT";
 import GeoJSON from "ol/format/GeoJSON";
 import proj4 from "proj4";
@@ -283,6 +284,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("mesuredeplan");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -536,8 +539,10 @@ onMounted(() => {
     .catch(() => {});
 });
 
-const submitForm = () => {
+const submitForm = async () => {
   submitted.value = true;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   if (props.onSubmit) {
     props.onSubmit({
       id_mesure_plan: form.id_mesure_plan,
@@ -581,12 +586,6 @@ const rulesFinPeriodeRealisation = computed(() => [
     "La fin de période réalisation doit être postérieure au début.",
 ]);
 
-const isFormValid = computed(() => {
-  const debut = form.date_debut_validite;
-  const fin = form.date_fin_validite;
-  return !fin || !debut || fin >= debut;
-});
-
 const closeModal = () => {
   props.onClose?.();
 };
@@ -612,21 +611,6 @@ const closeModal = () => {
   min-width: 0;
 }
 
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
 .geometry-status {
   display: inline-block;
   margin: 0 0 10px;
@@ -644,21 +628,6 @@ const closeModal = () => {
   color: #92400e;
   background: #fef3c7;
   border: 1px solid #fcd34d;
-}
-.mesure-plan-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-.mesure-plan-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-.mesure-plan-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
-.mesure-plan-form :deep(.v-field__input),
-.mesure-plan-form :deep(.v-select__selection-text) {
-  font-size: 0.88rem;
 }
 .obligation-field {
   padding: 4px 0 2px;
@@ -684,19 +653,6 @@ const closeModal = () => {
 }
 .obligation-field :deep(.v-label) {
   font-size: 0.88rem;
-}
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
-}
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
 }
 
 .import-section {

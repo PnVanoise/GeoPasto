@@ -410,14 +410,6 @@ function handleDelete(item) {
 </script>
 
 <style scoped>
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
 .header-actions {
   display: flex;
   justify-content: space-between;

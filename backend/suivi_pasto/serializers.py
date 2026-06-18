@@ -283,17 +283,12 @@ class QuartierPastoSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerialize
         ]
 
     def to_internal_value(self, data):
-        # Intercepter les données de géométrie avant la validation
         geometry = data.get("geometry", None)
-
-        # Vérifier si les coordonnées sont vides et définir geometry sur None si c'est le cas
-        if (
-            geometry
-            and geometry.get("type") == "Polygon"
-            and not geometry.get("coordinates")
-        ):
-            data["geometry"] = None
-
+        if geometry:
+            geom_type = geometry.get("type")
+            coords = geometry.get("coordinates")
+            if geom_type in ("Polygon", "MultiPolygon") and not coords:
+                data["geometry"] = None
         return super().to_internal_value(data)
 
     def to_representation(self, instance):
@@ -302,12 +297,8 @@ class QuartierPastoSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerialize
 
         data = super().to_representation(instance)
 
-        # Vérifiez si la géométrie est None et renvoyez un objet géométrique par défaut
         if instance.geometry is None:
-            data["geometry"] = {
-                "type": "Polygon",
-                "coordinates": [[]],  # Un polygone vide
-            }
+            data["geometry"] = {"type": "MultiPolygon", "coordinates": []}
 
         return data
 

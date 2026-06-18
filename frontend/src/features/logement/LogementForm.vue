@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="logement-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="logement-form" @submit.prevent="submitForm">
     <div class="logement-layout">
       <section class="layout-card tabs-card">
         <v-tabs v-model="activeTab" color="primary" density="compact" class="mb-2">
@@ -16,10 +16,11 @@
                 v-model="form.logement_code"
                 label="Code logement"
                 :disabled="props.mode === 'view'"
+                class="required"
                 density="compact"
                 variant="underlined"
-                hide-details
-                required
+                hide-details="auto"
+                :rules="[required]"
               />
               <v-text-field
                 v-model="form.nom_logement"
@@ -350,11 +351,12 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="formRef?.isValid === false"
       >
         {{ btTitle }}
       </v-btn>
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
@@ -363,6 +365,7 @@ import config from "../../../config";
 import auth from "@/services/axios";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
 import { selectMenuProps } from "../../composables/useSelectMenuProps";
+import { required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -382,6 +385,8 @@ const hasGeometry = computed(() => {
   const g = form.geometry;
   return g?.type === "Point" && Array.isArray(g.coordinates) && g.coordinates.length >= 2;
 });
+
+const formRef = ref(null);
 
 const activeTab = ref("tab1");
 const choices = ref({});
@@ -437,8 +442,11 @@ watch(
   { deep: true, immediate: true }
 );
 
-const submitForm = () => {
-  if (props.onSubmit) props.onSubmit({ ...form });
+const submitForm = async () => {
+  if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
+  props.onSubmit({ ...form });
 };
 
 const closeModal = () => props.onClose?.();
@@ -461,39 +469,6 @@ onMounted(async () => {
   grid-template-columns: 1fr minmax(300px, 480px);
   gap: 16px;
   align-items: start;
-}
-
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-
-.logement-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-.logement-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-.logement-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
-.logement-form :deep(.v-field__input),
-.logement-form :deep(.v-select__selection-text) {
-  font-size: 0.88rem;
 }
 
 .fields-grid {
@@ -526,13 +501,6 @@ onMounted(async () => {
   color: #92400e;
   background: #fef3c7;
   border: 1px solid #fcd34d;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1.2rem;
 }
 
 @media (max-width: 900px) {

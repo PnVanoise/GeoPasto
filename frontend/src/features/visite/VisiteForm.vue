@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="visite-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="visite-form" @submit.prevent="handleSubmitClick">
     <section class="layout-card">
       <div class="form-cell">
         <v-text-field
@@ -18,10 +18,12 @@
             type="date"
             v-model="form.date_visite"
             :disabled="props.mode === 'view'"
+            class="required"
             label="Date de visite"
             density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
+            :rules="props.mode !== 'view' ? [required] : []"
           />
         </div>
         <div class="w3-half form-cell">
@@ -50,10 +52,11 @@
           item-value="id"
           item-title="full_name"
           :disabled="props.mode === 'view'"
+          class="required"
           label="Observateurs PNV"
           density="compact"
           variant="underlined"
-          :hide-details="form.observateur_ids.length > 0 ? true : 'auto'"
+          hide-details="auto"
           :rules="props.mode !== 'view' ? [rulesObservateurs] : []"
           multiple
           chips
@@ -65,15 +68,12 @@
         <v-text-field
           v-model="form.description"
           :disabled="props.mode === 'view'"
-          label="Description *"
+          class="required"
+          label="Description"
           density="compact"
           variant="underlined"
           hide-details="auto"
-          :rules="
-            props.mode !== 'view'
-              ? [(v) => !!v?.trim() || 'La description est obligatoire.', maxLen(150)]
-              : []
-          "
+          :rules="props.mode !== 'view' ? [required, maxLen(150)] : []"
           :counter="150"
           clearable
         />
@@ -98,13 +98,13 @@
       <v-btn
         v-if="props.mode !== 'view'"
         color="success"
-        @click="handleSubmitClick"
+        type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 
   <v-dialog v-model="confirmDialog" max-width="420" persistent>
     <v-card>
@@ -125,7 +125,7 @@
 import { reactive, ref, computed, onMounted, watch } from "vue";
 import config from "../../../config";
 import auth from "@/services/axios";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -134,6 +134,8 @@ const props = defineProps({
   onSubmit: Function,
   onClose: Function,
 });
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -159,8 +161,6 @@ const confirmDialog = ref(false);
 
 const rulesObservateurs = (v) =>
   (Array.isArray(v) && v.length > 0) || "Au moins un observateur PNV est requis.";
-
-const isFormValid = computed(() => !!form.description?.trim() && form.observateur_ids.length > 0);
 
 watch(
   () => props.initialForm,
@@ -237,9 +237,9 @@ const buildPayload = () => ({
   observateur_ids: form.observateur_ids,
 });
 
-const handleSubmitClick = () => {
-  if (!form.description?.trim()) return;
-  if (!form.observateur_ids.length) return;
+const handleSubmitClick = async () => {
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   if (!form.contact_alpagiste_ids.length) {
     confirmDialog.value = true;
     return;
@@ -254,49 +254,3 @@ const confirmAndSubmit = () => {
 
 const closeModal = () => props.onClose?.();
 </script>
-
-<style scoped>
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-.visite-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-.visite-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-.visite-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
-.visite-form :deep(.v-field__input),
-.visite-form :deep(.v-select__selection-text) {
-  font-size: 0.88rem;
-}
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
-}
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-}
-</style>

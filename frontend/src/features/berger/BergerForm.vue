@@ -1,17 +1,19 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="berger-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="berger-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
           <v-text-field
             id="nom"
             v-model="form.nom_berger"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
+            class="required"
             label="Nom"
-            dense
+            density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
+            :rules="[required]"
             clearable
           />
         </div>
@@ -19,11 +21,13 @@
           <v-text-field
             id="prenom"
             v-model="form.prenom_berger"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
+            class="required"
             label="Prénom"
-            dense
+            density="compact"
             variant="underlined"
-            hide-details
+            hide-details="auto"
+            :rules="[required]"
             clearable
           />
         </div>
@@ -33,9 +37,9 @@
           <v-text-field
             id="tel"
             v-model="form.tel_berger"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
             label="Téléphone"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -45,9 +49,9 @@
           <v-text-field
             id="adresse"
             v-model="form.adresse_berger"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
             label="Adresse"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -59,9 +63,9 @@
           <v-text-field
             id="comm"
             v-model="form.commentaire"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
             label="Commentaire"
-            dense
+            density="compact"
             variant="underlined"
             hide-details
             clearable
@@ -84,27 +88,29 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
-import { reactive, watch, ref, computed, onMounted } from "vue";
-import config from "../../../config";
-import auth from "@/services/axios";
+import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
+import { required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
-  mode: { type: String, default: "view" }, // add | change | view
+  mode: { type: String, default: "view" },
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
 });
 
 const { can } = usePermissions("berger");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -137,64 +143,14 @@ watch(
   { immediate: true }
 );
 
-// Submits
-const submitForm = () => {
-  if (props.onSubmit) {
-    props.onSubmit(form);
-  }
+const submitForm = async () => {
+  if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
+  props.onSubmit(form);
 };
 
-// Close
 const closeModal = () => {
   props.onClose?.();
 };
 </script>
-
-<style scoped>
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-.berger-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-.berger-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-.berger-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
-.berger-form :deep(.v-field__input),
-.berger-form :deep(.v-select__selection-text) {
-  font-size: 0.88rem;
-}
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
-}
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-}
-.disable-events {
-  pointer-events: none;
-}
-</style>

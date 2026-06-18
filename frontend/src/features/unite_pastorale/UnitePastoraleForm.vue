@@ -1,6 +1,6 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="up-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="up-form" @submit.prevent="submitForm">
     <div class="up-form-layout">
       <section class="layout-card">
         <v-tabs v-model="activeTab" density="compact" color="primary" class="up-tabs">
@@ -17,10 +17,12 @@
               <v-text-field
                 v-model="form.properties.code_up"
                 :disabled="props.mode === 'view' || !can('change')"
+                class="required"
                 label="Code UP"
                 density="compact"
                 variant="underlined"
-                hide-details
+                hide-details="auto"
+                :rules="[required]"
                 clearable
               />
             </div>
@@ -28,10 +30,12 @@
               <v-text-field
                 v-model="form.properties.nom_up"
                 :disabled="props.mode === 'view' || !can('change')"
+                class="required"
                 label="Nom UP"
                 density="compact"
                 variant="underlined"
-                hide-details
+                hide-details="auto"
+                :rules="[required]"
                 clearable
               />
             </div>
@@ -231,16 +235,18 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
 import { reactive, ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import auth from "@/services/axios";
 import { usePermissions } from "@/composables/usePermissions";
+import { required } from "@/utils/validators";
 import config from "@/../config";
 import OpenLayersGeoJsonMap from "@/components/map/OpenLayersGeoJsonMap.vue";
 import CrudListPage from "@/components/crud/CrudListPage.vue";
@@ -258,6 +264,8 @@ const props = defineProps({
 });
 
 const { can } = usePermissions("unitepastorale");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   const nom = form.properties?.nom_up;
@@ -335,9 +343,16 @@ const activeMapLayer = computed(() => {
       title: "Géométrie active",
       data: {
         type: "FeatureCollection",
-        features: [{ type: "Feature", geometry: form.geometry, properties: {} }],
+        features: [
+          {
+            type: "Feature",
+            geometry: form.geometry,
+            properties: { nom_up: form.properties?.nom_up },
+          },
+        ],
       },
       style: { strokeColor: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.2, strokeWidth: 2 },
+      popup: { typeLabel: "Unité Pastorale", attribute: "nom_up" },
     },
   ];
 });
@@ -387,6 +402,10 @@ const fetchHistGeometries = () => {
     .get(`${config.API_BASE_URL}/api/geometrieUP/`, { params: { unite_pastorale: form.id } })
     .then((resp) => {
       histGeometries.value = resp.data?.features ?? resp.data ?? [];
+      const activeFeature = histGeometries.value.find((g) => !g.properties?.date_fin_validite);
+      if (activeFeature !== undefined) {
+        form.geometry = activeFeature?.geometry ?? null;
+      }
     })
     .catch(() => {});
 };
@@ -454,6 +473,7 @@ onBeforeUnmount(() => {
 
 const onGeoDataChanged = (event) => {
   if (event?.detail?.modelName === "geometrieunitepastorale") {
+    console.log(event);
     fetchHistGeometries();
   }
   if (event?.detail?.modelName === "conventiondexploitation") {
@@ -506,8 +526,10 @@ const buildPayload = () => {
   return payload;
 };
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!props.onSubmit) return;
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   props.onSubmit(buildPayload());
 };
 
@@ -535,36 +557,9 @@ const closeModal = () => props.onClose?.();
   height: 100%;
 }
 
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-
-.up-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-.up-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
 .up-form :deep(.v-label),
 .up-form :deep(.v-chip__content) {
   font-size: 0.82rem;
-}
-.up-form :deep(.v-input) {
-  font-size: 0.88rem;
 }
 .up-form :deep(.v-field__input),
 .up-form :deep(.v-select__selection-text),
@@ -575,12 +570,6 @@ const closeModal = () => props.onClose?.();
   margin-top: 0;
 }
 
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
-}
 .up-section-gap {
   margin-top: 0.75rem;
 }
@@ -592,13 +581,6 @@ const closeModal = () => props.onClose?.();
 .info-panel {
   padding: 12px;
   border: 1px solid #ddd;
-}
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
 }
 .up-tabs {
   margin-bottom: 0.5rem;
@@ -612,11 +594,6 @@ const closeModal = () => props.onClose?.();
 }
 
 @media (max-width: 700px) {
-  .form-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.4rem;
-  }
   .form-actions :deep(.v-btn) {
     width: 100%;
   }

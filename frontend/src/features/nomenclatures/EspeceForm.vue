@@ -1,18 +1,19 @@
 <template>
   <h4 class="w3-center w3-margin">{{ formTitle }}</h4>
-  <form class="espece-form" @submit.prevent="submitForm">
+  <v-form ref="formRef" class="espece-form" @submit.prevent="submitForm">
     <section class="layout-card">
       <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
           <v-text-field
             id="description"
             v-model="form.description"
-            :class="{ 'disable-events': props.mode === 'view' || !can('change') }"
+            :disabled="props.mode === 'view' || !can('change')"
+            class="required"
             label="Description"
-            dense
+            density="compact"
             variant="underlined"
             hide-details="auto"
-            :rules="[maxLen(150)]"
+            :rules="[required, maxLen(150)]"
             :counter="150"
             clearable
           />
@@ -34,29 +35,29 @@
         color="success"
         type="submit"
         prepend-icon="mdi-content-save"
-        :disabled="!isFormValid"
+        :disabled="formRef?.isValid === false"
         >{{ btTitle }}</v-btn
       >
     </div>
-  </form>
+  </v-form>
 </template>
 
 <script setup>
-import { reactive, watch, ref, computed, onMounted } from "vue";
-import config from "../../../config";
-import auth from "@/services/axios";
+import { reactive, watch, ref, computed } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
-import { maxLen } from "@/utils/validators";
+import { maxLen, required } from "@/utils/validators";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
-  mode: { type: String, default: "view" }, // add | change | view
+  mode: { type: String, default: "view" },
   itemLabel: { type: String, required: true },
   onSubmit: Function,
   onClose: Function,
 });
 
 const { can } = usePermissions("espece");
+
+const formRef = ref(null);
 
 const formTitle = computed(() => {
   if (props.mode === "add") return `Ajouter ${props.itemLabel}`;
@@ -80,7 +81,6 @@ watch(
   (newVal) => {
     if (newVal) {
       Object.assign(form, newVal);
-      // assurer l'ID pour le mode "change" (compatibilité id / id_espece)
       if (newVal.id_espece !== undefined && newVal.id_espece !== null) {
         form.id_espece = newVal.id_espece;
       } else if (newVal.id !== undefined && newVal.id !== null) {
@@ -91,78 +91,17 @@ watch(
   { immediate: true }
 );
 
-onMounted(() => {});
-
-// Submits
-const isFormValid = computed(() => !!form.description?.trim());
-
-const submitForm = () => {
+const submitForm = async () => {
   if (!props.onSubmit) return;
-  // payload propre (deep copy) : enlever champs read-only et n'envoyer l'id que pour update
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
   const payload = JSON.parse(JSON.stringify(form));
   delete payload.membres_ids;
   if (props.mode === "add") delete payload.id_espece;
   props.onSubmit(payload);
 };
 
-// Close
 const closeModal = () => {
   props.onClose?.();
 };
 </script>
-<style scoped>
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease;
-}
-
-.layout-card:hover {
-  border-color: #c8d0db;
-  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-
-.espece-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-
-.espece-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-
-.espece-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
-
-.espece-form :deep(.v-field__input),
-.espece-form :deep(.v-select__selection-text) {
-  font-size: 0.88rem;
-}
-
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-}
-
-.disable-events {
-  pointer-events: none;
-}
-</style>

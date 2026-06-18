@@ -109,7 +109,11 @@
       </div>
     </div>
 
+    <div v-if="crud.isLoading.value" class="loading-state">
+      <img src="/spinner_2.gif" alt="Chargement..." />
+    </div>
     <Grid3
+      v-else
       ref="gridRef"
       :data="filteredEntries"
       :showActions="false"
@@ -287,6 +291,12 @@ function handleDelete(item) {
 </script>
 
 <style scoped>
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
 .header-actions {
   display: flex;
   justify-content: space-between;

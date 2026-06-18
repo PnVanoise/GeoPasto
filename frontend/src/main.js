@@ -12,6 +12,7 @@ import * as directives from "vuetify/directives";
 import "@mdi/font/css/materialdesignicons.css";
 import "w3-css/w3.css";
 import "./assets/w3-colors-signal.css";
+import "./assets/global.css";
 
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";

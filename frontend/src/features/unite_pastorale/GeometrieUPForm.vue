@@ -223,44 +223,12 @@ const submitForm = () => {
 </script>
 
 <style scoped>
-.layout-card {
-  background: #ffffff;
-  border: 1px solid #d7dde6;
-  border-left: 3px solid #64748b;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-}
-.geometrie-up-form :deep(.v-input--density-compact .v-field__input) {
-  min-height: 38px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-.geometrie-up-form :deep(.v-label.v-field-label) {
-  font-size: 0.82rem;
-}
-.geometrie-up-form :deep(.v-input) {
-  font-size: 0.88rem;
-}
 .geometrie-up-form :deep(.v-field__input) {
   font-size: 0.88rem;
-}
-.form-ligne {
-  padding: 4px;
-}
-.form-cell {
-  padding: 4px;
 }
 .map-cell {
   min-height: 300px;
   margin-top: 0.5rem;
-}
-.form-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
 }
 
 .import-section {

@@ -77,7 +77,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
         typeLabel: "Quartier",
         attribute: "nom_quartier",
         idAttribute: "id_quartier",
-        route: "/QuartierPasto/edit",
+        route: "/quartier-pasto",
       },
     },
     {
@@ -98,7 +98,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
         typeLabel: "Événement",
         attribute: "description",
         idAttribute: "event_id",
-        route: "/Evenement/edit",
+        route: "/evenement",
         contentType: "eventCompact",
       },
     },

@@ -968,7 +968,8 @@ class QuartierPastoViewset(BaseModelViewSet):
         sql = """
             WITH
             q AS (
-                SELECT geometry AS geom FROM suivi_pasto_quartierpasto WHERE id_quartier = %(id)s
+                SELECT (ST_Dump(geometry)).geom AS geom
+                FROM suivi_pasto_quartierpasto WHERE id_quartier = %(id)s
             ),
             blade AS (
                 SELECT ST_Transform(ST_GeomFromGeoJSON(%(line)s), 2154) AS geom
@@ -995,16 +996,14 @@ class QuartierPastoViewset(BaseModelViewSet):
             cursor.execute(sql, {"id": quartier.pk, "line": line_geojson_str})
             rows = cursor.fetchall()
 
-        if len(rows) < 2:
+        original_num_geoms = quartier.geometry.num_geom if quartier.geometry else 1
+        if len(rows) <= original_num_geoms:
             return Response(
                 {
                     "detail": "La ligne ne traverse pas entièrement le quartier. Assurez-vous qu'elle entre et sort du polygone."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        geom1_4326 = json.loads(rows[0][0])
-        geom2_4326 = json.loads(rows[1][0])
 
         # Convert back to SRID 2154 for storage via GeoJSON round-trip through PostGIS
         def geojson_4326_to_2154(geojson_dict):
@@ -1013,13 +1012,21 @@ class QuartierPastoViewset(BaseModelViewSet):
                 cur.execute(sql_convert, [json.dumps(geojson_dict)])
                 return cur.fetchone()[0]
 
-        wkt1 = geojson_4326_to_2154(geom1_4326)
-        wkt2 = geojson_4326_to_2154(geom2_4326)
+        def rows_to_multi(geojson_dicts, srid=2154):
+            from django.contrib.gis.geos import GEOSGeometry
 
-        from django.contrib.gis.geos import GEOSGeometry
+            polys = [
+                GEOSGeometry(geojson_4326_to_2154(g), srid=srid) for g in geojson_dicts
+            ]
+            return MultiPolygon(*polys, srid=srid)
+
+        # quartier1 = largest part + any remaining parts not assigned to quartier2
+        # quartier2 = second largest part (the split-off piece)
+        q1_geojsons = [json.loads(rows[0][0])] + [json.loads(r[0]) for r in rows[2:]]
+        q2_geojsons = [json.loads(rows[1][0])]
 
         with transaction.atomic():
-            quartier.geometry = GEOSGeometry(wkt1, srid=2154)
+            quartier.geometry = rows_to_multi(q1_geojsons)
             quartier.save(update_fields=["geometry", "modified_by", "modified_on"])
 
             new_quartier = QuartierPasto.objects.create(
@@ -1029,7 +1036,7 @@ class QuartierPastoViewset(BaseModelViewSet):
                 nom_quartier=(
                     f"{quartier.nom_quartier} (2)" if quartier.nom_quartier else None
                 ),
-                geometry=GEOSGeometry(wkt2, srid=2154),
+                geometry=rows_to_multi(q2_geojsons),
                 situation_exploitation=quartier.situation_exploitation,
             )
 

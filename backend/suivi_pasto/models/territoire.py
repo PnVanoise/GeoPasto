@@ -154,7 +154,7 @@ class QuartierPasto(AuditFieldsMixin, models.Model):
     id_quartier = models.BigAutoField(primary_key=True)
     code_quartier = models.CharField(max_length=50, null=True, blank=True)
     nom_quartier = models.CharField(max_length=50, null=True, blank=True)
-    geometry = models.PolygonField(srid=2154, null=True, blank=True)
+    geometry = models.MultiPolygonField(srid=2154, null=True, blank=True)
 
     situation_exploitation = models.ForeignKey(
         "suivi_pasto.SituationDExploitation",

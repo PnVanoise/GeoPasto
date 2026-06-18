@@ -3,7 +3,9 @@
     <div ref="mapElement" class="geometry-map"></div>
 
     <div v-if="!props.disabled" class="geometry-toolbar">
-      <template v-if="!isSplitting && !isDeletingPart">
+      <template
+        v-if="!isSplitting && !isDeletingPart && !isAddingPart && !isAddingHole && !isDeletingHole"
+      >
         <v-btn
           v-if="!props.editOnly && !isDrawing && !isModifying"
           size="small"
@@ -45,9 +47,7 @@
           Effacer
         </v-btn>
         <v-btn
-          v-if="
-            props.geometryType === 'MultiPolygon' && !props.drawOnly && !isDrawing && !isModifying
-          "
+          v-if="props.geometryType === 'MultiPolygon' && !isDrawing && !isModifying"
           size="small"
           color="error"
           variant="tonal"
@@ -55,6 +55,51 @@
           @click="enableDeletePart"
         >
           Supprimer une partie
+        </v-btn>
+        <v-btn
+          v-if="
+            props.geometryType === 'MultiPolygon' &&
+            !isDrawing &&
+            !isModifying &&
+            props.modelValue != null
+          "
+          size="small"
+          color="primary"
+          variant="tonal"
+          prepend-icon="mdi-vector-polygon-add"
+          @click="enableAddPart"
+        >
+          Ajouter une partie
+        </v-btn>
+        <v-btn
+          v-if="
+            (props.geometryType === 'MultiPolygon' || props.geometryType === 'Polygon') &&
+            !isDrawing &&
+            !isModifying &&
+            props.modelValue != null
+          "
+          size="small"
+          color="primary"
+          variant="tonal"
+          prepend-icon="mdi-vector-circle-variant"
+          @click="enableAddHole"
+        >
+          Ajouter un trou
+        </v-btn>
+        <v-btn
+          v-if="
+            (props.geometryType === 'MultiPolygon' || props.geometryType === 'Polygon') &&
+            !isDrawing &&
+            !isModifying &&
+            hasHoles
+          "
+          size="small"
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-vector-circle-remove"
+          @click="enableDeleteHole"
+        >
+          Supprimer un trou
         </v-btn>
         <v-btn
           v-if="props.allowSplit && !isDrawing && !isModifying"
@@ -76,6 +121,45 @@
           variant="tonal"
           prepend-icon="mdi-close"
           @click="cancelDeletePart"
+        >
+          Annuler
+        </v-btn>
+      </template>
+
+      <template v-else-if="isDeletingHole">
+        <span class="split-hint">Cliquez sur le trou à supprimer</span>
+        <v-btn
+          size="small"
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-close"
+          @click="cancelDeleteHole"
+        >
+          Annuler
+        </v-btn>
+      </template>
+
+      <template v-else-if="isAddingPart">
+        <span class="split-hint">Dessinez le nouveau polygone à ajouter</span>
+        <v-btn
+          size="small"
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-close"
+          @click="cancelAddPart"
+        >
+          Annuler
+        </v-btn>
+      </template>
+
+      <template v-else-if="isAddingHole">
+        <span class="split-hint">Dessinez le trou à l'intérieur du polygone</span>
+        <v-btn
+          size="small"
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-close"
+          @click="cancelAddHole"
         >
           Annuler
         </v-btn>
@@ -114,7 +198,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, nextTick, ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, nextTick, ref, watch, computed } from "vue";
 import { normalizeGeoData } from "@/helpers/geojson.js";
 import "ol/ol.css";
 
@@ -125,6 +209,7 @@ import View from "ol/View";
 import Feature from "ol/Feature";
 import { unByKey } from "ol/Observable";
 import OlMultiPolygon from "ol/geom/MultiPolygon";
+import OlPolygon from "ol/geom/Polygon";
 import Draw from "ol/interaction/Draw";
 import Modify from "ol/interaction/Modify";
 import Snap from "ol/interaction/Snap";
@@ -181,10 +266,22 @@ const hasDrawn = ref(false);
 const isSplitting = ref(false);
 const splitLineDrawn = ref(false);
 const isDeletingPart = ref(false);
+const isAddingPart = ref(false);
+const isAddingHole = ref(false);
+const isDeletingHole = ref(false);
+
+const hasHoles = computed(() => {
+  const geom = props.modelValue;
+  if (!geom) return false;
+  if (geom.type === "Polygon") return (geom.coordinates?.length ?? 0) > 1;
+  if (geom.type === "MultiPolygon") return geom.coordinates?.some((poly) => poly.length > 1);
+  return false;
+});
 
 let map = null;
 let source = null;
 let splitSource = null;
+let tempSource = null;
 let splitLayer = null;
 let highlightSource = null;
 let highlightLayer = null;
@@ -600,9 +697,13 @@ const removeInteractions = () => {
     deleteHoverListener = null;
   }
   if (highlightSource) highlightSource.clear();
+  if (tempSource) tempSource.clear();
   const el = map.getTargetElement();
   if (el) el.style.cursor = "";
   isDeletingPart.value = false;
+  isAddingPart.value = false;
+  isAddingHole.value = false;
+  isDeletingHole.value = false;
 };
 
 const enableDraw = () => {
@@ -719,6 +820,191 @@ const highlightDeleteStyle = new Style({
   fill: new Fill({ color: "rgba(239, 68, 68, 0.35)" }),
   stroke: new Stroke({ color: "#ef4444", width: 2.5 }),
 });
+
+const enableAddPart = () => {
+  if (!map || !source) return;
+  removeInteractions();
+  isAddingPart.value = true;
+
+  tempSource = new VectorSource();
+  drawInteraction = new Draw({ source: tempSource, type: "Polygon" });
+
+  drawInteraction.on("drawend", (event) => {
+    const features = source.getFeatures();
+    if (!features.length) return;
+    const feature = features[0];
+    const existingGeom = feature.getGeometry();
+    if (!existingGeom) return;
+
+    const drawnPoly = event.feature.getGeometry();
+    const existingPolygons =
+      existingGeom.getType() === "MultiPolygon" ? existingGeom.getPolygons() : [existingGeom];
+
+    feature.setGeometry(
+      new OlMultiPolygon([
+        ...existingPolygons.map((p) => p.getCoordinates()),
+        drawnPoly.getCoordinates(),
+      ])
+    );
+
+    emitGeometry();
+    isAddingPart.value = false;
+    enableModify();
+  });
+
+  map.addInteraction(drawInteraction);
+  snapInteraction = new Snap({ source, pixelTolerance: 20 });
+  map.addInteraction(snapInteraction);
+  if (contextSource) {
+    contextSnapInteraction = new Snap({ source: contextSource, pixelTolerance: 20 });
+    map.addInteraction(contextSnapInteraction);
+  }
+};
+
+const cancelAddPart = () => {
+  removeInteractions();
+  applyInteractionMode();
+};
+
+const enableAddHole = () => {
+  if (!map || !source) return;
+  removeInteractions();
+  isAddingHole.value = true;
+
+  tempSource = new VectorSource();
+  drawInteraction = new Draw({ source: tempSource, type: "Polygon" });
+
+  drawInteraction.on("drawend", (event) => {
+    const features = source.getFeatures();
+    if (!features.length) {
+      isAddingHole.value = false;
+      enableModify();
+      return;
+    }
+    const feature = features[0];
+    const existingGeom = feature.getGeometry();
+    if (!existingGeom) {
+      isAddingHole.value = false;
+      enableModify();
+      return;
+    }
+
+    const drawnPoly = event.feature.getGeometry();
+    const drawnRingCoords = drawnPoly.getCoordinates()[0];
+    const ext = drawnPoly.getExtent();
+    const cx = (ext[0] + ext[2]) / 2;
+    const cy = (ext[1] + ext[3]) / 2;
+
+    if (existingGeom.getType() === "MultiPolygon") {
+      const polygons = existingGeom.getPolygons();
+      const hostIdx = polygons.findIndex((p) => p.containsXY(cx, cy));
+      if (hostIdx === -1) {
+        isAddingHole.value = false;
+        enableModify();
+        return;
+      }
+      const allCoords = polygons.map((p, i) => {
+        const coords = p.getCoordinates();
+        return i === hostIdx ? [...coords, drawnRingCoords] : coords;
+      });
+      feature.setGeometry(new OlMultiPolygon(allCoords));
+    } else {
+      if (!existingGeom.containsXY(cx, cy)) {
+        isAddingHole.value = false;
+        enableModify();
+        return;
+      }
+      existingGeom.setCoordinates([...existingGeom.getCoordinates(), drawnRingCoords]);
+    }
+
+    emitGeometry();
+    isAddingHole.value = false;
+    enableModify();
+  });
+
+  map.addInteraction(drawInteraction);
+  snapInteraction = new Snap({ source, pixelTolerance: 20 });
+  map.addInteraction(snapInteraction);
+  if (contextSource) {
+    contextSnapInteraction = new Snap({ source: contextSource, pixelTolerance: 20 });
+    map.addInteraction(contextSnapInteraction);
+  }
+};
+
+const cancelAddHole = () => {
+  removeInteractions();
+  applyInteractionMode();
+};
+
+const findHoleAt = (x, y) => {
+  if (!source) return null;
+  const features = source.getFeatures();
+  if (!features.length) return null;
+  const geom = features[0].getGeometry();
+  if (!geom) return null;
+  const polygons = geom.getType() === "MultiPolygon" ? geom.getPolygons() : [geom];
+  for (let polyIdx = 0; polyIdx < polygons.length; polyIdx++) {
+    const rings = polygons[polyIdx].getCoordinates();
+    for (let ringIdx = 1; ringIdx < rings.length; ringIdx++) {
+      if (new OlPolygon([rings[ringIdx]]).containsXY(x, y)) {
+        return { polyIdx, ringIdx };
+      }
+    }
+  }
+  return null;
+};
+
+const enableDeleteHole = () => {
+  if (!map || !source) return;
+  removeInteractions();
+  isDeletingHole.value = true;
+
+  const el = map.getTargetElement();
+  if (el) el.style.cursor = "crosshair";
+
+  deleteHoverListener = map.on("pointermove", (evt) => {
+    if (!highlightSource) return;
+    highlightSource.clear();
+    const found = findHoleAt(evt.coordinate[0], evt.coordinate[1]);
+    if (!found) return;
+    const features = source.getFeatures();
+    if (!features.length) return;
+    const geom = features[0].getGeometry();
+    const polygons = geom.getType() === "MultiPolygon" ? geom.getPolygons() : [geom];
+    const rings = polygons[found.polyIdx].getCoordinates();
+    const hlFeature = new Feature();
+    hlFeature.setGeometry(new OlPolygon([rings[found.ringIdx]]));
+    highlightSource.addFeature(hlFeature);
+  });
+
+  deleteClickListener = map.on("click", (evt) => {
+    const found = findHoleAt(evt.coordinate[0], evt.coordinate[1]);
+    if (!found) return;
+    const features = source.getFeatures();
+    if (!features.length) return;
+    const feature = features[0];
+    const geom = feature.getGeometry();
+    if (geom.getType() === "MultiPolygon") {
+      const polygons = geom.getPolygons();
+      const allCoords = polygons.map((p, i) => {
+        if (i !== found.polyIdx) return p.getCoordinates();
+        return p.getCoordinates().filter((_, ri) => ri !== found.ringIdx);
+      });
+      feature.setGeometry(new OlMultiPolygon(allCoords));
+    } else {
+      geom.setCoordinates(geom.getCoordinates().filter((_, ri) => ri !== found.ringIdx));
+    }
+    const outputGeometry = toOutputGeometry();
+    emit("update:modelValue", outputGeometry);
+    emitGeometryValidity(outputGeometry);
+    cancelDeleteHole();
+  });
+};
+
+const cancelDeleteHole = () => {
+  removeInteractions();
+  applyInteractionMode();
+};
 
 const enableDeletePart = () => {
   if (!map || !source) return;

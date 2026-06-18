@@ -395,6 +395,10 @@ const fetchHistGeometries = () => {
     .get(`${config.API_BASE_URL}/api/geometrieUP/`, { params: { unite_pastorale: form.id } })
     .then((resp) => {
       histGeometries.value = resp.data?.features ?? resp.data ?? [];
+      const activeFeature = histGeometries.value.find((g) => !g.properties?.date_fin_validite);
+      if (activeFeature !== undefined) {
+        form.geometry = activeFeature?.geometry ?? null;
+      }
     })
     .catch(() => {});
 };
@@ -462,6 +466,7 @@ onBeforeUnmount(() => {
 
 const onGeoDataChanged = (event) => {
   if (event?.detail?.modelName === "geometrieunitepastorale") {
+    console.log(event);
     fetchHistGeometries();
   }
   if (event?.detail?.modelName === "conventiondexploitation") {

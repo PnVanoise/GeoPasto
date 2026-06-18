@@ -65,7 +65,7 @@
         <QuartierGeometryEditorOl
           ref="geometryEditorRef"
           v-model="form.geometry"
-          :geometryType="'Polygon'"
+          :geometryType="'MultiPolygon'"
           :contextLayers="contextLayers"
           :drawOnly="!props.isEdit"
           :editOnly="props.isEdit"

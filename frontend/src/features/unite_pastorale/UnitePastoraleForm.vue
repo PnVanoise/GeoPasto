@@ -343,9 +343,16 @@ const activeMapLayer = computed(() => {
       title: "Géométrie active",
       data: {
         type: "FeatureCollection",
-        features: [{ type: "Feature", geometry: form.geometry, properties: {} }],
+        features: [
+          {
+            type: "Feature",
+            geometry: form.geometry,
+            properties: { nom_up: form.properties?.nom_up },
+          },
+        ],
       },
       style: { strokeColor: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.2, strokeWidth: 2 },
+      popup: { typeLabel: "Unité Pastorale", attribute: "nom_up" },
     },
   ];
 });

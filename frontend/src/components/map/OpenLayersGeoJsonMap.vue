@@ -365,13 +365,15 @@ const openPopupForFeature = (feature, coordinate) => {
   const popupRoute = popupConfig.route ?? "";
   const popupContentType = popupConfig.contentType || null;
   const label = properties[popupAttribute] || id || "Détails";
-  const href = id && popupRoute ? `${popupRoute}/${id}` : "";
+  const baseHref = id && popupRoute ? `${popupRoute}/${id}` : "";
+  const viewHref = popupConfig.viewRoute ? `${popupConfig.viewRoute}/${id}` : baseHref;
+  const editHref = baseHref ? `${baseHref}/edit` : "";
 
   if (popupContentType === "eventCompact") {
     popupContent.value.innerHTML = buildEventPopupHtml(
       properties,
       label,
-      href,
+      editHref,
       id,
       objectTypeLabel
     );
@@ -381,10 +383,11 @@ const openPopupForFeature = (feature, coordinate) => {
 
   popupContent.value.innerHTML = buildGenericPopupHtml(
     label,
-    href,
+    viewHref,
+    editHref,
     id,
     objectTypeLabel,
-    popupConfig
+    { ...popupConfig, layerName }
   );
   popupOverlay.setPosition(coordinate);
 };
@@ -396,21 +399,29 @@ const getObjectTypeLabel = (layerName) => {
   return "Objet";
 };
 
-const buildGenericPopupHtml = (label, href, id, objectTypeLabel, popupConfig = {}) => {
+const buildGenericPopupHtml = (
+  label,
+  viewHref,
+  editHref,
+  id,
+  objectTypeLabel,
+  popupConfig = {}
+) => {
   const safeLabel = escapeHtml(String(label || "Détails"));
   const safeType = escapeHtml(String(objectTypeLabel || "Objet"));
   const safeId = id ? escapeHtml(String(id)) : "";
 
-  if (!href || !id) {
+  if (!viewHref || !id) {
     return `
       <div class="popup-object-type"><strong>${safeType}</strong></div>
       <div><strong>${safeLabel}</strong></div>
     `;
   }
 
-  const popupEditHref = href;
-  const popupViewHref = popupConfig.viewRoute ? `${popupConfig.viewRoute}/${id}` : popupEditHref;
+  const popupViewHref = viewHref;
+  const popupEditHref = editHref;
   const canEdit = popupConfig.canEdit !== false;
+  const safeLayer = escapeHtml(String(popupConfig.layerName || ""));
 
   return `
     <div class="popup-object-type"><strong>${safeType}</strong></div>
@@ -422,6 +433,7 @@ const buildGenericPopupHtml = (label, href, id, objectTypeLabel, popupConfig = {
         data-feature-id="${safeId}"
         data-feature-label="${safeLabel}"
         data-feature-action="view"
+        data-feature-layer="${safeLayer}"
         title="Voir"
         aria-label="Voir"
       >voir</a>
@@ -434,6 +446,7 @@ const buildGenericPopupHtml = (label, href, id, objectTypeLabel, popupConfig = {
         data-feature-id="${safeId}"
         data-feature-label="${safeLabel}"
         data-feature-action="edit"
+        data-feature-layer="${safeLayer}"
         title="Éditer"
         aria-label="Éditer"
       >éditer</a>
@@ -477,9 +490,10 @@ const onPopupContentClick = (event) => {
   const id = link.getAttribute("data-feature-id");
   const label = link.getAttribute("data-feature-label") || "";
   const action = link.getAttribute("data-feature-action") || "view";
+  const layer = link.getAttribute("data-feature-layer") || "";
   if (!id) return;
 
-  emit("open-popup-item", { id, label, action });
+  emit("open-popup-item", { id, label, action, layer });
 };
 
 const zoomToFeature = (feature) => {

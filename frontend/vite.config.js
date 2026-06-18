@@ -14,6 +14,20 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('vuetify')) return 'vendor-vuetify'
+          if (id.includes('/ol/') || id.includes('ol-layerswitcher')) return 'vendor-ol'
+          if (id.includes('vue-router') || id.includes('pinia')) return 'vendor-vue'
+          if (id.includes('/vue/') || id.includes('/vue-demi/') || id.includes('/@vue/')) return 'vendor-vue'
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/api': 'http://localhost:8000',

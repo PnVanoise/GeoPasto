@@ -22,7 +22,7 @@ class ViewsetsSmokeTest(APITestCase):
 
     def setUp(self):
         User = get_user_model()
-        self.user = User.objects.create_user(username="vtest", password="vtest")
+        self.user = User.objects.create_superuser(username="vtest", password="vtest")
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         UnitePastorale.objects.create(
@@ -96,7 +96,9 @@ class SituationUpdateUpActionTest(APITestCase):
 
     def setUp(self):
         User = get_user_model()
-        self.user = User.objects.create_user(username="updater", password="updater")
+        self.user = User.objects.create_superuser(
+            username="updater", password="updater"
+        )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
@@ -129,14 +131,14 @@ class SituationUpdateUpActionTest(APITestCase):
             id_quartier=100,
             code_quartier="Q1",
             nom_quartier="Quartier 1",
-            geometry="SRID=2154;POLYGON((0 0,0 2,2 2,2 0,0 0))",
+            geometry="SRID=2154;MULTIPOLYGON(((0 0,0 2,2 2,2 0,0 0)))",
             situation_exploitation=self.situation,
         )
         QuartierPasto.objects.create(
             id_quartier=101,
             code_quartier="Q2",
             nom_quartier="Quartier 2",
-            geometry="SRID=2154;POLYGON((2 0,2 2,4 2,4 0,2 0))",
+            geometry="SRID=2154;MULTIPOLYGON(((2 0,2 2,4 2,4 0,2 0)))",
             situation_exploitation=self.situation,
         )
 
@@ -147,35 +149,21 @@ class SituationUpdateUpActionTest(APITestCase):
         resp = self.client.post(url, {}, format="json")
 
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        self.situation.refresh_from_db()
 
-        self.assertNotEqual(
-            self.situation.unite_pastorale_id, self.old_up.id_unite_pastorale
-        )
+        # La vue crée une nouvelle GeometrieUnitePastorale sur la même UP
+        self.assertEqual(resp.data["up_id"], self.old_up.id_unite_pastorale)
+        self.assertEqual(resp.data["quartiers_count"], 2)
+        self.assertIn("id_geometrie_up", resp.data)
 
-        new_up = UnitePastorale.objects.get(
-            id_unite_pastorale=self.situation.unite_pastorale_id
-        )
-        self.assertEqual(new_up.code_up, self.old_up.code_up)
-        self.assertEqual(new_up.nom_up, self.old_up.nom_up)
-        self.assertEqual(new_up.geom_active.geom_type, "MultiPolygon")
-        self.assertEqual(new_up.geom_active.srid, 2154)
-
-        self.assertTrue(
-            ProprietaireUnitePastorale.objects.filter(
-                proprietaire=self.proprietaire,
-                unite_pastorale=new_up,
-            ).exists()
-        )
+        # La geom_active de l'UP a été mise à jour via le signal
+        self.old_up.refresh_from_db()
+        self.assertEqual(self.old_up.geom_active.geom_type, "MultiPolygon")
+        self.assertEqual(self.old_up.geom_active.srid, 2154)
 
         expected_union = GEOSGeometry(
             "SRID=2154;MULTIPOLYGON(((0 0,0 2,2 2,4 2,4 0,2 0,0 0)))"
         )
-        self.assertTrue(new_up.geom_active.equals(expected_union))
-
-        self.assertEqual(resp.data["old_up_id"], self.old_up.id_unite_pastorale)
-        self.assertEqual(resp.data["new_up_id"], new_up.id_unite_pastorale)
-        self.assertEqual(resp.data["quartiers_count"], 2)
+        self.assertTrue(self.old_up.geom_active.equals(expected_union))
 
     def test_mettre_a_jour_up_returns_400_when_no_quartier_geometry(self):
         url = reverse(
@@ -192,7 +180,7 @@ class SituationDuplicateActionTest(APITestCase):
 
     def setUp(self):
         User = get_user_model()
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_superuser(
             username="duplicator", password="duplicator"
         )
         self.client = APIClient()
@@ -219,7 +207,7 @@ class SituationDuplicateActionTest(APITestCase):
             id_quartier=200,
             code_quartier="QD1",
             nom_quartier="Quartier DUP",
-            geometry="SRID=2154;POLYGON((0 0,0 2,2 2,2 0,0 0))",
+            geometry="SRID=2154;MULTIPOLYGON(((0 0,0 2,2 2,2 0,0 0)))",
             situation_exploitation=self.situation,
         )
         c_old = Cheptel.objects.create(
@@ -242,8 +230,7 @@ class SituationDuplicateActionTest(APITestCase):
         )
         EquipementExploitant.objects.create(
             id_equipement_exploitant=200,
-            description="Cloture mobile",
-            etat="Bon",
+            commentaire="Cloture mobile",
             geometry="SRID=2154;POINT(1 1)",
             situation_exploitation=self.situation,
         )

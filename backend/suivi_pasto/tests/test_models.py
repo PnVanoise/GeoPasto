@@ -26,8 +26,7 @@ class ModelsSmokeTest(TestCase):
 
         ruche = Ruche.objects.create(
             id_ruche=10,
-            description="R10",
-            geometry="POINT(0 0)",
+            geometry="SRID=2154;POINT(0 0)",
             situation_exploitation=orig,
         )
 

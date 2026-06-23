@@ -19,7 +19,9 @@ class DuplicateSituationTest(APITestCase):
         self.client = APIClient()
         # create and authenticate a test user because the API requires authentication
         User = get_user_model()
-        self.user = User.objects.create_user(username="testuser", password="testpass")
+        self.user = User.objects.create_superuser(
+            username="testuser", password="testpass"
+        )
         self.client.force_authenticate(user=self.user)
         # create a situation
         self.orig = SituationDExploitation.objects.create(

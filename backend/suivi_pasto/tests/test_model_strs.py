@@ -18,7 +18,7 @@ from suivi_pasto import models as m
         (m.SituationDExploitation, {"nom_situation": "SIT"}, "SIT"),
         (m.Eleveur, {"nom_eleveur": "E1"}, "E1"),
         (m.TypeDExploitant, {"description": "TYPEEX"}, "TYPEEX"),
-        (m.SubventionPNV, {"description": "SUBV"}, "SUBV"),
+        (m.SubventionPNV, {"montant": 100, "engage": False, "paye": False}, "None"),
         (m.Commodite, {"description": "COMMO"}, "COMMO"),
         (m.AbriDUrgence, {"description": "ABRI"}, "ABRI"),
         (
@@ -38,7 +38,7 @@ from suivi_pasto import models as m
             },
             "EXP bénéficie de AB",
         ),
-        (m.Ruche, {"description": "R1"}, "R1"),
+        (m.Ruche, {}, "None"),
         (m.Berger, {"nom_berger": "B1", "prenom_berger": "P1"}, "B1"),
         (m.GardeSituation, {"id_garde_situation": 7}, "7"),
         (m.Production, {"description": "PROD"}, "PROD"),

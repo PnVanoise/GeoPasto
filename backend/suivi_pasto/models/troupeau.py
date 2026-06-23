@@ -174,5 +174,5 @@ class Cheptel(AuditFieldsMixin, models.Model):
         ]
 
     def __str__(self):
-        proprietaire = self.eleveur if self.eleveur_id else self.exploitant_proprietaire
+        proprietaire = self.eleveur or self.exploitant_proprietaire
         return f"{proprietaire} élève {self.description} dans la situation {self.situation_exploitation}"

@@ -252,9 +252,8 @@ class ProprietaireUnitePastoraleSerializer(
 
     def get_proprietaire_nom(self, obj):
         if obj.proprietaire:
-            return (
-                f"{obj.proprietaire.nom_propr} {obj.proprietaire.prenom_propr}".strip()
-            )
+            prenom = obj.proprietaire.prenom_propr or ""
+            return f"{obj.proprietaire.nom_propr} {prenom}".strip()
         return ""
 
     class Meta:

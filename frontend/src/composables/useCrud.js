@@ -113,6 +113,7 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     try {
       await auth.axiosInstance.post(`${config.API_BASE_URL}/api/${apiRouteName}/`, sendBody);
       notify({ message: "Créé avec succès !", type: "success" });
+      window.dispatchEvent(new CustomEvent("geo-data-changed", { detail: { modelName } }));
       await fetchAll(null, extraQueryParams);
     } catch (err) {
       notify({ message: extractErrorMessage(err, "Erreur lors de la création."), type: "error" });
@@ -140,6 +141,7 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     try {
       await auth.axiosInstance.put(`${config.API_BASE_URL}/api/${apiRouteName}/${id}/`, sendBody);
       notify({ message: "Modifié avec succès !", type: "success" });
+      window.dispatchEvent(new CustomEvent("geo-data-changed", { detail: { modelName } }));
       await fetchAll(null, extraQueryParams);
     } catch (err) {
       notify({
@@ -156,6 +158,7 @@ export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
     try {
       await auth.axiosInstance.delete(`${config.API_BASE_URL}/api/${apiRouteName}/${id}/`);
       notify({ message: "Supprimé !", type: "success" });
+      window.dispatchEvent(new CustomEvent("geo-data-changed", { detail: { modelName } }));
       await fetchAll(null, extraQueryParams);
     } catch (err) {
       notify({

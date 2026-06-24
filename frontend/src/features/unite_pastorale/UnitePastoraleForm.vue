@@ -376,7 +376,8 @@ const geomTabLayers = computed(() => {
     const id = geom.id ?? geom.properties?.id_geometrie_up;
     const dateDebut = geom.properties?.date_debut_validite || "?";
     const dateFin = geom.properties?.date_fin_validite;
-    const isActive = !dateFin;
+    const today = new Date().toISOString().slice(0, 10);
+    const isActive = (!dateDebut || dateDebut <= today) && (!dateFin || dateFin >= today);
     layers.push({
       id: `geom_${id}`,
       title: isActive ? `${dateDebut} → en cours` : `${dateDebut} → ${dateFin}`,
@@ -402,10 +403,13 @@ const fetchHistGeometries = () => {
     .get(`${config.API_BASE_URL}/api/geometrieUP/`, { params: { unite_pastorale: form.id } })
     .then((resp) => {
       histGeometries.value = resp.data?.features ?? resp.data ?? [];
-      const activeFeature = histGeometries.value.find((g) => !g.properties?.date_fin_validite);
-      if (activeFeature !== undefined) {
-        form.geometry = activeFeature?.geometry ?? null;
-      }
+      const today = new Date().toISOString().slice(0, 10);
+      const activeFeature = histGeometries.value.find((g) => {
+        const debut = g.properties?.date_debut_validite;
+        const fin = g.properties?.date_fin_validite;
+        return (!debut || debut <= today) && (!fin || fin >= today);
+      });
+      form.geometry = activeFeature?.geometry ?? null;
     })
     .catch(() => {});
 };

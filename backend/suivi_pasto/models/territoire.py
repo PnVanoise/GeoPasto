@@ -21,7 +21,7 @@ class UnitePastorale(AuditFieldsMixin, models.Model):
     nom_up = models.CharField(max_length=50, null=False, blank=False)
     geom_active = models.MultiPolygonField(srid=2154, null=True, blank=True)
     secteur = models.CharField(max_length=50, null=True, blank=True)
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "unité pastorale"

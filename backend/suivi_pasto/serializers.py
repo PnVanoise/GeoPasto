@@ -131,15 +131,27 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
     def create(self, validated_data):
         proprios_data = validated_data.pop("proprios", [])
         up = UnitePastorale.objects.create(**validated_data)
-
-        # Ajout des propriétaires dans la table EtreCompose
         for proprio_id in proprios_data:
             proprio = ProprietaireFoncier.objects.get(id_proprietaire=proprio_id)
             ProprietaireUnitePastorale.objects.create(
                 unite_pastorale=up, proprietaire=proprio
             )
-
         return up
+
+    def update(self, instance, validated_data):
+        # geom_active et active sont des champs calculés par le signal GeometrieUnitePastorale
+        validated_data.pop("geom_active", None)
+        validated_data.pop("active", None)
+        proprios_data = validated_data.pop("proprios", None)
+        instance = super().update(instance, validated_data)
+        if proprios_data is not None:
+            ProprietaireUnitePastorale.objects.filter(unite_pastorale=instance).delete()
+            for proprio_id in proprios_data:
+                proprio = ProprietaireFoncier.objects.get(id_proprietaire=proprio_id)
+                ProprietaireUnitePastorale.objects.create(
+                    unite_pastorale=instance, proprietaire=proprio
+                )
+        return instance
 
     def update(self, instance, validated_data):
         proprios_data = validated_data.pop("proprios", [])

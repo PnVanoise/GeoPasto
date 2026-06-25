@@ -11,7 +11,7 @@
         idField="id"
         :columns="columns"
         :filters="upFilters"
-        :bgColor="'#808080'"
+        :bgColor="'#a02128'"
         :selectedId="selectedId"
         :rowClass="(item) => (item.active === false ? 'row-inactive' : '')"
         @update:filtered-items="onFilteredItems"

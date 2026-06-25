@@ -7,7 +7,7 @@
     idField="id_evenement"
     :geojsonMode="true"
     :columns="columns"
-    :bgColor="'#9b2423'"
+    :bgColor="'#154889'"
     :searchFields="searchFields"
   />
 </template>

@@ -7,7 +7,7 @@
     itemLabel="un logement"
     idField="id"
     :columns="columns"
-    :bgColor="'#2e7d32'"
+    :bgColor="'#904684'"
     :searchFields="searchFields"
   />
 </template>

@@ -6,7 +6,7 @@
     itemLabel="une mesure de plan"
     idField="id_mesure_plan"
     :columns="columns"
-    :bgColor="'#f7ba0b'"
+    :bgColor="'#154889'"
     :geojsonMode="true"
     :searchFields="searchFields"
     :filters="filters"

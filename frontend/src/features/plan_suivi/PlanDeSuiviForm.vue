@@ -114,7 +114,7 @@
                   itemLabel="une mesure de plan"
                   idField="id_mesure_plan"
                   :columns="mesureColumns"
-                  :bgColor="'#64748b'"
+                  :bgColor="'#154889'"
                   :geojsonMode="true"
                   :showTitle="false"
                   :showHeader="true"

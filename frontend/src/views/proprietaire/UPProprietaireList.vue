@@ -6,7 +6,7 @@
     itemLabel="un lien UP / Propriétaire"
     idField="id_proprietaire_up"
     :columns="columns"
-    :bgColor="'#f7ba0b'"
+    :bgColor="'#a02128'"
     :searchFields="searchFields"
   />
 </template>

@@ -7,7 +7,7 @@
     idField="id_equipement_alpage"
     :geojsonMode="true"
     :columns="columns"
-    :bgColor="'#9b2423'"
+    :bgColor="'#904684'"
     :searchFields="searchFields"
   />
 </template>

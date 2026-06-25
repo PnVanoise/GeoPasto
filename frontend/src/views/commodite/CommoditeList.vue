@@ -6,7 +6,7 @@
     itemLabel="une commodité"
     idField="id_commodite"
     :columns="columns"
-    :bgColor="'#154889'"
+    :bgColor="'#9b9b9b'"
     :searchFields="searchFields"
   />
 </template>

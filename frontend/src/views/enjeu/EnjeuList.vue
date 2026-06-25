@@ -6,7 +6,7 @@
     itemLabel="un enjeu"
     idField="id_enjeu"
     :columns="columns"
-    :bgColor="'#808080'"
+    :bgColor="'#9b9b9b'"
     :searchFields="searchFields"
   />
 </template>

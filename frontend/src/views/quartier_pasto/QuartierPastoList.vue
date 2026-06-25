@@ -7,7 +7,7 @@
     idField="id_quartier"
     :geojsonMode="true"
     :columns="columns"
-    :bgColor="'#4a7c59'"
+    :bgColor="'#a02128'"
     :searchFields="searchFields"
   />
 </template>

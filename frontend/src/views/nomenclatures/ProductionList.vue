@@ -6,7 +6,7 @@
     itemLabel="une production"
     idField="id_production"
     :columns="columns"
-    :bgColor="'#808080'"
+    :bgColor="'#9b9b9b'"
     :searchFields="searchFields"
   />
 </template>

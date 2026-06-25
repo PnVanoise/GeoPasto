@@ -6,7 +6,7 @@
     itemLabel="une visite"
     idField="id_visite"
     :columns="columns"
-    :bgColor="'#0f766e'"
+    :bgColor="'#154889'"
     :searchFields="searchFields"
   />
 </template>

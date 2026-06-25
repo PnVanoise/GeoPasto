@@ -6,7 +6,7 @@
     itemLabel="un suivi"
     idField="id_plan_suivi"
     :columns="columns"
-    :bgColor="'#f7ba0b'"
+    :bgColor="'#154889'"
     :searchFields="searchFields"
   />
 </template>

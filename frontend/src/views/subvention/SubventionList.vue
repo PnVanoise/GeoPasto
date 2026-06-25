@@ -6,7 +6,7 @@
     itemLabel="une subvention"
     idField="id_subvention"
     :columns="columns"
-    :bgColor="'#d4652f'"
+    :bgColor="'#317f43'"
     :searchFields="searchFields"
   />
 </template>

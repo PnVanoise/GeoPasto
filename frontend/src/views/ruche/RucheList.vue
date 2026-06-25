@@ -7,7 +7,7 @@
     itemLabel="une ruche"
     idField="id"
     :columns="columns"
-    :bgColor="'#9b2423'"
+    :bgColor="'#317f43'"
     :searchFields="searchFields"
   />
 </template>

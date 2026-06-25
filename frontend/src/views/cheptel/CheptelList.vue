@@ -6,7 +6,7 @@
     itemLabel="un cheptel"
     idField="id_cheptel"
     :columns="columns"
-    :bgColor="'#d4652f'"
+    :bgColor="'#317f43'"
     :searchFields="searchFields"
     :filters="cheptelFilters"
   />

@@ -6,7 +6,7 @@
     itemLabel="un eleveur"
     idField="id_eleveur"
     :columns="columns"
-    :bgColor="'#d5642f'"
+    :bgColor="'#d4652f'"
     :searchFields="searchFields"
   />
 </template>

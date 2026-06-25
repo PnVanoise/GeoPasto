@@ -214,15 +214,201 @@ watch(
             </button>
           </div>
 
-          <!-- Accordeon 'referentiels'-->
+          <!-- Accordeon 'Territoire' -->
+          <div class="nav-item w3-signal-red" @click="toggleAccordion('terr')">
+            Territoire
+            <i
+              class="mdi mdi-chevron-down accordion-caret"
+              :class="{ open: isAccordionOpen('terr') }"
+            ></i>
+          </div>
+          <div v-show="isAccordionOpen('terr')" class="w3-white w3-card">
+            <div
+              v-if="hasPermissionForModel('unitepastorale')"
+              :class="[
+                'nav-item w3-signal-red transparent',
+                { active: route.path.startsWith('/unite-pastorale') },
+              ]"
+            >
+              <RouterLink to="/unite-pastorale">Unités pastorales</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-red transparent',
+                { active: route.path.startsWith('/proprietaire-foncier') },
+              ]"
+            >
+              <RouterLink to="/proprietaire-foncier">Propriétaires fonciers</RouterLink>
+            </div>
+          </div>
+
+          <!-- Accordeon 'Acteurs' -->
+          <div class="nav-item w3-signal-orange" @click="toggleAccordion('acte')">
+            Acteurs
+            <i
+              class="mdi mdi-chevron-down accordion-caret"
+              :class="{ open: isAccordionOpen('acte') }"
+            ></i>
+          </div>
+          <div v-show="isAccordionOpen('acte')" class="w3-white w3-card">
+            <div
+              :class="[
+                'nav-item w3-signal-orange transparent',
+                { active: route.path.startsWith('/exploitant') },
+              ]"
+            >
+              <RouterLink to="/exploitant">Alpagistes</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-orange transparent',
+                { active: route.path.startsWith('/eleveur') },
+              ]"
+            >
+              <RouterLink to="/eleveur">Éleveurs</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-orange transparent',
+                { active: route.path.startsWith('/berger') },
+              ]"
+            >
+              <RouterLink to="/berger">Bergers</RouterLink>
+            </div>
+          </div>
+
+          <!-- Accordeon 'Exploitation' -->
+          <div class="nav-item w3-signal-green" @click="toggleAccordion('expl')">
+            Exploitation
+            <i
+              class="mdi mdi-chevron-down accordion-caret"
+              :class="{ open: isAccordionOpen('expl') }"
+            ></i>
+          </div>
+          <div v-show="isAccordionOpen('expl')" class="w3-white w3-card">
+            <div
+              :class="[
+                'nav-item w3-signal-green transparent',
+                { active: route.path.startsWith('/convention-exploitation') },
+              ]"
+            >
+              <RouterLink to="/convention-exploitation">Conventions</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-green transparent',
+                { active: route.path.startsWith('/situation-exploitation') },
+              ]"
+            >
+              <RouterLink to="/situation-exploitation">Situations d'exploitation</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-green transparent',
+                { active: route.path.startsWith('/cheptel') },
+              ]"
+            >
+              <RouterLink to="/cheptel">Cheptels</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-green transparent',
+                { active: route.path.startsWith('/garde-situation') },
+              ]"
+            >
+              <RouterLink to="/garde-situation">Gardiennage</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-green transparent',
+                { active: route.path.startsWith('/subvention') },
+              ]"
+            >
+              <RouterLink to="/subvention">Subventions</RouterLink>
+            </div>
+          </div>
+
+          <!-- Accordeon 'Suivi' -->
+          <div class="nav-item w3-signal-blue" @click="toggleAccordion('suiv')">
+            Suivi
+            <i
+              class="mdi mdi-chevron-down accordion-caret"
+              :class="{ open: isAccordionOpen('suiv') }"
+            ></i>
+          </div>
+          <div v-show="isAccordionOpen('suiv')" class="w3-white w3-card">
+            <div
+              :class="[
+                'nav-item w3-signal-blue transparent',
+                { active: route.path.startsWith('/plan-suivi') },
+              ]"
+            >
+              <RouterLink to="/plan-suivi">Plans de suivi</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-blue transparent',
+                { active: route.path.startsWith('/mesure-plan') },
+              ]"
+            >
+              <RouterLink to="/mesure-plan">Mesures</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-blue transparent',
+                { active: route.path.startsWith('/evenement') },
+              ]"
+            >
+              <RouterLink to="/evenement">Événements</RouterLink>
+            </div>
+            <div
+              v-if="hasPermissionForModel('visite')"
+              :class="[
+                'nav-item w3-signal-blue transparent',
+                { active: route.path.startsWith('/visite') },
+              ]"
+            >
+              <RouterLink to="/visite">Visites</RouterLink>
+            </div>
+          </div>
+
+          <!-- Accordeon 'Équipements & logements' -->
+          <div class="nav-item w3-signal-violet" @click="toggleAccordion('equip')">
+            Équipements &amp; logements
+            <i
+              class="mdi mdi-chevron-down accordion-caret"
+              :class="{ open: isAccordionOpen('equip') }"
+            ></i>
+          </div>
+          <div v-show="isAccordionOpen('equip')" class="w3-white w3-card">
+            <div
+              :class="[
+                'nav-item w3-signal-violet transparent',
+                { active: route.path.startsWith('/logement') },
+              ]"
+            >
+              <RouterLink to="/logement">Logements</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-violet transparent',
+                { active: route.path.startsWith('/abri-urgence') },
+              ]"
+            >
+              <RouterLink to="/abri-urgence">Abris d'urgence</RouterLink>
+            </div>
+          </div>
+
+          <!-- Accordeon 'Référentiels' -->
           <div class="nav-item w3-signal-grey" @click="toggleAccordion('ref')">
-            Referentiels
+            Référentiels
             <i
               class="mdi mdi-chevron-down accordion-caret"
               :class="{ open: isAccordionOpen('ref') }"
             ></i>
           </div>
           <div v-show="isAccordionOpen('ref')" class="w3-white w3-card">
+            <div class="nav-section-label">Troupeau</div>
             <div
               v-if="hasPermissionForModel('espece')"
               :class="[
@@ -230,7 +416,25 @@ watch(
                 { active: route.path.startsWith('/espece') },
               ]"
             >
-              <RouterLink to="/espece">Especes</RouterLink>
+              <RouterLink to="/espece">Espèces</RouterLink>
+            </div>
+            <div
+              v-if="hasPermissionForModel('race')"
+              :class="[
+                'nav-item w3-signal-grey transparent',
+                { active: route.path.startsWith('/race') },
+              ]"
+            >
+              <RouterLink to="/race">Races</RouterLink>
+            </div>
+            <div
+              v-if="hasPermissionForModel('categorieanimaux')"
+              :class="[
+                'nav-item w3-signal-grey transparent',
+                { active: route.path.startsWith('/categorie-animaux') },
+              ]"
+            >
+              <RouterLink to="/categorie-animaux">Catégories d'animaux</RouterLink>
             </div>
             <div
               v-if="hasPermissionForModel('production')"
@@ -248,25 +452,16 @@ watch(
                 { active: route.path.startsWith('/categorie-pension') },
               ]"
             >
-              <RouterLink to="/categorie-pension">Categories de pension</RouterLink>
+              <RouterLink to="/categorie-pension">Catégories de pension</RouterLink>
             </div>
+            <div class="nav-section-label">Exploitation</div>
             <div
-              v-if="hasPermissionForModel('categorieanimaux')"
               :class="[
                 'nav-item w3-signal-grey transparent',
-                { active: route.path.startsWith('/categorie-animaux') },
+                { active: route.path.startsWith('/type-exploitant') },
               ]"
             >
-              <RouterLink to="/categorie-animaux">Categories d'animaux</RouterLink>
-            </div>
-            <div
-              v-if="hasPermissionForModel('race')"
-              :class="[
-                'nav-item w3-signal-grey transparent',
-                { active: route.path.startsWith('/race') },
-              ]"
-            >
-              <RouterLink to="/race">Races</RouterLink>
+              <RouterLink to="/type-exploitant">Types d'alpagistes</RouterLink>
             </div>
             <div
               v-if="hasPermissionForModel('typeconvention')"
@@ -277,21 +472,14 @@ watch(
             >
               <RouterLink to="/type-convention">Types de convention</RouterLink>
             </div>
+            <div class="nav-section-label">Suivi</div>
             <div
               :class="[
                 'nav-item w3-signal-grey transparent',
-                { active: route.path.startsWith('/type-exploitant') },
+                { active: route.path.startsWith('/type-suivi') },
               ]"
             >
-              <RouterLink to="/type-exploitant">Types d'Alpagistes</RouterLink>
-            </div>
-            <div
-              :class="[
-                'nav-item w3-signal-grey transparent',
-                { active: route.path.startsWith('/type-equipement') },
-              ]"
-            >
-              <RouterLink to="/type-equipement">Types d'equipement</RouterLink>
+              <RouterLink to="/type-suivi">Types de suivi</RouterLink>
             </div>
             <div
               :class="[
@@ -304,18 +492,10 @@ watch(
             <div
               :class="[
                 'nav-item w3-signal-grey transparent',
-                { active: route.path.startsWith('/type-suivi') },
-              ]"
-            >
-              <RouterLink to="/type-suivi">Types de suivi</RouterLink>
-            </div>
-            <div
-              :class="[
-                'nav-item w3-signal-grey transparent',
                 { active: route.path.startsWith('/type-evenement') },
               ]"
             >
-              <RouterLink to="/type-evenement">Types d'evenements</RouterLink>
+              <RouterLink to="/type-evenement">Types d'événements</RouterLink>
             </div>
             <div
               :class="[
@@ -325,201 +505,18 @@ watch(
             >
               <RouterLink to="/enjeu">Enjeux</RouterLink>
             </div>
-          </div>
-
-          <!-- Accordeon 'administratif'-->
-          <div class="nav-item w3-signal-yellow" @click="toggleAccordion('admi')">
-            Administratif
-            <i
-              class="mdi mdi-chevron-down accordion-caret"
-              :class="{ open: isAccordionOpen('admi') }"
-            ></i>
-          </div>
-          <div v-show="isAccordionOpen('admi')" class="w3-white w3-card">
+            <div class="nav-section-label">Équipements</div>
             <div
               :class="[
-                'nav-item w3-signal-yellow transparent',
-                { active: route.path.startsWith('/proprietaire-foncier') },
+                'nav-item w3-signal-grey transparent',
+                { active: route.path.startsWith('/type-equipement') },
               ]"
             >
-              <RouterLink to="/proprietaire-foncier">Proprietaires</RouterLink>
-            </div>
-            <div
-              v-if="hasPermissionForModel('unitepastorale')"
-              :class="[
-                'nav-item w3-signal-yellow transparent',
-                { active: route.path.startsWith('/unite-pastorale') },
-              ]"
-            >
-              <RouterLink to="/unite-pastorale">Unites pastorales</RouterLink>
-            </div>
-          </div>
-
-          <!-- Accordeon 'Exploitation'-->
-          <div class="nav-item w3-signal-orange" @click="toggleAccordion('expl')">
-            Exploitation
-            <i
-              class="mdi mdi-chevron-down accordion-caret"
-              :class="{ open: isAccordionOpen('expl') }"
-            ></i>
-          </div>
-          <div v-show="isAccordionOpen('expl')" class="w3-white w3-card">
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/convention-exploitation') },
-              ]"
-            >
-              <RouterLink to="/convention-exploitation">Conventions d'exploitation</RouterLink>
-            </div>
-
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/situation-exploitation') },
-              ]"
-            >
-              <RouterLink to="/situation-exploitation">Situations d'exploitation</RouterLink>
-            </div>
-
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/eleveur') },
-              ]"
-            >
-              <RouterLink to="/eleveur">Eleveurs</RouterLink>
-            </div>
-
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/exploitant') },
-              ]"
-            >
-              <RouterLink to="/exploitant">Alpagistes</RouterLink>
-            </div>
-
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/subvention') },
-              ]"
-            >
-              <RouterLink to="/subvention">Subventions</RouterLink>
-            </div>
-
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/cheptel') },
-              ]"
-            >
-              <RouterLink to="/cheptel">Cheptels</RouterLink>
-            </div>
-
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/berger') },
-              ]"
-            >
-              <RouterLink to="/berger">Bergers</RouterLink>
-            </div>
-
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/garde-situation') },
-              ]"
-            >
-              <RouterLink to="/garde-situation">Gardiennage</RouterLink>
-            </div>
-          </div>
-
-          <!-- Accordeon 'Suivis et Mesures'-->
-          <div class="nav-item w3-signal-red" @click="toggleAccordion('plan')">
-            Suivis et Mesures
-            <i
-              class="mdi mdi-chevron-down accordion-caret"
-              :class="{ open: isAccordionOpen('plan') }"
-            ></i>
-          </div>
-          <div v-show="isAccordionOpen('plan')" class="w3-white w3-card">
-            <div
-              :class="[
-                'nav-item w3-signal-red transparent',
-                { active: route.path.startsWith('/plan-suivi') },
-              ]"
-            >
-              <RouterLink to="/plan-suivi">Suivis par alpage</RouterLink>
+              <RouterLink to="/type-equipement">Types d'équipement</RouterLink>
             </div>
             <div
               :class="[
-                'nav-item w3-signal-red transparent',
-                { active: route.path.startsWith('/mesure-plan') },
-              ]"
-            >
-              <RouterLink to="/mesure-plan">Mesures de suivi</RouterLink>
-            </div>
-            <div
-              v-if="hasPermissionForModel('visite')"
-              :class="[
-                'nav-item w3-signal-red transparent',
-                { active: route.path.startsWith('/visite') },
-              ]"
-            >
-              <RouterLink to="/visite">Visites</RouterLink>
-            </div>
-          </div>
-
-          <!-- Accordeon 'Evenements'-->
-          <div class="nav-item w3-signal-violet" @click="toggleAccordion('eve')">
-            Evenements
-            <i
-              class="mdi mdi-chevron-down accordion-caret"
-              :class="{ open: isAccordionOpen('eve') }"
-            ></i>
-          </div>
-          <div v-show="isAccordionOpen('eve')" class="w3-white w3-card">
-            <div
-              :class="[
-                'nav-item w3-signal-violet transparent',
-                { active: route.path.startsWith('/evenement') },
-              ]"
-            >
-              <RouterLink to="/evenement">Evenements</RouterLink>
-            </div>
-          </div>
-
-          <!-- Accordeon 'Equipements'-->
-          <div class="nav-item w3-signal-blue" @click="toggleAccordion('equip')">
-            Equipements
-            <i
-              class="mdi mdi-chevron-down accordion-caret"
-              :class="{ open: isAccordionOpen('equip') }"
-            ></i>
-          </div>
-          <div v-show="isAccordionOpen('equip')" class="w3-white w3-card">
-            <div
-              :class="[
-                'nav-item w3-signal-blue transparent',
-                { active: route.path.startsWith('/logement') },
-              ]"
-            >
-              <RouterLink to="/logement">Logements</RouterLink>
-            </div>
-            <div
-              :class="[
-                'nav-item w3-signal-blue transparent',
-                { active: route.path.startsWith('/abri-urgence') },
-              ]"
-            >
-              <RouterLink to="/abri-urgence">Abris d'urgence</RouterLink>
-            </div>
-            <div
-              :class="[
-                'nav-item w3-signal-blue transparent',
+                'nav-item w3-signal-grey transparent',
                 { active: route.path.startsWith('/commodite') },
               ]"
             >
@@ -837,6 +834,17 @@ watch(
 .accordion-caret {
   margin-left: 8px;
   /* transition: transform 0.2s ease; */
+}
+
+.nav-section-label {
+  padding: 6px 16px 2px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 4px;
 }
 
 /* .accordion-caret.open {

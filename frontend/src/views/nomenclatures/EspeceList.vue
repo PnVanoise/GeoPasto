@@ -6,7 +6,7 @@
     itemLabel="une espèce"
     idField="id_espece"
     :columns="columns"
-    :bgColor="'#808080'"
+    :bgColor="'#9b9b9b'"
     :searchFields="searchFields"
   />
 </template>

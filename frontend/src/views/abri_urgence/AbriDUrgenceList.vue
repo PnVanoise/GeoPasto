@@ -6,7 +6,7 @@
     itemLabel="un abri d'urgence"
     idField="id_abri_urgence"
     :columns="columns"
-    :bgColor="'#154889'"
+    :bgColor="'#904684'"
     :searchFields="searchFields"
   />
 </template>

@@ -6,7 +6,7 @@
     itemLabel="un gardiennage"
     idField="id_garde_situation"
     :columns="columns"
-    :bgColor="'#d5642f'"
+    :bgColor="'#317f43'"
     :searchFields="searchFields"
   />
 </template>

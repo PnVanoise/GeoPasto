@@ -6,7 +6,7 @@
     itemLabel="un type de mesure"
     idField="id_type_mesure"
     :columns="columns"
-    :bgColor="'#808080'"
+    :bgColor="'#9b9b9b'"
     :searchFields="searchFields"
   />
 </template>

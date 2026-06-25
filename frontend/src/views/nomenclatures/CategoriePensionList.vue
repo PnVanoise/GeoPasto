@@ -6,7 +6,7 @@
     itemLabel="une catégorie de pension"
     idField="id_categorie_pension"
     :columns="columns"
-    :bgColor="'#808080'"
+    :bgColor="'#9b9b9b'"
     :searchFields="searchFields"
   />
 </template>

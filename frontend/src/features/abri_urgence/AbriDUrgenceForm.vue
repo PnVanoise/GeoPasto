@@ -66,7 +66,7 @@
           idField="id_abri_urgence_commodite"
           :columns="commGridColumns"
           :formComponent="AbriDUrgenceCommoditeForm"
-          :bgColor="'#154889'"
+          :bgColor="'#904684'"
           :filters="commFilters"
           :showTitle="false"
           :showHeader="true"

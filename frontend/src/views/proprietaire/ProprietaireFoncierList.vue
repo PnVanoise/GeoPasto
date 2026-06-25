@@ -6,7 +6,7 @@
     itemLabel="un propriétaire foncier"
     idField="id_proprietaire"
     :columns="columns"
-    :bgColor="'#808080'"
+    :bgColor="'#a02128'"
     :searchFields="searchFields"
   />
 </template>

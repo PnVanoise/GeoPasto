@@ -6,7 +6,7 @@
     itemLabel="une catégorie d'animaux"
     idField="id_categorie_animaux"
     :columns="columns"
-    :bgColor="'#808080'"
+    :bgColor="'#9b9b9b'"
     :searchFields="searchFields"
   />
 </template>

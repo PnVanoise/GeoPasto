@@ -6,7 +6,7 @@
     itemLabel="une race"
     idField="id_race"
     :columns="columns"
-    :bgColor="'#808080'"
+    :bgColor="'#9b9b9b'"
     :searchFields="searchFields"
     :filters="raceFilters"
   />

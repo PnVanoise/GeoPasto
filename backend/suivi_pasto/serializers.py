@@ -139,21 +139,6 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
         return up
 
     def update(self, instance, validated_data):
-        # geom_active et active sont des champs calculés par le signal GeometrieUnitePastorale
-        validated_data.pop("geom_active", None)
-        validated_data.pop("active", None)
-        proprios_data = validated_data.pop("proprios", None)
-        instance = super().update(instance, validated_data)
-        if proprios_data is not None:
-            ProprietaireUnitePastorale.objects.filter(unite_pastorale=instance).delete()
-            for proprio_id in proprios_data:
-                proprio = ProprietaireFoncier.objects.get(id_proprietaire=proprio_id)
-                ProprietaireUnitePastorale.objects.create(
-                    unite_pastorale=instance, proprietaire=proprio
-                )
-        return instance
-
-    def update(self, instance, validated_data):
         proprios_data = validated_data.pop("proprios", [])
 
         with transaction.atomic():
@@ -173,10 +158,10 @@ class UnitePastoraleSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializ
 
             # Supprimer les proprios qui ne sont plus associés
             proprios_a_supprimer = proprios_actuels - nouveaux_proprios
-            if proprios_a_supprimer:
-                ProprietaireUnitePastorale.objects.filter(
-                    unite_pastorale=instance, proprietaire_id__in=proprios_a_supprimer
-                ).delete()
+            for proprio_up in ProprietaireUnitePastorale.objects.filter(
+                unite_pastorale=instance, proprietaire_id__in=proprios_a_supprimer
+            ):
+                proprio_up.delete()
 
             # Ajouter les nouveaux proprios
             proprios_a_ajouter = nouveaux_proprios - proprios_actuels

@@ -7,7 +7,7 @@ from .mixins import AuditFieldsMixin
 
 class TypeDeSuivi(AuditFieldsMixin, models.Model):
     id_type_suivi = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "type de suivi"
@@ -54,7 +54,7 @@ class PlanDeSuivi(AuditFieldsMixin, models.Model):
 
 class TypeDeMesure(AuditFieldsMixin, models.Model):
     id_type_mesure = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "type de mesure"
@@ -66,7 +66,7 @@ class TypeDeMesure(AuditFieldsMixin, models.Model):
 
 class Enjeu(AuditFieldsMixin, models.Model):
     id_enjeu = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "enjeu"
@@ -158,7 +158,7 @@ class RealisationMesure(AuditFieldsMixin, models.Model):
 
 class TypeEvenement(AuditFieldsMixin, models.Model):
     id_type_evenement = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "type d'événement"

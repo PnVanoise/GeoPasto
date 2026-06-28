@@ -1,7 +1,7 @@
 <!-- components/Notification.vue -->
 <template>
   <div v-if="visible" class="notification" :class="type">
-    <span>{{ message }}</span>
+    <span style="white-space: pre-line">{{ message }}</span>
     <button @click="closeNotification" class="close-button">×</button>
   </div>
 </template>

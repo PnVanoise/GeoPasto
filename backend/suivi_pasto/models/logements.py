@@ -104,7 +104,7 @@ class Logement(AuditFieldsMixin, models.Model):
 
 class Commodite(AuditFieldsMixin, models.Model):
     id_commodite = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "commodité"

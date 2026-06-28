@@ -247,6 +247,123 @@ class UnitePastoraleViewset(BaseModelViewSet):
             request, serializer_class=UnitePastoraleLSerializer
         )
 
+    # /unitePastorale/{id}/historique/ → journal auditlog (UP + géométries + propriétaires)
+    @action(detail=True, methods=["get"], url_path="historique")
+    def historique(self, request, pk=None):
+        from auditlog.models import LogEntry
+        from django.contrib.contenttypes.models import ContentType
+
+        instance = self.get_object()
+
+        _ACTION_LABELS = {
+            LogEntry.Action.CREATE: "Création",
+            LogEntry.Action.UPDATE: "Modification",
+            LogEntry.Action.DELETE: "Suppression",
+            LogEntry.Action.ACCESS: "Accès",
+        }
+
+        _WKT_PREFIXES = (
+            "POINT",
+            "MULTIPOINT",
+            "LINESTRING",
+            "MULTILINESTRING",
+            "POLYGON",
+            "MULTIPOLYGON",
+            "GEOMETRYCOLLECTION",
+            "SRID=",
+        )
+
+        def _mask_wkt(val):
+            if isinstance(val, str) and val.upper().startswith(_WKT_PREFIXES):
+                return "(géométrie)"
+            return val
+
+        def _serialize(entry, model_key, strip_fields=None, replace_fields=None):
+            changes = {
+                k: [_mask_wkt(v) for v in vals]
+                for k, vals in entry.changes_dict.items()
+            }
+            if strip_fields:
+                changes = {k: v for k, v in changes.items() if k not in strip_fields}
+            if replace_fields:
+                for field, mapping in replace_fields.items():
+                    if field in changes:
+                        changes[field] = [mapping.get(v, v) for v in changes[field]]
+            return {
+                "timestamp": entry.timestamp.isoformat(),
+                "actor": entry.actor.get_username() if entry.actor else None,
+                "action": _ACTION_LABELS.get(entry.action, str(entry.action)),
+                "changes": changes,
+                "model": model_key,
+            }
+
+        def _linked_log_entries(ct, current_pks, fk_field_name):
+            """Entrées pour les objets existants + supprimés liés à cette UP."""
+            pk_strs = [str(p) for p in current_pks]
+            up_pk_str = str(instance.pk)
+            existing = LogEntry.objects.filter(
+                content_type=ct, object_pk__in=pk_strs
+            ).select_related("actor")
+            deleted = [
+                e
+                for e in LogEntry.objects.filter(
+                    content_type=ct,
+                    action=LogEntry.Action.DELETE,
+                )
+                .exclude(object_pk__in=pk_strs)
+                .select_related("actor")
+                if str(e.changes_dict.get(fk_field_name, [None])[0]) == up_pk_str
+            ]
+            return list(existing) + deleted
+
+        all_entries = []
+
+        # --- UP ---
+        ct_up = ContentType.objects.get_for_model(UnitePastorale)
+        for e in LogEntry.objects.filter(
+            content_type=ct_up, object_pk=str(instance.pk)
+        ).select_related("actor"):
+            all_entries.append((e.timestamp, _serialize(e, "unitepastorale")))
+
+        # --- GeometrieUnitePastorale ---
+        ct_geom = ContentType.objects.get_for_model(GeometrieUnitePastorale)
+        geom_pks = list(
+            GeometrieUnitePastorale.objects.filter(
+                unite_pastorale=instance
+            ).values_list("pk", flat=True)
+        )
+        for e in _linked_log_entries(ct_geom, geom_pks, "unite_pastorale"):
+            row = _serialize(
+                e,
+                "geometrieunitepastorale",
+                strip_fields={"geom_active", "unite_pastorale"},
+            )
+            all_entries.append((e.timestamp, row))
+
+        # --- ProprietaireUnitePastorale ---
+        ct_proprio = ContentType.objects.get_for_model(ProprietaireUnitePastorale)
+        proprio_pks = list(
+            ProprietaireUnitePastorale.objects.filter(
+                unite_pastorale=instance
+            ).values_list("pk", flat=True)
+        )
+        # Table de résolution pk → "Nom Prénom"
+        proprio_names = {
+            str(p.pk): f"{p.nom_propr} {p.prenom_propr or ''}".strip()
+            for p in ProprietaireFoncier.objects.all()
+        }
+        for e in _linked_log_entries(ct_proprio, proprio_pks, "unite_pastorale"):
+            row = _serialize(
+                e,
+                "proprietaireunitepastorale",
+                strip_fields={"unite_pastorale"},
+                replace_fields={"proprietaire": proprio_names},
+            )
+            all_entries.append((e.timestamp, row))
+
+        all_entries.sort(key=lambda x: x[0], reverse=True)
+        return Response([row for _, row in all_entries[:200]])
+
 
 class GeometrieUnitePastoraleViewset(BaseModelViewSet):
     serializer_class = GeometrieUnitePastoraleSerializer
@@ -260,9 +377,12 @@ class GeometrieUnitePastoraleViewset(BaseModelViewSet):
 
     @transaction.atomic
     def perform_destroy(self, instance):
-        up = instance.unite_pastorale
-        instance.delete()
-        _refresh_geom_active(up)
+        from auditlog.context import set_actor
+
+        with set_actor(self._get_auditlog_actor()):
+            up = instance.unite_pastorale
+            instance.delete()
+            _refresh_geom_active(up)
 
 
 class ProprietaireFoncierViewset(BaseModelViewSet):
@@ -801,12 +921,15 @@ class EquipementExploitantViewset(BaseModelViewSet):
 
     @transaction.atomic
     def perform_destroy(self, instance):
-        bd = instance.beneficier_de
-        instance.beneficier_de = None
-        instance.save(update_fields=["beneficier_de"])
-        instance.delete()
-        if bd:
-            bd.delete()
+        from auditlog.context import set_actor
+
+        with set_actor(self._get_auditlog_actor()):
+            bd = instance.beneficier_de
+            instance.beneficier_de = None
+            instance.save(update_fields=["beneficier_de"])
+            instance.delete()
+            if bd:
+                bd.delete()
 
     @transaction.atomic
     def perform_create(self, serializer):

@@ -9,6 +9,7 @@
           <v-tab value="conventions" :disabled="props.mode === 'add'">Conventions</v-tab>
           <v-tab value="visites" :disabled="props.mode === 'add'">Visites</v-tab>
           <v-tab value="suivis" :disabled="props.mode === 'add'">Suivis</v-tab>
+          <v-tab value="historique" :disabled="props.mode === 'add'">Historique</v-tab>
         </v-tabs>
 
         <v-window v-model="activeTab">
@@ -202,6 +203,12 @@
               />
             </template>
           </v-window-item>
+
+          <v-window-item value="historique">
+            <template v-if="props.mode !== 'add' && form.id">
+              <UpHistoriqueTab :upId="form.id" />
+            </template>
+          </v-window-item>
         </v-window>
       </section>
 
@@ -252,6 +259,7 @@ import OpenLayersGeoJsonMap from "@/components/map/OpenLayersGeoJsonMap.vue";
 import CrudListPage from "@/components/crud/CrudListPage.vue";
 import CrudList from "@/components/crud/CrudList.vue";
 import GeometrieUPForm from "./GeometrieUPForm.vue";
+import UpHistoriqueTab from "./UpHistoriqueTab.vue";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },

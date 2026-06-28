@@ -1,3 +1,4 @@
+from auditlog.context import set_actor
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -61,13 +62,19 @@ class BaseModelViewSet(ModelViewSet):
 
         return save_kwargs
 
+    def _get_auditlog_actor(self):
+        user = getattr(getattr(self, "request", None), "user", None)
+        return user if (user and user.is_authenticated) else None
+
     def perform_create(self, serializer):
-        save_kwargs = self._audit_save_kwargs(serializer, is_create=True)
-        serializer.save(**save_kwargs)
+        with set_actor(self._get_auditlog_actor()):
+            save_kwargs = self._audit_save_kwargs(serializer, is_create=True)
+            serializer.save(**save_kwargs)
 
     def perform_update(self, serializer):
-        save_kwargs = self._audit_save_kwargs(serializer, is_create=False)
-        serializer.save(**save_kwargs)
+        with set_actor(self._get_auditlog_actor()):
+            save_kwargs = self._audit_save_kwargs(serializer, is_create=False)
+            serializer.save(**save_kwargs)
 
     def create(self, request, *args, **kwargs):
         logger.debug(

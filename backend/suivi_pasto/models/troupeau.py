@@ -7,7 +7,7 @@ from .mixins import AuditFieldsMixin
 
 class Production(AuditFieldsMixin, models.Model):
     id_production = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "production"
@@ -19,7 +19,7 @@ class Production(AuditFieldsMixin, models.Model):
 
 class CategoriePension(AuditFieldsMixin, models.Model):
     id_categorie_pension = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "catégorie de pension"
@@ -31,7 +31,7 @@ class CategoriePension(AuditFieldsMixin, models.Model):
 
 class Espece(AuditFieldsMixin, models.Model):
     id_espece = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "espèce"
@@ -55,6 +55,7 @@ class Race(AuditFieldsMixin, models.Model):
     class Meta:
         verbose_name = "race"
         verbose_name_plural = "races"
+        unique_together = [("description", "espece")]
 
     def __str__(self):
         return str(self.description)
@@ -82,6 +83,7 @@ class CategorieAnimaux(AuditFieldsMixin, models.Model):
     class Meta:
         verbose_name = "catégorie d'animaux"
         verbose_name_plural = "catégories d'animaux"
+        unique_together = [("description", "espece")]
 
     def __str__(self):
         return str(self.description)

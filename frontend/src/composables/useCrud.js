@@ -9,12 +9,23 @@ import { useNotification } from "./useNotification";
 
 const { notify } = useNotification();
 
-const extractErrorMessage = (err, fallback) =>
-  err?.response?.data?.detail ||
-  err?.response?.data?.message ||
-  (typeof err?.response?.data === "string" ? err.response.data : null) ||
-  err?.message ||
-  fallback;
+const extractErrorMessage = (err, fallback) => {
+  const data = err?.response?.data;
+  if (data) {
+    if (data.detail) return data.detail;
+    if (data.message) return data.message;
+    if (typeof data === "string") return data;
+    // Format DRF validation : { field: ["msg", ...], ... }
+    if (typeof data === "object") {
+      const lines = Object.entries(data).flatMap(([field, msgs]) => {
+        const label = field === "non_field_errors" ? "" : `${field} : `;
+        return (Array.isArray(msgs) ? msgs : [msgs]).map((m) => `${label}${m}`);
+      });
+      if (lines.length) return lines.join("\n");
+    }
+  }
+  return err?.message || fallback;
+};
 
 export function useCrud(modelName, apiRouteName, idField = "id", options = {}) {
   const { can, actionsFor } = usePermissions(modelName);

@@ -20,6 +20,7 @@ from suivi_pasto.models import (
     Exploitant,
     Exploiter,
     GardeSituation,
+    GeometrieUnitePastorale,
     Logement,
     MesureDePlan,
     PlanDeSuivi,
@@ -217,10 +218,21 @@ class Command(BaseCommand):
         # --- 3. Sérialisation ---
         sections = {}
 
-        # UPs (pour la table de résolution dans import_up_data)
         sections["UnitePastorale"] = [
-            {"pk": up.id_unite_pastorale, "code_up": up.code_up} for up in ups
+            {
+                "pk": up.id_unite_pastorale,
+                "fields": {
+                    "code_up": up.code_up,
+                    "nom_up": up.nom_up,
+                    "secteur": up.secteur,
+                    "created_by": up.created_by,
+                },
+            }
+            for up in ups
         ]
+        sections["GeometrieUnitePastorale"] = serialize_qs(
+            GeometrieUnitePastorale.objects.filter(unite_pastorale_id__in=up_ids)
+        )
 
         sections["ProprietaireFoncier"] = serialize_qs(
             ProprietaireFoncier.objects.filter(id_proprietaire__in=proprietaire_ids)

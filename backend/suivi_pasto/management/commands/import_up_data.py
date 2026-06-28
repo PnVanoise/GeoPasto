@@ -28,6 +28,7 @@ from suivi_pasto.models import (
     Exploitant,
     Exploiter,
     GardeSituation,
+    GeometrieUnitePastorale,
     Logement,
     MesureDePlan,
     PlanDeSuivi,
@@ -70,8 +71,8 @@ def _to_decimal(value):
 class Command(BaseCommand):
     help = (
         "Importe les données d'UPs depuis un fichier produit par export_up_data. "
-        "Nécessite les cartes de remapping produites par import_referentiels, "
-        "import_up_shapefile et import_users."
+        "Les UPs sont créées directement depuis l'export si elles n'existent pas encore. "
+        "Nécessite les cartes produites par import_referentiels et import_users."
     )
 
     def add_arguments(self, parser):
@@ -84,9 +85,8 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--up-map",
-            required=True,
             metavar="FICHIER",
-            help="Carte up_id_map.json produite par import_up_shapefile --output-map",
+            help="Carte up_id_map.json produite par import_up_shapefile --output-map (optionnel)",
         )
         parser.add_argument(
             "--user-map",
@@ -111,7 +111,9 @@ class Command(BaseCommand):
 
         data = _load_json(options["fichier"], "export_up_data")
         ref_map = _load_json(options["ref_map"], "ref_id_map")
-        up_id_map = _load_json(options["up_map"], "up_id_map")
+        up_id_map = (
+            _load_json(options["up_map"], "up_id_map") if options.get("up_map") else {}
+        )
         user_id_map = _load_json(options["user_map"], "user_id_map")
 
         if dry_run:
@@ -121,18 +123,68 @@ class Command(BaseCommand):
 
         sections = data.get("sections", {})
 
-        # Construire la carte old_up_pk → new_up_pk depuis UnitePastorale export + up_id_map
+        # Résolution et création des UPs
         old_up_pk_to_new = {}
+        up_created = (
+            set()
+        )  # new PKs des UPs créées ici (pour importer leurs géométries)
+
         for entry in sections.get("UnitePastorale", []):
-            code_up = entry["code_up"]
             old_pk = entry["pk"]
-            new_pk = up_id_map.get(code_up)
-            if new_pk is None:
-                raise CommandError(
-                    f"UP '{code_up}' (pk={old_pk}) absente de la carte up_id_map. "
-                    f"Avez-vous bien exécuté import_up_shapefile ?"
-                )
-            old_up_pk_to_new[old_pk] = new_pk
+            fields = entry.get("fields", {})
+            code_up = fields.get("code_up") or entry.get("code_up")
+
+            existing = UnitePastorale.objects.filter(code_up=code_up).first()
+            if existing:
+                old_up_pk_to_new[old_pk] = existing.id_unite_pastorale
+            elif up_id_map.get(code_up):
+                old_up_pk_to_new[old_pk] = up_id_map[code_up]
+            else:
+                if not fields.get("nom_up"):
+                    raise CommandError(
+                        f"UP '{code_up}' absente de la base et données insuffisantes pour la créer "
+                        f"(nom_up manquant). Utilisez un export récent ou fournissez --up-map."
+                    )
+                if not dry_run:
+                    up = UnitePastorale(
+                        code_up=code_up,
+                        nom_up=fields["nom_up"],
+                        secteur=fields.get("secteur"),
+                        created_by=fields.get("created_by") or created_by_default,
+                    )
+                    up.save()
+                    self._reset_seq(UnitePastorale)
+                    old_up_pk_to_new[old_pk] = up.id_unite_pastorale
+                    up_created.add(up.id_unite_pastorale)
+                    self.stdout.write(
+                        f"  UP {code_up} — créée (id={up.id_unite_pastorale})"
+                    )
+                else:
+                    old_up_pk_to_new[old_pk] = -(old_pk)
+                    self.stdout.write(f"  UP {code_up} — serait créée")
+
+        # Géométries des UPs nouvellement créées
+        geom_count = 0
+        for entry in sections.get("GeometrieUnitePastorale", []):
+            fields = dict(entry["fields"])
+            new_up_pk = old_up_pk_to_new.get(fields["unite_pastorale_id"])
+            if new_up_pk not in up_created:
+                continue
+            if not dry_run:
+                GeometrieUnitePastorale(
+                    unite_pastorale_id=new_up_pk,
+                    geometry=_resolve_geom(fields["geometry"]),
+                    date_debut_validite=fields["date_debut_validite"],
+                    date_fin_validite=fields.get("date_fin_validite"),
+                    created_by=fields.get("created_by") or created_by_default,
+                ).save()
+            geom_count += 1
+        if up_created or geom_count:
+            self.stdout.write(
+                f"  {'GeometrieUnitePastorale':<35} : {geom_count} importées"
+            )
+        if not dry_run and up_created:
+            self._reset_seq(GeometrieUnitePastorale)
 
         # Maps locales : model_name → {old_pk: new_pk}
         local = {}

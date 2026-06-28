@@ -22,7 +22,7 @@ class Eleveur(AuditFieldsMixin, models.Model):
 
 class TypeDExploitant(AuditFieldsMixin, models.Model):
     id_type_exploitant = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
 
     class Meta:
         verbose_name = "type d'exploitant"

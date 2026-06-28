@@ -5,7 +5,7 @@ from .mixins import AuditFieldsMixin
 
 class TypeEquipement(AuditFieldsMixin, models.Model):
     id_type_equipement = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=150, null=False, blank=False)
+    description = models.CharField(max_length=150, null=False, blank=False, unique=True)
     categorie = models.CharField(max_length=50, null=False, blank=False)
 
     class Meta:

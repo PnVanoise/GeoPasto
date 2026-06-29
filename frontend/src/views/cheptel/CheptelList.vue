@@ -23,6 +23,7 @@ const columns = [
   { field: "annee", label: "Année", sortable: true },
   { field: "description", label: "Description", sortable: true },
   { field: "nombre_animaux", label: "Nombre d'animaux", sortable: true },
+  { field: "nombre_animaux_exact", label: "Exact", sortable: true },
 ];
 
 const searchFields = [

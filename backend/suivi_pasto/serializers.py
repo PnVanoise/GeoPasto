@@ -1359,6 +1359,7 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
             "annee",
             "date_fin",
             "nombre_animaux",
+            "nombre_animaux_exact",
             "eleveur",
             "eleveur_detail",
             "exploitant_proprietaire",

@@ -52,9 +52,7 @@
             clearable
           />
         </div>
-      </div>
-      <!-- Ligne : Race | Catégorie animaux -->
-      <div class="w3-row form-ligne">
+
         <div class="w3-half form-cell">
           <v-select
             v-model="form.race"
@@ -69,6 +67,8 @@
             clearable
           />
         </div>
+      </div>
+      <div class="w3-row form-ligne">
         <div class="w3-half form-cell">
           <v-select
             v-model="form.categorie_animaux"
@@ -81,6 +81,20 @@
             variant="underlined"
             hide-details
             clearable
+          />
+        </div>
+        <div class="w3-half form-cell">
+          <v-text-field
+            v-model="form.coefficient_UGB"
+            label="Coefficient UGB"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            :disabled="props.mode === 'view'"
+            density="compact"
+            variant="underlined"
+            hide-details
           />
         </div>
       </div>
@@ -132,18 +146,30 @@
           />
         </div>
         <div class="w3-half form-cell">
-          <v-text-field
-            v-model="form.coefficient_UGB"
-            label="Coefficient UGB"
-            type="number"
-            min="0"
-            max="1"
-            step="0.01"
-            :disabled="props.mode === 'view'"
+          <v-select
+            v-model="form.nombre_animaux_exact"
+            label="Effectif exact"
+            :items="[
+              { title: 'Oui', value: true },
+              { title: 'Non', value: false },
+            ]"
+            item-title="title"
+            item-value="value"
             density="compact"
             variant="underlined"
+            :disabled="props.mode === 'view'"
             hide-details
-          />
+          >
+            <template #append-inner>
+              <v-tooltip text="Indique si le décompte est précis ou une estimation." location="top">
+                <template #activator="{ props: tip }">
+                  <v-icon v-bind="tip" size="16" color="grey-lighten-1"
+                    >mdi-information-outline</v-icon
+                  >
+                </template>
+              </v-tooltip>
+            </template>
+          </v-select>
         </div>
       </div>
       <div class="w3-row form-ligne">
@@ -267,6 +293,7 @@ const form = reactive({
   exploitant_proprietaire: null,
   situation_exploitation: "",
   nombre_animaux: "",
+  nombre_animaux_exact: true,
   description: "",
   commentaire: "",
   date_debut: "",

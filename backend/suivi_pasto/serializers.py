@@ -344,9 +344,13 @@ class PlanDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerialize
 
 
 class TypeDeMesureSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+    types_suivi = serializers.PrimaryKeyRelatedField(
+        queryset=TypeDeSuivi.objects.all(), many=True, required=False
+    )
+
     class Meta:
         model = TypeDeMesure
-        fields = ["id_type_mesure", "description"]
+        fields = ["id_type_mesure", "description", "types_suivi"]
 
 
 class EnjeuSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):

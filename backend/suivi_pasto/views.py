@@ -398,6 +398,11 @@ class TypeDeMesureViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = TypeDeMesure.objects.all().order_by("id_type_mesure")
+        type_suivi_id = self.request.GET.get("type_suivi")
+        if type_suivi_id is not None:
+            queryset = queryset.filter(
+                Q(types_suivi__isnull=True) | Q(types_suivi__id=type_suivi_id)
+            ).distinct()
         return queryset
 
 

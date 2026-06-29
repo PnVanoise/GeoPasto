@@ -211,6 +211,18 @@
           @geometry-validity-change="onGeometryValidityChange"
         />
 
+        <div v-if="props.mode !== 'view' && upGeometry" class="import-section">
+          <v-btn
+            type="button"
+            size="small"
+            color="secondary"
+            variant="tonal"
+            prepend-icon="mdi-vector-polygon"
+            @click="copyUpGeometry"
+            >Copier la géométrie de l'UP</v-btn
+          >
+        </div>
+
         <div v-if="props.mode !== 'view'" class="import-section">
           <button type="button" class="import-toggle" @click="showImport = !showImport">
             <v-icon size="16">{{ showImport ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
@@ -443,6 +455,15 @@ const mapContextLayers = computed(() => {
     },
   ];
 });
+
+const upGeometry = computed(() => upContextGeoData.value?.features?.[0]?.geometry ?? null);
+
+const copyUpGeometry = () => {
+  const geom = upGeometry.value;
+  if (!geom) return;
+  form.geometry = geom;
+  geometryEditorRef.value?.loadGeometry(geom);
+};
 
 const onGeometryValidityChange = (payload) => {
   geometryValidity.value = payload || { isValid: false, reason: "geometry_optional" };

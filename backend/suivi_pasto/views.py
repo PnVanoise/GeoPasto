@@ -821,6 +821,10 @@ class EvenementViewset(BaseModelViewSet):
         if situation_id is not None:
             queryset = queryset.filter(situation_id=situation_id)
 
+        up_id = self.request.GET.get("unite_pastorale")
+        if up_id is not None:
+            queryset = queryset.filter(situation__unite_pastorale_id=up_id)
+
         return queryset
 
 

@@ -1490,6 +1490,7 @@ class TypeEvenementSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeriali
 
 class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     type_evenement_label = serializers.SerializerMethodField()
+    nom_situation = serializers.SerializerMethodField()
 
     class Meta:
         model = Evenement
@@ -1500,6 +1501,12 @@ class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     def get_type_evenement_label(self, obj):
         try:
             return obj.type_evenement.description if obj.type_evenement else None
+        except Exception:
+            return None
+
+    def get_nom_situation(self, obj):
+        try:
+            return obj.situation.nom_situation if obj.situation else None
         except Exception:
             return None
 

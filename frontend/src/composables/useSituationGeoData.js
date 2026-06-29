@@ -368,14 +368,14 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
   };
 
   const fetchEvenementsForUp = async () => {
-    if (!form.id_situation) {
+    if (!form.unite_pastorale) {
       evenementsGeoData.value = null;
       return;
     }
     isEvenementsMapLoading.value = true;
     try {
       const { data } = await auth.axiosInstance.get(
-        `${config.API_BASE_URL}/api/evenement/?situation=${form.id_situation}`
+        `${config.API_BASE_URL}/api/evenement/?unite_pastorale=${form.unite_pastorale}`
       );
       const eventTypeById = new Map(
         (eventTypes.value || []).map((t) => [String(t?.id_type_evenement), t?.description])
@@ -579,7 +579,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
     if (m === "cheptel" && form.id_situation) fetchCheptels();
     if (m === "exploiter" && form.id_situation) fetchParcoursForSituation();
     if (m === "quartierpasto" && form.id_situation) fetchQuartiersForSituation();
-    if (m === "evenement" && form.id_situation) fetchEvenementsForUp();
+    if (m === "evenement" && form.unite_pastorale) fetchEvenementsForUp();
     if (m === "equipementalpage" && form.unite_pastorale) fetchEquipementsUpForUp();
     if (m === "equipementexploitant" && form.id_situation) fetchEquipementsSituationForSituation();
     if (m === "gardesituation" && form.id_situation) fetchGardesForSituation();
@@ -630,7 +630,7 @@ export function useSituationGeoData(form, { activeBottomTab } = {}) {
   watch(
     eventTypes,
     (types) => {
-      if (form.id_situation && Array.isArray(types) && types.length) fetchEvenementsForUp();
+      if (form.unite_pastorale && Array.isArray(types) && types.length) fetchEvenementsForUp();
     },
     { deep: true }
   );

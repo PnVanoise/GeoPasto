@@ -1123,6 +1123,20 @@ defineExpose({
     return Array.isArray(features) && features.length > 0;
   },
   fitToFeatures,
+  loadGeometry: (geom) => {
+    emit("update:modelValue", geom);
+    syncFromModel();
+    if (props.drawOnly) {
+      removeInteractions();
+      isDrawing.value = false;
+      hasDrawn.value = true;
+    } else {
+      applyInteractionMode();
+    }
+    const features = source?.getFeatures();
+    if (features?.length) fitToGeometry(features[0].getGeometry());
+    emitGeometryValidity(geom);
+  },
 });
 
 onMounted(async () => {

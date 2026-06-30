@@ -398,6 +398,11 @@ class TypeDeMesureViewset(BaseModelViewSet):
 
     def get_queryset(self):
         queryset = TypeDeMesure.objects.all().order_by("id_type_mesure")
+        type_suivi_id = self.request.GET.get("type_suivi")
+        if type_suivi_id is not None:
+            queryset = queryset.filter(
+                Q(types_suivi__isnull=True) | Q(types_suivi__id=type_suivi_id)
+            ).distinct()
         return queryset
 
 
@@ -693,6 +698,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
                 date_fin=self._replace_year_safe(source.date_fin, target_year),
                 unite_pastorale=source.unite_pastorale,
                 exploitant=source.exploitant,
+                sans_gardiennage=source.sans_gardiennage,
             )
 
             # 1) Quartiers: clone and map old->new
@@ -820,6 +826,10 @@ class EvenementViewset(BaseModelViewSet):
         )
         if situation_id is not None:
             queryset = queryset.filter(situation_id=situation_id)
+
+        up_id = self.request.GET.get("unite_pastorale")
+        if up_id is not None:
+            queryset = queryset.filter(situation__unite_pastorale_id=up_id)
 
         return queryset
 

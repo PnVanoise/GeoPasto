@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Sum
@@ -344,9 +346,13 @@ class PlanDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerialize
 
 
 class TypeDeMesureSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
+    types_suivi = serializers.PrimaryKeyRelatedField(
+        queryset=TypeDeSuivi.objects.all(), many=True, required=False
+    )
+
     class Meta:
         model = TypeDeMesure
-        fields = ["id_type_mesure", "description"]
+        fields = ["id_type_mesure", "description", "types_suivi"]
 
 
 class EnjeuSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
@@ -566,12 +572,21 @@ class ConventionDExploitationSerializer(
                 {"date_fin": "La date de fin doit être postérieure à la date de début."}
             )
 
+        _MM_DD_RE = re.compile(r"^\d{2}-\d{2}$")
         debut_expl = attrs.get(
             "debut_periode_expl", getattr(self.instance, "debut_periode_expl", None)
         )
         fin_expl = attrs.get(
             "fin_periode_expl", getattr(self.instance, "fin_periode_expl", None)
         )
+        for field, val in [
+            ("debut_periode_expl", debut_expl),
+            ("fin_periode_expl", fin_expl),
+        ]:
+            if val and not _MM_DD_RE.match(val):
+                raise serializers.ValidationError(
+                    {field: "Format attendu : MM-JJ (ex: 06-15)."}
+                )
         if debut_expl and fin_expl and debut_expl > fin_expl:
             raise serializers.ValidationError(
                 {
@@ -633,6 +648,7 @@ class SituationDExploitationSerializer(
             "exploitant_nom",
             "unite_pastorale",
             "unite_pastorale_detail",
+            "sans_gardiennage",
         ]
 
 
@@ -1359,6 +1375,7 @@ class CheptelSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerializer):
             "annee",
             "date_fin",
             "nombre_animaux",
+            "nombre_animaux_exact",
             "eleveur",
             "eleveur_detail",
             "exploitant_proprietaire",
@@ -1490,6 +1507,7 @@ class TypeEvenementSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSeriali
 
 class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     type_evenement_label = serializers.SerializerMethodField()
+    nom_situation = serializers.SerializerMethodField()
 
     class Meta:
         model = Evenement
@@ -1500,6 +1518,12 @@ class EvenementSerializer(AuditReadOnlyFieldsMixin, GeoFeatureModelSerializer):
     def get_type_evenement_label(self, obj):
         try:
             return obj.type_evenement.description if obj.type_evenement else None
+        except Exception:
+            return None
+
+    def get_nom_situation(self, obj):
+        try:
+            return obj.situation.nom_situation if obj.situation else None
         except Exception:
             return None
 

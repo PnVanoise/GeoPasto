@@ -19,6 +19,25 @@
           />
         </div>
       </div>
+      <div class="w3-row form-ligne">
+        <div class="form-cell">
+          <v-select
+            v-model="form.types_suivi"
+            :items="typessuivi"
+            item-title="description"
+            item-value="id_type_suivi"
+            :disabled="props.mode === 'view' || !can('change')"
+            label="Types de plan associés (vide = tous)"
+            density="compact"
+            variant="underlined"
+            hide-details
+            multiple
+            chips
+            closable-chips
+            clearable
+          />
+        </div>
+      </div>
     </section>
 
     <div class="form-actions">
@@ -43,9 +62,11 @@
 </template>
 
 <script setup>
-import { reactive, watch, ref, computed } from "vue";
+import { reactive, watch, ref, computed, onMounted } from "vue";
 import { usePermissions } from "../../composables/usePermissions";
 import { maxLen, required } from "@/utils/validators";
+import auth from "@/services/axios";
+import config from "../../../config";
 
 const props = defineProps({
   initialForm: { type: Object, default: () => ({}) },
@@ -72,9 +93,21 @@ const btTitle = computed(() => {
   return "";
 });
 
+const typessuivi = ref([]);
+
+onMounted(() => {
+  auth.axiosInstance
+    .get(`${config.API_BASE_URL}/api/typeSuivi/`)
+    .then(({ data }) => {
+      typessuivi.value = data;
+    })
+    .catch(() => {});
+});
+
 const form = reactive({
   id_type_mesure: null,
   description: "",
+  types_suivi: [],
 });
 
 watch(

@@ -55,6 +55,11 @@ class PlanDeSuivi(AuditFieldsMixin, models.Model):
 class TypeDeMesure(AuditFieldsMixin, models.Model):
     id_type_mesure = models.AutoField(primary_key=True)
     description = models.CharField(max_length=150, null=False, blank=False, unique=True)
+    types_suivi = models.ManyToManyField(
+        "suivi_pasto.TypeDeSuivi",
+        blank=True,
+        related_name="types_mesure",
+    )
 
     class Meta:
         verbose_name = "type de mesure"

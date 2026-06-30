@@ -202,6 +202,36 @@
           @geometry-validity-change="onGeometryValidityChange"
         />
 
+        <div v-if="props.mode !== 'view'" class="import-section">
+          <button type="button" class="import-toggle" @click="showImport = !showImport">
+            <v-icon size="16">{{ showImport ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
+            Importer depuis QGIS
+          </button>
+          <div v-if="showImport" class="import-panel">
+            <v-textarea
+              v-model="importText"
+              label="Coller la géométrie copiée depuis QGIS (WKT ou GeoJSON)"
+              density="compact"
+              variant="outlined"
+              hide-details
+              rows="4"
+              auto-grow
+              class="import-textarea"
+            />
+            <div class="import-actions">
+              <span v-if="importInfo" class="import-info">{{ importInfo }}</span>
+              <span v-if="importError" class="import-error">{{ importError }}</span>
+              <v-btn
+                color="primary"
+                size="small"
+                prepend-icon="mdi-import"
+                @click="importerGeometrie"
+                >Importer</v-btn
+              >
+            </div>
+          </div>
+        </div>
+
         <div class="map-legend" aria-label="Légende de la carte">
           <div class="map-legend-item" v-if="showUpLayer && mapUpCount > 0">
             <span class="map-legend-swatch map-legend-swatch--up" aria-hidden="true"></span>
@@ -236,9 +266,19 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
+import proj4 from "proj4";
+import { register } from "ol/proj/proj4";
+import WKT from "ol/format/WKT";
+import GeoJSON from "ol/format/GeoJSON";
 import auth from "@/services/axios";
 import config from "../../../config";
 import QuartierGeometryEditorOl from "../../components/map/QuartierGeometryEditorOl.vue";
+
+proj4.defs(
+  "EPSG:2154",
+  "+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+);
+register(proj4);
 import { usePermissions } from "../../composables/usePermissions";
 import { selectMenuProps } from "../../composables/useSelectMenuProps";
 import { useMainStore } from "../../store/index";
@@ -572,6 +612,79 @@ watch(
   }
 );
 
+const showImport = ref(false);
+const importText = ref("");
+const importError = ref("");
+const importInfo = ref("");
+const detectedCrs = ref("");
+
+const CRS_LABELS = {
+  "EPSG:4326": "WGS84 (EPSG:4326)",
+  "EPSG:2154": "Lambert 93 (EPSG:2154)",
+  "EPSG:3857": "Web Mercator (EPSG:3857)",
+};
+
+const detectCrsFromCoords = (x, y) => {
+  if (Math.abs(x) <= 180 && Math.abs(y) <= 90) return "EPSG:4326";
+  if (x > 70000 && x < 1300000 && y > 6000000 && y < 7200000) return "EPSG:2154";
+  return "EPSG:3857";
+};
+
+watch(importText, (text) => {
+  importError.value = "";
+  const trimmed = text?.trim();
+  if (!trimmed || trimmed.startsWith("{")) {
+    detectedCrs.value = "";
+    importInfo.value = "";
+    return;
+  }
+  const coordMatch = trimmed.match(/\(\s*([-\d.]+)\s+([-\d.]+)/);
+  if (!coordMatch) {
+    detectedCrs.value = "";
+    importInfo.value = "";
+    return;
+  }
+  const crs = detectCrsFromCoords(parseFloat(coordMatch[1]), parseFloat(coordMatch[2]));
+  detectedCrs.value = crs;
+  importInfo.value = `Projection détectée : ${CRS_LABELS[crs]}`;
+});
+
+const importerGeometrie = () => {
+  importError.value = "";
+  const text = importText.value.trim();
+  if (!text) {
+    importError.value = "Collez une géométrie WKT ou GeoJSON.";
+    return;
+  }
+  try {
+    let geometry;
+    if (text.startsWith("{")) {
+      const parsed = JSON.parse(text);
+      if (parsed.type === "FeatureCollection") {
+        geometry = parsed.features?.[0]?.geometry ?? null;
+      } else if (parsed.type === "Feature") {
+        geometry = parsed.geometry;
+      } else {
+        geometry = parsed;
+      }
+      if (!geometry?.type) throw new Error("GeoJSON invalide.");
+    } else {
+      const effectiveCrs = detectedCrs.value || "EPSG:4326";
+      const olFeature = new WKT().readFeature(text, {
+        dataProjection: effectiveCrs,
+        featureProjection: "EPSG:4326",
+      });
+      if (!olFeature) throw new Error("WKT invalide.");
+      geometry = new GeoJSON().writeGeometryObject(olFeature.getGeometry());
+    }
+    form.geometry = geometry;
+    showImport.value = false;
+    importText.value = "";
+  } catch (e) {
+    importError.value = e.message || "Format non reconnu (WKT ou GeoJSON attendu).";
+  }
+};
+
 const submitForm = async () => {
   submitted.value = true;
   const { valid } = await formRef.value.validate();
@@ -708,6 +821,50 @@ onMounted(async () => {
   border-width: 1px;
   background: rgba(220, 38, 38, 0.9);
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.import-section {
+  margin-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.5rem;
+}
+.import-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+.import-toggle:hover {
+  color: #1e40af;
+}
+.import-panel {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.import-textarea :deep(.v-field__input) {
+  font-size: 0.78rem;
+  font-family: monospace;
+}
+.import-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.import-error {
+  font-size: 0.78rem;
+  color: #dc2626;
+}
+.import-info {
+  font-size: 0.78rem;
+  color: #2563eb;
 }
 
 @media (max-width: 1100px) {

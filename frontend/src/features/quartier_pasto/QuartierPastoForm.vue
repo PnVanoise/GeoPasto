@@ -73,6 +73,18 @@
           @split-line="handleSplitLine"
         />
 
+        <div v-if="resolvedMode !== 'view' && upGeometry" class="import-section">
+          <v-btn
+            type="button"
+            size="small"
+            color="secondary"
+            variant="tonal"
+            prepend-icon="mdi-vector-polygon"
+            @click="copyUpGeometry"
+            >Copier la géométrie de l'UP</v-btn
+          >
+        </div>
+
         <div v-if="resolvedMode !== 'view'" class="import-section">
           <button type="button" class="import-toggle" @click="showImport = !showImport">
             <v-icon size="16">{{ showImport ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
@@ -188,6 +200,17 @@ const contextLayers = computed(() => {
   }
   return layers;
 });
+
+const upGeometry = computed(() => upGeoData.value?.features?.[0]?.geometry ?? null);
+
+const copyUpGeometry = () => {
+  const geom = upGeometry.value;
+  if (!geom) return;
+  const normalized =
+    geom.type === "MultiPolygon" ? geom : { type: "MultiPolygon", coordinates: [geom.coordinates] };
+  form.value.geometry = normalized;
+  geometryEditorRef.value?.loadGeometry(normalized);
+};
 
 const fetchUpGeometry = async (upId) => {
   if (!upId) {

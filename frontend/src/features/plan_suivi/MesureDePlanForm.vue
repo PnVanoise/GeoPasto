@@ -104,7 +104,7 @@
           <div class="w3-half form-cell">
             <v-select
               v-model="form.type_mesure"
-              :items="typemesures"
+              :items="typemesuresFiltrees"
               item-title="description"
               item-value="id_type_mesure"
               :disabled="props.mode === 'view'"
@@ -210,6 +210,18 @@
           :disabled="props.mode === 'view'"
           @geometry-validity-change="onGeometryValidityChange"
         />
+
+        <div v-if="props.mode !== 'view' && upGeometry" class="import-section">
+          <v-btn
+            type="button"
+            size="small"
+            color="secondary"
+            variant="tonal"
+            prepend-icon="mdi-vector-polygon"
+            @click="copyUpGeometry"
+            >Copier la géométrie de l'UP</v-btn
+          >
+        </div>
 
         <div v-if="props.mode !== 'view'" class="import-section">
           <button type="button" class="import-toggle" @click="showImport = !showImport">
@@ -421,6 +433,14 @@ const importerGeometrie = async () => {
 };
 
 const typemesures = ref([]);
+const typemesuresFiltrees = computed(() => {
+  const plan = plansuivis.value.find((p) => p.id_plan_suivi === form.plan_suivi);
+  const typeSuiviId = plan?.type_suivi ?? null;
+  if (!typeSuiviId) return typemesures.value;
+  return typemesures.value.filter(
+    (t) => !t.types_suivi?.length || t.types_suivi.includes(typeSuiviId)
+  );
+});
 const plansuivis = ref([]);
 const enjeux = ref([]);
 const upContextGeoData = ref(null);
@@ -443,6 +463,15 @@ const mapContextLayers = computed(() => {
     },
   ];
 });
+
+const upGeometry = computed(() => upContextGeoData.value?.features?.[0]?.geometry ?? null);
+
+const copyUpGeometry = () => {
+  const geom = upGeometry.value;
+  if (!geom) return;
+  form.geometry = geom;
+  geometryEditorRef.value?.loadGeometry(geom);
+};
 
 const onGeometryValidityChange = (payload) => {
   geometryValidity.value = payload || { isValid: false, reason: "geometry_optional" };
@@ -502,7 +531,15 @@ watch(
 
 watch(
   () => form.plan_suivi,
-  (planId) => fetchUpForPlan(planId),
+  (planId) => {
+    fetchUpForPlan(planId);
+    if (
+      form.type_mesure &&
+      !typemesuresFiltrees.value.some((t) => t.id_type_mesure === form.type_mesure)
+    ) {
+      form.type_mesure = null;
+    }
+  },
   { immediate: true }
 );
 

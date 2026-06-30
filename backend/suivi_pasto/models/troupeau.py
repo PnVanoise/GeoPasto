@@ -117,6 +117,7 @@ class Cheptel(AuditFieldsMixin, models.Model):
         related_name="cheptels",
     )
     nombre_animaux = models.IntegerField(null=False, blank=False)
+    nombre_animaux_exact = models.BooleanField(default=True)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
 

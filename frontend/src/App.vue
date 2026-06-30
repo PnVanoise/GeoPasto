@@ -30,11 +30,16 @@ const handleAuthenticated = async () => {
 const route = useRoute();
 const router = useRouter();
 const menuOpen = ref(false);
+const appEnv = import.meta.env.VITE_APP_ENV || "";
+const envBannerRef = ref(null);
+const envBannerHeight = ref(0);
 const headerRef = ref(null);
 const headerHeight = ref(88);
 
 const updateHeaderHeight = () => {
-  headerHeight.value = headerRef.value?.offsetHeight || 88;
+  const bannerH = envBannerRef.value?.offsetHeight || 0;
+  envBannerHeight.value = bannerH;
+  headerHeight.value = (headerRef.value?.offsetHeight || 88) + bannerH;
 };
 
 const activeAccordion = ref(null);
@@ -122,7 +127,22 @@ watch(
 </script>
 
 <template>
-  <div class="app-root" :style="{ '--header-height': `${headerHeight}px` }">
+  <div
+    class="app-root"
+    :style="{
+      '--header-height': `${headerHeight}px`,
+      '--env-banner-height': `${envBannerHeight}px`,
+    }"
+  >
+    <div
+      v-if="appEnv === 'dev' || appEnv === 'demo'"
+      ref="envBannerRef"
+      :class="['env-banner', `env-banner--${appEnv}`]"
+    >
+      {{
+        appEnv === "dev" ? "⚙ ENVIRONNEMENT DE DÉVELOPPEMENT" : "🔎 ENVIRONNEMENT DE DÉMONSTRATION"
+      }}
+    </div>
     <template v-if="!isAuthenticated">
       <div class="login-page">
         <div class="login-panel w3-card-4">
@@ -152,45 +172,49 @@ watch(
     </template>
 
     <template v-else>
-      <header ref="headerRef" class="app-header w3-signal-green">
-        <div class="header-left">
-          <button
-            type="button"
-            class="burger-btn"
-            @click="toggleMenu"
-            :aria-expanded="menuOpen"
-            aria-label="Ouvrir le menu"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-          <img src="/geopasto_logo.png" alt="Logo GeoPasto" class="app-logo" />
-          <img src="/PNV_logo.png" alt="Logo client" class="client-logo" />
-          <!-- <h2>GeoPasto</h2> -->
-        </div>
-        <div class="header-right">
-          <div class="user-info header-pill">
-            Utilisateur connecté :
-            <strong>{{ mainStore.username || mainStore.user?.username || "inconnu" }}</strong>
+      <div ref="headerRef">
+        <header class="app-header w3-signal-green">
+          <div class="header-left">
+            <button
+              type="button"
+              class="burger-btn"
+              @click="toggleMenu"
+              :aria-expanded="menuOpen"
+              aria-label="Ouvrir le menu"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <RouterLink to="/"
+              ><img src="/geopasto_logo.png" alt="Logo GeoPasto" class="app-logo"
+            /></RouterLink>
+            <img src="/PNV_logo.png" alt="Logo client" class="client-logo" />
+            <!-- <h2>GeoPasto</h2> -->
           </div>
-          <Logout class="header-pill logout-chip" @loggedOut="handleLogout" />
-        </div>
-        <div class="notification-container">
-          <Notification
-            v-if="successMessage"
-            :message="successMessage"
-            type="success"
-            @close="clearSuccessMessage"
-          />
-          <Notification
-            v-if="errorMessage"
-            :message="errorMessage"
-            type="error"
-            @close="clearErrorMessage"
-          />
-        </div>
-      </header>
+          <div class="header-right">
+            <div class="user-info header-pill">
+              Utilisateur connecté :
+              <strong>{{ mainStore.username || mainStore.user?.username || "inconnu" }}</strong>
+            </div>
+            <Logout class="header-pill logout-chip" @loggedOut="handleLogout" />
+          </div>
+          <div class="notification-container">
+            <Notification
+              v-if="successMessage"
+              :message="successMessage"
+              type="success"
+              @close="clearSuccessMessage"
+            />
+            <Notification
+              v-if="errorMessage"
+              :message="errorMessage"
+              type="error"
+              @close="clearErrorMessage"
+            />
+          </div>
+        </header>
+      </div>
 
       <Transition name="menu-fade">
         <div v-if="menuOpen" class="menu-backdrop" @click="closeMenu"></div>
@@ -254,18 +278,18 @@ watch(
             <div
               :class="[
                 'nav-item w3-signal-orange transparent',
-                { active: route.path.startsWith('/exploitant') },
-              ]"
-            >
-              <RouterLink to="/exploitant">Alpagistes</RouterLink>
-            </div>
-            <div
-              :class="[
-                'nav-item w3-signal-orange transparent',
                 { active: route.path.startsWith('/eleveur') },
               ]"
             >
               <RouterLink to="/eleveur">Éleveurs</RouterLink>
+            </div>
+            <div
+              :class="[
+                'nav-item w3-signal-orange transparent',
+                { active: route.path.startsWith('/exploitant') },
+              ]"
+            >
+              <RouterLink to="/exploitant">Alpagistes</RouterLink>
             </div>
             <div
               :class="[
@@ -540,6 +564,7 @@ watch(
 .app-root {
   --drawer-width: min(350px, 88vw);
   min-height: 100vh;
+  padding-top: var(--env-banner-height, 0px);
 }
 
 .login-page {
@@ -599,6 +624,27 @@ watch(
   height: 48px;
   width: auto;
   object-fit: contain;
+}
+
+.env-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+}
+.env-banner--dev {
+  background: #f59e0b;
+  color: #1c1407;
+}
+.env-banner--demo {
+  background: #7c3aed;
+  color: #ffffff;
 }
 
 .app-header {

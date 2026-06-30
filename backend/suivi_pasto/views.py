@@ -698,6 +698,7 @@ class SituationDExploitationViewset(BaseModelViewSet):
                 date_fin=self._replace_year_safe(source.date_fin, target_year),
                 unite_pastorale=source.unite_pastorale,
                 exploitant=source.exploitant,
+                sans_gardiennage=source.sans_gardiennage,
             )
 
             # 1) Quartiers: clone and map old->new

@@ -39,6 +39,38 @@
             </div>
           </div>
           <div class="w3-row form-ligne">
+            <div class="w3-twothird form-cell">
+              <v-text-field
+                v-model="form.plan_de_gestion"
+                :disabled="props.mode === 'view'"
+                label="Plan de gestion (lien)"
+                density="compact"
+                variant="underlined"
+                hide-details="auto"
+                clearable
+                :rules="rulesPlanDeGestion"
+                placeholder="https://..."
+              />
+            </div>
+            <div
+              class="w3-third form-cell"
+              style="display: flex; align-items: flex-end; padding-bottom: 4px"
+            >
+              <v-btn
+                v-if="form.plan_de_gestion"
+                :href="form.plan_de_gestion"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="small"
+                color="primary"
+                variant="tonal"
+                prepend-icon="mdi-open-in-new"
+              >
+                Ouvrir
+              </v-btn>
+            </div>
+          </div>
+          <div class="w3-row form-ligne">
             <div class="w3-half form-cell">
               <v-text-field
                 type="date"
@@ -205,6 +237,7 @@ const form = reactive({
   id_plan_suivi: null,
   description: "",
   commentaire: "",
+  plan_de_gestion: "",
   date_debut: "",
   date_fin: "",
   type_suivi: null,
@@ -405,6 +438,10 @@ const rulesDateFin = computed(() => [
     v >= form.date_debut ||
     "La date de fin doit être postérieure à la date de début.",
 ]);
+
+const rulesPlanDeGestion = [
+  (v) => !v || /^https?:\/\/.+/.test(v) || "L'URL doit commencer par http:// ou https://",
+];
 
 const onMapFeatureClick = async ({ id, layer }) => {
   if (!id) {

@@ -336,6 +336,7 @@ class PlanDeSuiviSerializer(AuditReadOnlyFieldsMixin, serializers.ModelSerialize
             "id_plan_suivi",
             "description",
             "commentaire",
+            "plan_de_gestion",
             "date_debut",
             "date_fin",
             "type_suivi",

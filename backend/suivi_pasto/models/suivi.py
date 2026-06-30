@@ -21,6 +21,7 @@ class PlanDeSuivi(AuditFieldsMixin, models.Model):
     id_plan_suivi = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=150, null=False, blank=False)
     commentaire = models.TextField(null=True, blank=True)
+    plan_de_gestion = models.URLField(max_length=500, null=True, blank=True)
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
     type_suivi = models.ForeignKey(
